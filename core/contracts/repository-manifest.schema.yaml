@@ -1,0 +1,36 @@
+# Documentation contract for repository manifests. This is intentionally not a JSON Schema validator.
+contract:
+  name: repository-manifest
+  version: v1
+  purpose: Binds one source repository to a product and describes its guidance entry points.
+required_fields:
+  repository:
+    type: string
+    meaning: Stable repository name.
+  product:
+    type: string
+    meaning: Product identifier from the product manifest.
+  product_manifest:
+    type: path
+  product_index:
+    type: path
+  guidance_home:
+    type: map
+    fields: [resolution]
+  local_instructions:
+    type: list[path]
+  knowledge_update:
+    type: map
+    fields: [assess_cross_service_facts]
+optional_fields:
+  evidence_sources:
+    type: list[path]
+  code_owners:
+    type: list[string]
+  notes:
+    type: string
+rules:
+  - resolution must support AI_GUIDANCE_HOME, explicit configuration, or both.
+  - product paths must identify the same product binding.
+  - manifests must not contain secrets or personal data.
+

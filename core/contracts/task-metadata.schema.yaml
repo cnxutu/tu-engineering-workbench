@@ -1,0 +1,37 @@
+# Documentation contract for active and archived task records. This is intentionally not a JSON Schema validator.
+contract:
+  name: task-metadata
+  version: v1
+  purpose: Captures a task's scope, evidence, decisions, and knowledge-maintenance outcome.
+required_fields:
+  id:
+    type: string
+  title:
+    type: string
+  status:
+    type: string
+    allowed_values: [active, completed, blocked, superseded]
+  repository:
+    type: string
+  product:
+    type: string
+  created_at:
+    type: date-time
+  evidence:
+    type: list
+    item_fields: [source, summary]
+  knowledge_update_assessment:
+    type: string
+    allowed_values: [updated, not-needed, deferred]
+optional_fields:
+  adr:
+    type: path
+  archived_at:
+    type: date-time
+  sensitive_data_review:
+    type: string
+rules:
+  - completed, blocked, and superseded tasks belong in the product task archive and require archived_at.
+  - active tasks may omit archived_at.
+  - evidence must be reproducible references, never copied secrets or sensitive payloads.
+  - an ADR reference is required when the task records a durable architectural decision.

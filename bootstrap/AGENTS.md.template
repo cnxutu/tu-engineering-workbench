@@ -1,0 +1,23 @@
+# Repository AI Guidance
+
+This repository participates in the shared `ai-guidance` knowledge base.
+
+## Required loading order
+
+For bootstrap, use this read sequence:
+
+1. Resolve the guidance home from `AI_GUIDANCE_HOME` or explicit repository configuration.
+2. Read the repository manifest to determine the product binding.
+3. Load the bound product's `index.md` **first among product guidance**. It defines scope, evidence status, and what to load next.
+4. Load only the task-specific Core role, rule, workflow, or template.
+5. Load the remaining repository-local instructions and current code, including nearer `AGENTS.md` and `README` files.
+
+Use progressive loading: begin with the product index and read the smallest additional set of documents needed to make the next decision. Do not preload unrelated product material.
+
+## Precedence and facts
+
+Semantic precedence is independent of reading order. When instructions conflict, use **local repository instructions and code > product guidance > Core guidance**. Preserve stricter local constraints.
+
+Treat a product fact as verified only when its cited evidence is available and applicable. For a change, question, or review that establishes or changes a cross-service fact (service ownership, API/message contract, deployment topology, or end-to-end flow), assess whether the product knowledge needs an update. Record the evidence, update the appropriate product document when in scope, or explicitly state why no update is needed.
+
+Never place secrets, tokens, credentials, customer data, or other sensitive operational data in guidance, task records, or evidence excerpts.

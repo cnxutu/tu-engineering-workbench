@@ -1,0 +1,7 @@
+id: personal/knowledge-hub
+name: Personal Knowledge Hub
+status: bootstrap
+entry: index.md
+repositories: []
+fact_policy: "This is an empty personal starter scaffold. It asserts no architecture, repository, service, or operational facts until evidence is added."
+

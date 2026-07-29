@@ -6,9 +6,9 @@
 
 ## 依赖
 
-- Agent：`agents/java-engineer.md`；涉及数据时使用 `agents/database-expert.md`
-- Rules：`rules/java.md`、`rules/database.md`
-- Template：`templates/bugfix.md`
+- Agent：[`Java Engineer`](../agents/java-engineer.md)；涉及数据时使用 [`Database Expert`](../agents/database-expert.md)
+- Rules：[`Java`](../rules/java.md)、[`数据库`](../rules/database.md)
+- Template：[`缺陷修复任务`](../templates/bugfix.md)
 - Context：目标项目的日志、监控、部署版本、调用链和已知变更
 
 ## 流程

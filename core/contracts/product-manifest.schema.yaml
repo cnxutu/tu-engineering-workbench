@@ -1,0 +1,36 @@
+# Documentation contract for product manifests. This is intentionally not a JSON Schema validator.
+contract:
+  name: product-manifest
+  version: v1
+  purpose: Registers a product, its entry document, repositories, and fact policy.
+required_fields:
+  id:
+    type: string
+    meaning: Stable product identifier, such as company/device-inspection-platform.
+  name:
+    type: string
+    meaning: Human-readable product name.
+  status:
+    type: string
+    allowed_values: [evidence-backed, mixed, bootstrap]
+  entry:
+    type: path
+    meaning: Product-relative path to the loading entry, normally index.md.
+  repositories:
+    type: list[path]
+    meaning: Product-relative repository manifests.
+  fact_policy:
+    type: string
+    meaning: How verified, pending, and unknown facts are labeled.
+optional_fields:
+  owners:
+    type: list[string]
+  updated_at:
+    type: date
+  decisions:
+    type: path
+rules:
+  - id must be unique in platform.yaml.
+  - entry and repository paths must exist when the manifest is published.
+  - product facts require evidence or must be marked pending_verification or unknown.
+

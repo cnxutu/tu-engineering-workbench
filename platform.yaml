@@ -1,0 +1,11 @@
+platform:
+  name: ai-engineering-context-platform
+  version: 1.0.0
+  knowledge_contract_version: v1
+products:
+  - id: company/device-inspection-platform
+    manifest: products/company/device-inspection-platform/product.yaml
+    index: products/company/device-inspection-platform/index.md
+  - id: personal/knowledge-hub
+    manifest: products/personal/knowledge-hub/product.yaml
+    index: products/personal/knowledge-hub/index.md

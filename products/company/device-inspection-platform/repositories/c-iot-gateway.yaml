@@ -1,0 +1,24 @@
+repository: c-iot-gateway
+product: company/device-inspection-platform
+product_manifest: ../product.yaml
+product_index: ../index.md
+guidance_home:
+  resolution: AI_GUIDANCE_HOME-or-explicit-repository-config
+local_instructions: []
+knowledge_update:
+  assess_cross_service_facts: true
+role: IoT 协议与连接入口
+verified_responsibilities:
+  - protocol-access
+  - connection-entry
+  - protocol-conversion
+  - authentication-enrichment
+  - forwarding-to-iot-platform
+known_contracts:
+  downstream_topic_pattern: "iot:gw:down:${serverId}"
+evidence_sources:
+  - README.md
+  - docs/03-protocol-and-deployment.md
+unknowns:
+  - deployment
+  - complete-topic-list

@@ -1,0 +1,18 @@
+repository: c-iot-server
+product: company/device-inspection-platform
+product_manifest: ../product.yaml
+product_index: ../index.md
+guidance_home:
+  resolution: AI_GUIDANCE_HOME-or-explicit-repository-config
+local_instructions: []
+knowledge_update:
+  assess_cross_service_facts: true
+role: IoT 服务
+pending_verification:
+  - centralized-device-state-determination
+evidence_sources:
+  - docs/device_online_state_architecture_optimization.md
+notes: Architecture target, not current-code proof.
+unknowns:
+  - deployment
+  - complete-message-contracts

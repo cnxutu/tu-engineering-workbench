@@ -1,0 +1,18 @@
+# Documentation contract; see ../core/contracts/repository-manifest.schema.yaml.
+repository: example-service
+product: company/example-product
+product_manifest: products/company/example-product/product.yaml
+product_index: products/company/example-product/index.md
+guidance_home:
+  resolution: AI_GUIDANCE_HOME-or-explicit-config
+  explicit_config: .ai-guidance.yaml
+local_instructions:
+  - AGENTS.md
+  - README.md
+evidence_sources:
+  - README.md
+  - docs/
+knowledge_update:
+  assess_cross_service_facts: true
+  task_archive: products/company/example-product/tasks/archive/
+

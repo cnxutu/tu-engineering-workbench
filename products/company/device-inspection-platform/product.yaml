@@ -1,0 +1,10 @@
+id: company/device-inspection-platform
+name: 无人机巡检平台
+status: mixed
+entry: index.md
+repositories:
+  - repositories/c-drone-inspection.yaml
+  - repositories/c-iot-server.yaml
+  - repositories/c-iot-gateway.yaml
+  - repositories/ad-iot-codec-adapter-dji.yaml
+fact_policy: "仅将有仓库 README、文档或源码证据的内容标为已验证；其余内容必须标为待验证。"

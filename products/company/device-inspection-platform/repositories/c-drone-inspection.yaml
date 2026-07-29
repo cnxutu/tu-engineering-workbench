@@ -1,0 +1,21 @@
+repository: c-drone-inspection
+product: company/device-inspection-platform
+product_manifest: ../product.yaml
+product_index: ../index.md
+guidance_home:
+  resolution: AI_GUIDANCE_HOME-or-explicit-repository-config
+local_instructions: []
+knowledge_update:
+  assess_cross_service_facts: true
+role: 巡检业务平台
+verified_responsibilities:
+  - business
+  - core
+  - iot
+  - bootstrap
+  - media-and-video
+evidence_sources:
+  - README.md
+unknowns:
+  - external-api-contracts
+  - deployment
