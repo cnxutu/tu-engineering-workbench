@@ -5,6 +5,9 @@ product_index: ../index.md
 guidance_home:
   resolution: AI_GUIDANCE_HOME-or-explicit-repository-config
 local_instructions: []
+central_context:
+  key_entry_points: c-drone-inspection/key-entry-points.md
+  cache_design: c-drone-inspection/cache-design.md
 knowledge_update:
   assess_cross_service_facts: true
 role: 巡检业务平台
