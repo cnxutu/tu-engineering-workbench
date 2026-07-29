@@ -1,26 +1,28 @@
-# Integration Guide
+# 接入指南
 
-This guide describes a repository integration model; it does not implement a resolver, knowledge graph, MCP server, or `ai-guidance init` command.
+本指南描述仓库接入模型；它不实现解析器、知识图谱、MCP Server 或 `ai-guidance init` 命令。具体读取和 Template 使用见 [使用指南](usage-guide.md)。
 
-## Bind a repository
+## 绑定一个仓库
 
-1. Copy [AGENTS.md.template](../bootstrap/AGENTS.md.template) into the repository as `AGENTS.md` and adapt local instruction paths.
-2. Copy [repository-manifest.template.yaml](../bootstrap/repository-manifest.template.yaml), bind it to one product, and keep its product manifest and index paths consistent.
-3. Configure the guidance root with `AI_GUIDANCE_HOME` or an explicit repository configuration (for example `.ai-guidance.yaml`). An explicit configuration may select a non-default manifest path.
-4. For bootstrap reads, resolve `AI_GUIDANCE_HOME` or explicit configuration, read the repository manifest binding, load the product index, load task-specific Core material, then load remaining local instructions and current code.
+1. 将 [AGENTS.md.template](../bootstrap/AGENTS.md.template) 复制到目标仓库为 `AGENTS.md`，再补充本仓库局部说明路径。
+2. 复制 [repository-manifest.template.yaml](../bootstrap/repository-manifest.template.yaml)，绑定一个产品，并保证其中产品清单与入口路径一致。
+3. 通过 `AI_GUIDANCE_HOME` 或显式仓库配置（例如 `.ai-guidance.yaml`）配置 P0 的知识根目录；显式配置可以选择非默认清单路径。
+4. 启动读取时先定位 P0，再读取仓库清单绑定、产品入口、任务所需 Core，最后读取局部说明与代码。
 
-Semantic precedence is independent of this read sequence: local repository instructions and code > product guidance > Core guidance.
+语义优先级独立于读取顺序：仓库局部说明与代码 > 产品上下文 > Core 通用规则。
 
-Future `ai-guidance init` tooling may automate these copies and configuration checks; it should produce the same explicit binding rather than inventing product facts.
+未来的 `ai-guidance init` 可以自动复制模板和检查配置，但它必须生成同样明确的绑定，不能臆造产品事实。
 
-## Resolver contract
+## 解析器约定
 
-A future resolver should locate guidance in this order: explicit configuration, `AI_GUIDANCE_HOME`, then an installation default. It should return the bound repository manifest, product manifest, and product index, and report ambiguous or missing bindings instead of guessing. The [repository manifest contract](../core/contracts/repository-manifest.schema.yaml) documents the expected fields.
+未来解析器应按“显式配置 → `AI_GUIDANCE_HOME` → 安装默认位置”的顺序定位知识库。它应返回绑定的仓库清单、产品清单和产品入口；遇到缺失或歧义绑定时必须报错，不能猜测。预期字段见 [仓库清单契约](../core/contracts/repository-manifest.schema.yaml)。
 
-## Knowledge graph and MCP Context Server
+## 知识图谱与 MCP Context Server
 
-Future tooling may expose documents, repositories, services, contracts, evidence, ADRs, and tasks as nodes with typed links. A future MCP Context Server could use that graph to answer targeted context requests, return evidence and staleness status, and recommend the next document for progressive loading. Neither facility is implemented by these templates or documents; repository manifests remain the portable source of truth.
+未来工具可将文档、仓库、服务、契约、证据、ADR 与任务作为带类型关系的节点暴露。未来 MCP Context Server 可基于该图谱回答定向上下文问题、返回证据与过期状态，并建议下一份按需读取的文档。
 
-## Verification
+当前模板和文档**没有实现**上述能力；仓库清单仍是可移植的事实来源。
 
-Before publishing an integration, verify paths, Markdown links, YAML structure, product binding, and that no sensitive data was introduced. For cross-service changes, also record the product knowledge update assessment.
+## 接入验证
+
+发布接入前检查路径、Markdown 链接、YAML 结构、产品绑定以及敏感信息。跨服务变更还应记录产品知识更新评估。

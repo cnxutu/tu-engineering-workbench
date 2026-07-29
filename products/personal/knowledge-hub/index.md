@@ -1,8 +1,7 @@
-# Personal Knowledge Hub
+# 个人知识中心
 
-This product is an empty personal starter scaffold. It has no bound repositories and asserts no architecture, service, contract, deployment, or operational facts.
+这是一个空的个人产品起始骨架，当前没有绑定仓库，也不声明任何架构、服务、契约、部署或运行事实。
 
-When the hub is adopted, add evidence-backed context progressively: start with a product scope, then bind repositories and record only facts supported by code, contracts, tests, or approved documentation. Mark all unverified information as pending verification or unknown.
+启用后按证据逐步添加上下文：先定义产品范围，再绑定仓库，只记录能由代码、契约、测试或已批准文档支持的事实。所有未验证信息使用 `pending_verification` 或 `unknown` 标记。
 
-Follow the shared [authoring guide](../../../docs/authoring-guide.md) and [governance policy](../../../docs/governance.md) when adding knowledge.
-
+新增知识时遵循共享的 [编写指南](../../../docs/authoring-guide.md) 与 [治理规范](../../../docs/governance.md)。

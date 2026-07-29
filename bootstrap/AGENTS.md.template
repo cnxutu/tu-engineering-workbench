@@ -1,23 +1,23 @@
-# Repository AI Guidance
+# 仓库 AI 上下文入口
 
-This repository participates in the shared `ai-guidance` knowledge base.
+本仓库接入共享的 `ai-guidance` 知识库。
 
-## Required loading order
+## 必须的读取顺序
 
-For bootstrap, use this read sequence:
+启动时按以下顺序读取：
 
-1. Resolve the guidance home from `AI_GUIDANCE_HOME` or explicit repository configuration.
-2. Read the repository manifest to determine the product binding.
-3. Load the bound product's `index.md` **first among product guidance**. It defines scope, evidence status, and what to load next.
-4. Load only the task-specific Core role, rule, workflow, or template.
-5. Load the remaining repository-local instructions and current code, including nearer `AGENTS.md` and `README` files.
+1. 通过 `AI_GUIDANCE_HOME` 或仓库显式配置定位 P0 的 `ai-guidance`。
+2. 读取仓库清单，确定当前仓库绑定的产品。
+3. 在产品知识中优先读取绑定产品的 `index.md`，确认范围、证据状态和后续按需读取路径。
+4. 只读取任务所需的 Core 角色、规则、Skill 或 Template。
+5. 最后读取仓库局部说明、就近的 `AGENTS.md`、`README` 和当前代码。
 
-Use progressive loading: begin with the product index and read the smallest additional set of documents needed to make the next decision. Do not preload unrelated product material.
+采用渐进式读取：从产品入口开始，只增加完成下一步判断所必需的文档；不要预加载无关产品材料。
 
-## Precedence and facts
+## 优先级与事实
 
-Semantic precedence is independent of reading order. When instructions conflict, use **local repository instructions and code > product guidance > Core guidance**. Preserve stricter local constraints.
+语义优先级独立于读取顺序。发生冲突时采用：**仓库局部约束与代码 > 产品上下文 > Core 通用规则**。
 
-Treat a product fact as verified only when its cited evidence is available and applicable. For a change, question, or review that establishes or changes a cross-service fact (service ownership, API/message contract, deployment topology, or end-to-end flow), assess whether the product knowledge needs an update. Record the evidence, update the appropriate product document when in scope, or explicitly state why no update is needed.
+只有能取得且适用的证据才可将产品事实视为已验证。需求、问题或评审若建立或修改了跨服务事实（服务职责、API/消息契约、部署拓扑或端到端链路），必须评估是否更新产品知识；记录证据并更新对应文档，或明确说明为何无需更新。
 
-Never place secrets, tokens, credentials, customer data, or other sensitive operational data in guidance, task records, or evidence excerpts.
+禁止将密钥、Token、凭据、客户数据或其他敏感运行信息写入知识、任务记录或证据摘录。

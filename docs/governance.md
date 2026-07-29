@@ -1,21 +1,21 @@
-# Governance
+# 知识治理规范
 
-`ai-guidance` is a shared engineering knowledge base. It is useful only when readers can distinguish verified facts from assumptions and can trace a fact back to evidence.
+`ai-guidance` 是共享工程知识库。只有读者能区分已验证事实与假设，并能追溯事实证据时，它才有价值。
 
-## Evidence and staleness
+## 证据与过期性
 
-Product facts need a reproducible source: code location, API or message contract, checked-in document, test, or approved operational record. Cite the source and state whether it proves current behavior, a target design, or an unresolved hypothesis. Mark unsupported statements as `pending_verification` or `unknown`.
+产品事实必须具备可复现来源：代码位置、API 或消息契约、已提交文档、测试或已批准的运行记录。标注来源，并说明它证明的是当前行为、目标设计还是未决假设；没有证据的内容使用 `pending_verification` 或 `unknown` 标记。
 
-Review product knowledge whenever a task changes service boundaries, shared data ownership, public contracts, deployment topology, or an end-to-end flow. If the task changes such a fact, update the relevant product documentation with evidence; otherwise record a `not-needed` assessment in task metadata. Re-check volatile facts after releases or material infrastructure changes and retire or annotate stale evidence rather than silently treating it as current.
+当任务改变服务边界、共享数据所有权、公开契约、部署拓扑或端到端流程时，必须复核产品知识。若任务改变了这些事实，更新对应产品文档并写入证据；若无需更新，在任务元数据中记录 `not-needed`。发布或基础设施发生重大变化后，应复核易变事实；过期证据要淘汰或标注，不能默认为当前事实。
 
-## Sensitive data
+## 敏感信息
 
-Do not store credentials, tokens, private keys, customer identifiers, production payloads, internal host details, or unredacted logs in guidance. Reference a controlled source or redact examples. Evidence references must remain useful without reproducing sensitive content.
+禁止在知识库中保存凭据、Token、私钥、客户标识、生产 payload、内部主机信息或未脱敏日志。应引用受控来源或使用脱敏示例；证据引用必须在不复制敏感内容的前提下仍有意义。
 
-## ADRs and task records
+## ADR 与任务记录
 
-Create an ADR under the product's `decisions/` directory for durable, consequential architectural choices: boundaries, ownership, contracts, persistence strategy, or major technology direction. An ADR should name the decision, context, alternatives, outcome, and evidence.
+针对持久且重要的架构选择，在产品 `decisions/` 下创建 ADR，例如服务边界、数据所有权、契约、持久化策略或重大技术方向。ADR 应说明决策、背景、候选方案、结果和证据。
 
-Keep in-progress task records in `tasks/active/`; they may omit `archived_at`. Move completed, blocked, or superseded records to `tasks/archive/`, preserve their identifiers and evidence, add the final status and required `archived_at` time, and link any ADR created by the task. Task records are historical evidence, not a place for secrets or transient scratch notes.
+进行中的任务记录放在 `tasks/active/`，可没有 `archived_at`；完成、阻塞或被替代的任务移入 `tasks/archive/`，保留标识和证据，补齐最终状态与必填的 `archived_at`，并链接任务产生的 ADR。任务记录是历史证据，不是保存密钥或临时草稿的地方。
 
-See the [authoring guide](authoring-guide.md), [integration guide](integration-guide.md), and [task metadata contract](../core/contracts/task-metadata.schema.yaml).
+参见 [编写指南](authoring-guide.md)、[接入指南](integration-guide.md) 和 [任务元数据契约](../core/contracts/task-metadata.schema.yaml)。

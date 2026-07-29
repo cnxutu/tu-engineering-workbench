@@ -1,23 +1,19 @@
-# AI Engineering Context Platform
+# AI 工程上下文平台
 
-`ai-guidance` 为多个代码仓库提供可复用的 AI 工程方法和产品上下文入口，而不是 Prompt 集合。
+`ai-guidance` 是 P0 中面向 P1–P4 的统一系统知识库与 AI 工作方法库，不是单纯的 Prompt 集合。
 
-## 目录
+## 从这里开始
 
-- `core/`：跨产品通用的角色、规则、工作流和任务模板。
-- `products/`：按产品维护已验证的业务、架构、链路和任务知识。
-- `bootstrap/`：新仓库接入所需的 `AGENTS.md` 与清单模板。
-- `docs/`：编写、治理和接入规范。
+- [使用指南](docs/usage-guide.md)：AI 读取链路、P0–P4 全量/局部工作区、Skill/Template 使用和变量替换规则。
+- [Core 入口](core/index.md)：角色、规则、Skill 与 Template。
+- [无人机巡检产品入口](products/company/device-inspection-platform/index.md)：P1–P4 的业务、架构和链路上下文。
+- [接入指南](docs/integration-guide.md)：如何让一个代码仓库绑定产品上下文。
 
-## 使用顺序
+## 目录职责
 
-1. 从目标产品的 `index.md` 读取系统范围与按需加载规则。
-2. 读取当前仓库清单和任务相关的领域、架构或链路文档。
-3. 从 [Core 入口](core/index.md) 选择角色、规则、工作流与模板。
-4. 最后以当前仓库代码和局部约束为准。
+- `core/`：跨产品复用的角色、规则、工作流和模板。
+- `products/`：产品、仓库、架构、流程、缓存与历史任务知识。
+- `bootstrap/`：`AGENTS.md` 和仓库清单模板。
+- `docs/`：使用、接入、编写和治理说明。
 
-优先级为：仓库局部约束 > 产品上下文 > Core 通用规则。产品事实必须带有代码、接口或运行证据；未知信息应标记为待验证。
-
-## 产品注册
-
-已注册产品见 [platform.yaml](platform.yaml)。新增产品或仓库时，先创建产品清单与入口文档，再接入仓库级 `AGENTS.md`。
+产品事实应有代码、接口或运行证据；未知内容必须标记为待验证。语义优先级始终是：仓库局部约束与代码 > 产品上下文 > Core 通用规则。

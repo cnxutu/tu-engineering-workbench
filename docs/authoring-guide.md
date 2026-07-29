@@ -1,22 +1,21 @@
-# Authoring Guide
+# 编写指南
 
-Write guidance for the next engineer who must decide what to load and what can be trusted.
+编写面向下一位工程师或 AI 的知识：让其知道该加载什么、什么可以信任。
 
-## Product documents
+## 产品文档
 
-Start each product at `index.md`. It should state scope, evidence posture, and links to the smallest useful domain, architecture, flow, repository, and decision documents. Keep Core generic: it provides methods and templates, not product facts. Put product-specific facts in the product tree and bind repositories through manifests.
+每个产品从 `index.md` 开始。入口应说明范围、证据状态，并链接最小必要的领域、架构、流程、仓库和决策文档。Core 保持通用，只提供方法和模板，不承载产品事实；产品事实应放在产品树中，并用清单绑定仓库。
 
-Use progressive loading: link rather than duplicate detail, and keep each document focused on one concern. State an owner or source when it clarifies authority. The normal precedence is local repository instructions and code, then product guidance, then Core guidance.
+采用渐进式读取：以链接代替重复细节，每篇文档只聚焦一个主题。必要时标注负责人或来源。通常优先级是：仓库局部说明与代码，其次产品知识，最后 Core。
 
-## Facts and citations
+## 事实与引用
 
-For every material product claim, state its evidence and confidence. Prefer stable links to source, tests, contracts, or approved design records. Label a target architecture as a target; it does not prove current code behavior. Use `pending_verification` and `unknown` plainly instead of guessing.
+每条重要产品结论都要说明证据与可信度。优先引用稳定的源码、测试、契约或批准设计记录。目标架构必须明确标为目标，不能证明当前代码行为；不确定时直接使用 `pending_verification` 或 `unknown`，不要猜测。
 
-Before completing work that introduces a cross-service fact, assess whether service maps, ownership, contracts, topology, or flows need revision. Update the applicable document when evidence supports it and record the outcome in task metadata.
+完成引入跨服务事实的工作前，评估服务地图、所有权、契约、拓扑或流程是否需要修订。有证据时更新适用文档，并在任务元数据中记录结果。
 
-## Records
+## 记录
 
-Use the contracts in [Core](../core/contracts/) as documentation contracts, not executable validators. Keep task records concise and archive final records under the product's `tasks/archive/`. Use ADRs for durable architectural decisions, and redact sensitive information before adding evidence.
+`Core` 下的 [契约](../core/contracts/) 是文档契约，不是可执行校验器。任务记录应保持简洁，最终记录归档到产品 `tasks/archive/`；持久架构选择使用 ADR；加入证据前先脱敏。
 
-For repository setup, follow the [integration guide](integration-guide.md).
-
+仓库配置见 [接入指南](integration-guide.md)，AI 读取、Skill 与 Template 使用见 [使用指南](usage-guide.md)。
