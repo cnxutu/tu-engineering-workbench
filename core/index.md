@@ -20,8 +20,12 @@ Core 只描述通用工程方法，不存放任何产品或仓库事实。使用
 
 - [功能开发](skills/feature-development.md)、[问题排查](skills/bug-analysis.md)、[架构评审](skills/architecture-review.md)、[重构分析](skills/refactor-analysis.md)。
 
-## 模板
+## 日常任务入口
 
-- [功能](templates/feature.md)、[缺陷修复](templates/bugfix.md)、[重构](templates/refactor.md)、[架构设计](templates/architecture-design.md)、[代码评审](templates/code-review.md)、[跨服务变更](templates/cross-service-change.md)。
+- [Prompt Compact Syntax](prompt-compact-syntax.md)：用户与 Codex 的默认简写协议。日常任务优先使用它，不要求填写长 Markdown 模板。
 
-任务涉及多个仓库、公开契约或消息协议时，应先加载产品架构与链路文档，使用 `System Designer` 进行设计或评审，并使用跨服务变更模板。
+任务涉及多个仓库、公开契约或消息协议时，应先加载产品架构与链路文档，使用 `System Designer` 进行设计或评审；任务类型使用 `X`，并在 `i` 中列出受影响的仓库。
+
+## 历史模板
+
+`templates/` 保留为历史参考或需要长篇任务文档时的输出框架：功能、缺陷修复、重构、架构设计、代码评审与跨服务变更。除非用户明确指定，Codex 不主动要求或加载它们。

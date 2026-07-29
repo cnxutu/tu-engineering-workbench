@@ -8,7 +8,7 @@
 
 - Agent：服务内部设计使用 [`Backend Architect`](../agents/backend-architect.md)；跨服务、协议或拓扑设计使用 [`System Designer`](../agents/system-designer.md)
 - Rules：[`架构`](../rules/architecture.md)、[`数据库`](../rules/database.md)（涉及持久化时）
-- Template：服务内部设计使用 [`架构设计任务`](../templates/architecture-design.md)；跨服务变更使用 [`跨服务变更任务`](../templates/cross-service-change.md)
+- Prompt：默认使用 [`Prompt Compact Syntax`](../prompt-compact-syntax.md) 的 `A`；跨服务改动使用 `X`。仅在用户明确要求长篇任务文档时，服务内部设计参考 [`架构设计任务`](../templates/architecture-design.md)，跨服务变更参考 [`跨服务变更任务`](../templates/cross-service-change.md)
 - Context：目标项目的业务概览、当前架构、接口与数据模型事实
 
 ## 流程

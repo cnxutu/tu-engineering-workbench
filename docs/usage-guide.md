@@ -12,14 +12,19 @@
 
 P0 是知识主库，不参与 P1–P4 的运行时调用。P1–P4 共同属于 `device-inspection-platform` 产品。
 
+P0–P4 的本机源码位置统一登记在 [`workspace.yaml`](../workspace.yaml)。当任务需要阅读、核实或修改代码时，先读取该文件并按其中路径打开目标仓库；目录迁移只更新这一处，不在产品文档内散落绝对路径。
+
 ## 2. AI 读取链路
 
 Codex 不会仅因目录存在就自动读取所有 Markdown。需要通过仓库 `AGENTS.md`、任务文本或明确指令告诉它从哪里开始；随后按需加载，而非把所有文档一次塞入上下文。
 
+P0 根目录的 [`AGENTS.md`](../../AGENTS.md) 已负责识别任务类型并引导到本平台；进入本目录后，[`AGENTS.md`](../AGENTS.md) 会进一步规定产品与 Core 的读取顺序。这两份文件是实际生效的引导文件，`bootstrap/AGENTS.md.template` 仅用于其他仓库接入时复制。
+
 ```mermaid
 flowchart TD
     Task["用户任务 / Codex 进入代码仓库"] --> Locate["定位 P0：AI_GUIDANCE_HOME 或显式配置"]
-    Locate --> Manifest["读取仓库清单\n确定产品与仓库绑定"]
+    Locate --> Workspace["读取 workspace.yaml\n定位 P0–P4 本机源码"]
+    Workspace --> Manifest["读取仓库清单\n确定产品与仓库绑定"]
     Manifest --> Product["读取产品 index.md\n理解系统边界与按需导航"]
     Product --> Select["按任务选择：仓库入口 / 架构 / Flow / 缓存设计"]
     Select --> Core["选择最小 Core 集合\nAgent + Rule + Skill + Template"]

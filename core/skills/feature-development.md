@@ -8,7 +8,7 @@
 
 - Agent：[`Java Engineer`](../agents/java-engineer.md)；涉及设计时使用 [`Backend Architect`](../agents/backend-architect.md)
 - Rules：[`Java`](../rules/java.md)、[`架构`](../rules/architecture.md)、[`数据库`](../rules/database.md)、[`Git`](../rules/git.md)
-- Template：[`功能任务`](../templates/feature.md)
+- Prompt：默认使用 [`Prompt Compact Syntax`](../prompt-compact-syntax.md) 的 `F`；仅在用户明确要求长篇任务文档时参考 [`功能任务`](../templates/feature.md)
 - Context：目标项目的模块结构、业务术语、局部开发约定和测试方式
 
 ## 流程

@@ -8,7 +8,7 @@
 
 - Agent：[`Java Engineer`](../agents/java-engineer.md)；涉及边界调整时使用 [`Backend Architect`](../agents/backend-architect.md)
 - Rules：[`Java`](../rules/java.md)、[`架构`](../rules/architecture.md)、[`数据库`](../rules/database.md)（涉及持久化时）
-- Template：[`重构任务`](../templates/refactor.md)
+- Prompt：默认使用 [`Prompt Compact Syntax`](../prompt-compact-syntax.md) 的 `R`；仅在用户明确要求长篇任务文档时参考 [`重构任务`](../templates/refactor.md)
 - Context：目标仓库的调用链、测试基线、公开契约和性能指标
 
 ## 流程

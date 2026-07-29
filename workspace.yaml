@@ -1,0 +1,32 @@
+# 本机工作区映射：供 Codex 从 P0 的产品知识定位 P1–P4 源码。
+# 如目录迁移，只修改本文件；产品知识、链路文档和 Core 无需复制或改写。
+workspace:
+  id: xm-new-local
+  roots:
+    p0: D:/workspace/github/tu-devkit
+    company: D:/workspace/xm-new
+repositories:
+  - code: P0
+    repository: tu-devkit
+    path: D:/workspace/github/tu-devkit
+    role: AI 工程上下文与开发工具主库
+  - code: P1
+    repository: c-drone-inspection
+    path: D:/workspace/xm-new/c-drone-inspection
+    product: company/device-inspection-platform
+    role: 巡检业务、设备、任务、媒体、视频与巡检 IoT 业务
+  - code: P2
+    repository: c-iot-server
+    path: D:/workspace/xm-new/c-iot-server
+    product: company/device-inspection-platform
+    role: IoT 业务、设备状态、Data Rule 与消息处理
+  - code: P3
+    repository: c-iot-gateway
+    path: D:/workspace/xm-new/c-iot-gateway
+    product: company/device-inspection-platform
+    role: 协议接入、连接管理与消息上下行入口
+  - code: P4
+    repository: ad-iot-codec-adapter-dji
+    path: D:/workspace/xm-new/ad-iot-codec-adapter-dji
+    product: company/device-inspection-platform
+    role: DJI 协议解析、物模型转换与设备能力映射
