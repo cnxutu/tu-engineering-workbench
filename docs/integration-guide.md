@@ -7,9 +7,9 @@
 1. 将 [AGENTS.md.template](../bootstrap/AGENTS.md.template) 复制到目标仓库为 `AGENTS.md`，再补充本仓库局部说明路径。
 2. 复制 [repository-manifest.template.yaml](../bootstrap/repository-manifest.template.yaml)，绑定一个产品，并保证其中产品清单与入口路径一致。
 3. 通过 `AI_GUIDANCE_HOME` 或显式仓库配置（例如 `.ai-guidance.yaml`）配置 P0 的知识根目录；显式配置可以选择非默认清单路径。
-4. 目标仓库的 `AGENTS.md` 应先定位 P0；随后按 P0 `AGENTS.md` 的会话范围、任务类型与影响范围条件读取产品知识和 Core，最后核实局部说明与代码。不要默认加载所有产品文档或维护者指南。
+4. 目标仓库的 `AGENTS.md` 应先定位 P0，再读取当前仓库和目标目录的局部约束；随后按 P0 `AGENTS.md` 的会话范围、任务类型与影响范围条件读取产品知识和 Core，最后核实代码。不要默认加载所有产品文档或维护者指南。
 
-语义优先级独立于读取顺序：仓库局部说明与代码 > 产品上下文 > Core 通用规则。
+指令优先级独立于读取顺序：平台、系统和开发者约束 > 用户最新明确要求 > 仓库局部说明 > Core 公共规则 > 产品上下文。代码、契约、配置和测试用于核实当前事实，不取代用户已授权的目标变更。
 
 未来的 `ai-guidance init` 可以自动复制模板和检查配置，但它必须生成同样明确的绑定，不能臆造产品事实。
 
@@ -25,4 +25,4 @@
 
 ## 接入验证
 
-发布接入前检查路径、Markdown 链接、YAML 结构、产品绑定以及敏感信息。跨服务变更还应记录产品知识更新评估。
+发布接入前运行 `python ai-guidance/scripts/validate_guidance.py --repo-root <仓库根目录>`，检查路径、Markdown 链接、产品绑定、本机映射模板和疑似敏感配置值。跨服务变更还应记录产品知识更新评估。

@@ -15,7 +15,7 @@ p: 先核实现有缓存与接口，再提出最小实现方案并完成代码�
 v: 单元测试与接口回归
 ```
 
-`P0–P4` 是当前无人机巡检系统的全量范围；`K1` 和 `K2` 分别预留给 Knowledge Hub 后端与前端。绝对路径统一维护在 [`../workspace.yaml`](../workspace.yaml)；目录变动只改这一处。
+`P0–P4` 是当前无人机巡检系统的全量范围；`K1` 和 `K2` 分别预留给 Knowledge Hub 后端与前端。本机绝对路径维护在未提交的 `workspace.local.yaml`；首次接入时从 [`../workspace.example.yaml`](../workspace.example.yaml) 复制创建。缺少映射时不得猜测源码位置。
 
 项目标记不依赖固定分隔符，因此 `P1 + P2`、`P1,P2`、`P1，P2`、`P1、P2`、`P1 P2`，或正文中分别出现 P1、P2，均表示本次涉及两者；`-` 或 `–` 表示连续范围，例如 `P0–P4`。`范围：` 是可选前缀。
 
@@ -32,7 +32,7 @@ v: 单元测试与接口回归
 
 - `core/`：通用角色、规则、工作流和参考模板。
 - `products/`：产品架构、流程、仓库入口、缓存与任务历史。
-- `workspace.yaml`：P0–P4/K1/K2 的本机路径地图。
+- `workspace.example.yaml`：可提交的本机路径地图模板；实际路径写入被忽略的 `workspace.local.yaml`。
 - `bootstrap/`：其他仓库接入时复制的模板。
 - `docs/`：面向维护者的使用、接入、编写与治理资料。
 
@@ -40,4 +40,4 @@ v: 单元测试与接口回归
 
 ## 4. 接入新仓库
 
-接入或迁移仓库时阅读 [接入指南](integration-guide.md)，并同步更新 `workspace.yaml`、产品清单与目标仓库的局部 `AGENTS.md`。
+接入或迁移仓库时阅读 [接入指南](integration-guide.md)，并同步更新 `workspace.example.yaml`、本机的 `workspace.local.yaml`、产品清单与目标仓库的局部 `AGENTS.md`。

@@ -21,6 +21,8 @@ Core 只描述通用工程方法，不存放任何产品或仓库事实。使用
 
 - [功能开发](skills/feature-development.md)、[问题排查](skills/bug-analysis.md)、[架构评审](skills/architecture-review.md)、[重构分析](skills/refactor-analysis.md)。
 
+本目录的“工作流”是仓库级参考，不等同于 Codex 平台安装的 `SKILL.md`。平台 Skill 的适用与优先级以 [P0 运行时约束](../AGENTS.md) 为准；工作流仅在不冲突时补充其执行细节。
+
 ## 日常任务入口
 
 - [Prompt Compact Syntax](prompt-compact-syntax.md)：用户与 Codex 的默认简写协议。日常任务优先使用它，不要求填写长 Markdown 模板。
