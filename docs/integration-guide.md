@@ -1,13 +1,13 @@
 # 接入指南
 
-本指南描述仓库接入模型；它不实现解析器、知识图谱、MCP Server 或 `ai-guidance init` 命令。具体读取和 Template 使用见 [使用指南](usage-guide.md)。
+本指南描述仓库接入模型；它不实现解析器、知识图谱、MCP Server 或 `ai-guidance init` 命令。运行时读取规则见 [`../AGENTS.md`](../AGENTS.md)，维护者使用方式见 [使用指南](usage-guide.md)。
 
 ## 绑定一个仓库
 
 1. 将 [AGENTS.md.template](../bootstrap/AGENTS.md.template) 复制到目标仓库为 `AGENTS.md`，再补充本仓库局部说明路径。
 2. 复制 [repository-manifest.template.yaml](../bootstrap/repository-manifest.template.yaml)，绑定一个产品，并保证其中产品清单与入口路径一致。
 3. 通过 `AI_GUIDANCE_HOME` 或显式仓库配置（例如 `.ai-guidance.yaml`）配置 P0 的知识根目录；显式配置可以选择非默认清单路径。
-4. 启动读取时先定位 P0，再读取仓库清单绑定、产品入口、任务所需 Core，最后读取局部说明与代码。
+4. 目标仓库的 `AGENTS.md` 应先定位 P0；随后按 P0 `AGENTS.md` 的会话范围、任务类型与影响范围条件读取产品知识和 Core，最后核实局部说明与代码。不要默认加载所有产品文档或维护者指南。
 
 语义优先级独立于读取顺序：仓库局部说明与代码 > 产品上下文 > Core 通用规则。
 

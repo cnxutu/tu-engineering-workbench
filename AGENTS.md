@@ -1,75 +1,71 @@
-# ai-guidance 知识层工作指引
+# ai-guidance 运行时约束
 
-`ai-guidance` 是 P0 的 AI Engineering Context Platform：维护跨项目可复用的工作方法，以及产品级、跨服务的长期上下文。它不是 P1–P4 业务代码的镜像副本。
+本文件是 Codex 在 P0 中的最小运行时入口：只定义**工程范围、任务简写、条件读取、角色边界和事实优先级**。`README.md`、`docs/` 与产品文档用于人工维护或在下列条件满足时按需读取，不是默认上下文。
 
-## 知识收录约束
+## 1. 会话范围与路径地图
 
-本目录只沉淀能帮助下一位工程师或 AI **快速定位、正确决策或安全联调** 的长期知识：
+会话首次任务中，Codex 应从用户文本直接识别项目标记 `P0`–`P4`、`K1`、`K2`；无需固定的范围声明格式。识别出的标记共同构成本次范围，后续消息沿用该范围，直到用户明确变更。
 
-- **关键入口**：任务应从哪个仓库、模块、接口或配置开始核实。
-- **关键链路**：触发条件、跨服务跳点、数据/命令方向、关键契约及联调检查项。
-- **关键设计**：服务边界、数据所有权、持久架构决策与不可违反的约束。
-
-文档保持精炼、按需可读，以链接替代重复。不要复制大段实现、完整 API/Topic/配置清单、临时排查过程或未经证实的运行事实；这些内容应回到代码、契约、配置或任务记录。未知内容标记为“待验证”，并附可复现证据或核实入口。
-
-P0 根目录的 `AGENTS.md` 已直接指向本文件；本文件是 P0 内所有 AI 协作约束的唯一维护入口。
-
-## 用户任务简写协议
-
-用户若以一个大写字母开头、后接 `小写字母: 内容` 的形式描述任务，必须按 [`core/prompt-compact-syntax.md`](core/prompt-compact-syntax.md) 解析。这是默认日常 Prompt 协议：大写字母表示任务类型（例如 `F` 为开发），小写字母表示目标、背景、状态、约束、结果、影响与验证上下文。除非用户明确指定，**不要要求用户填写 `core/templates/` 下的 Markdown 模板**。
-
-## 会话首次范围声明
-
-用户通常会在会话的首次任务中声明工程范围，例如 `P0`、`P0 + P1` 或 `P0–P4`。该声明表示本次任务可读取、核实和修改的工程范围；后续消息沿用该范围，直到用户明确变更。
-
-| 标记 | 工程/职责 | 本机路径登记状态 |
+| 标记 | 工程 | 本机路径 |
 | --- | --- | --- |
-| `P0` | `tu-devkit`：AI 上下文与开发工具主库 | 已登记在 `workspace.yaml` |
-| `P1` | `c-drone-inspection`：巡检业务 | 已登记在 `workspace.yaml` |
-| `P2` | `c-iot-server`：IoT 服务 | 已登记在 `workspace.yaml` |
-| `P3` | `c-iot-gateway`：协议与连接入口 | 已登记在 `workspace.yaml` |
-| `P4` | `ad-iot-codec-adapter-dji`：DJI 编解码适配器 | 已登记在 `workspace.yaml` |
-| `K1` | `knowledge-hub`：Knowledge Hub 后端项目 | 待登记本机路径 |
-| `K2` | `knowledge-web`：Knowledge Hub 前端项目 | 待登记本机路径 |
+| `P0` | `tu-devkit`：AI 上下文与开发工具 | `workspace.yaml` |
+| `P1` | `c-drone-inspection`：巡检业务 | `workspace.yaml` |
+| `P2` | `c-iot-server`：IoT 服务 | `workspace.yaml` |
+| `P3` | `c-iot-gateway`：协议与连接入口 | `workspace.yaml` |
+| `P4` | `ad-iot-codec-adapter-dji`：DJI 编解码适配 | `workspace.yaml` |
+| `K1` | `knowledge-hub`：Knowledge Hub 后端 | 待登记 |
+| `K2` | `knowledge-web`：Knowledge Hub 前端 | 待登记 |
 
-解析规则：`P0–P4` 表示 P0、P1、P2、P3、P4 全部范围；`P0 + P1` 表示仅 P0 与 P1。范围外的项目只可作为产品知识中的依赖背景，不读取、核实或修改其源码。`K1`、`K2` 在路径登记前只能读取其产品知识，不假定源码可访问；用户提供本机位置后，必须补充到 `workspace.yaml`。
+项目标记可出现在自然语言、列表、括号或字段中；`P1 + P2`、`P1,P2`、`P1，P2`、`P1、P2`、`P1 P2` 等均识别为 P1 与 P2。短横线 `-` 或连接号 `–` 表示连续范围：`P0–P4` 表示 P0、P1、P2、P3、P4；它可与其他标记混用，例如 `P0、P2-P4`。`范围：` 只是提高可读性的可选前缀，不是必需格式。
 
-## 默认读取顺序
+需打开、核实或修改已登记源码时，读取 `workspace.yaml` 获取绝对路径。范围外项目仅可作为依赖背景，不读取、核实或修改其源码。K1/K2 在路径登记前不得假定其源码可访问。
 
-以下路径均相对于 `ai-guidance/` 目录：
+## 2. Prompt Compact Syntax
 
-1. `README.md`：确认本目录职责和导航。
-2. `docs/usage-guide.md`：确认 P0–P4 定义、读取模式和 Template 的使用方式。
-3. `platform.yaml`：确认产品注册信息。
-4. `workspace.yaml`：确认 P0–P4（及未来 K1/K2）的本机源码路径；需要核实或修改实现时，从这里打开目标仓库。
-5. 选择并读取任务所属产品的明确入口：
-   - P1–P4、无人机巡检、设备、IoT、DJI、OSD、指令、缓存或跨服务任务：`products/company/device-inspection-platform/index.md`。
-   - Knowledge Hub 个人产品任务：`products/personal/knowledge-hub/index.md`。
-6. 从已读取的产品入口按链接加载最小必要的架构、Flow、仓库入口或任务文档；收到简写 Prompt 时，必须读取 `core/prompt-compact-syntax.md`，再按任务类型选择最小必要的 `core/` 文档。
+用户可用一个大写任务类型与小写上下文字段描述任务。大小写有语义：`B` 是 Bugfix，`b` 是 Background。
 
-不得只写或只按文件名 `index.md` 搜索产品入口；必须使用上述完整相对路径，或以 `platform.yaml` 中的 `products[].index` 为准。
+| 大写类型 | 含义 | 默认 Core 角色/工作流 |
+| --- | --- | --- |
+| `F` | Feature Development，开发 | 后端任务：`Java Engineer` + `feature-development` |
+| `B` | Bugfix，缺陷修复 | 后端任务：`Java Engineer` + `bug-analysis` |
+| `R` | Refactor，重构 | `Backend Architect` + `refactor-analysis` |
+| `A` | Architecture，架构设计/评审 | `System Designer` 或 `Backend Architect` + `architecture-review` |
+| `X` | Cross-service Change，跨服务变更 | `System Designer` + `architecture-review` |
+| `C` | Code Review，代码评审 | `Code Reviewer` |
+| `D` | Discovery / Feasibility，可行性探索 | 按范围选择 `System Designer` 或 `Backend Architect`；只调查、核实和比较，不修改代码 |
+| `P` | Planning / Change Plan，变更计划 | 按范围选择 `System Designer` 或 `Backend Architect`；锁定边界与计划，不直接实施 |
 
-## 分层边界与固定结构
-
-- `core/`：可跨产品复用的 Agent、Rule、Skill、Template；不记录某个服务的运行事实。
-- `products/`：产品边界、服务关系、领域、流程、关键入口、缓存和任务历史；可维护系统级及模块级的关键设计，但不复制全部代码实现。
-- `bootstrap/`：供其他仓库复制和按需填写的接入模板；其中的模板不会自动生效。
-
-新增或改写产品文档时采用以下最小结构；只保留适用章节：
-
-| 文档类型 | 必备内容 |
+| 小写字段 | 含义 |
 | --- | --- |
-| 产品/目录入口 | 范围或用途、何时读取、按任务导航链接、证据状态 |
-| 链路（`flows/`） | 触发与边界、关键跳点/方向、契约或时序约束、联调必验项、证据 |
-| 设计（`architecture/`、ADR） | 决策或边界、责任/所有权、影响与约束、待验证项、证据 |
-| 仓库入口地图 | 任务类型到代码入口的映射、阅读顺序、需结合代码核实的项 |
+| `g` | Goal，目标 |
+| `b` | Background，背景 |
+| `s` | State，当前状态 |
+| `c` | Constraints，约束 |
+| `r` | Result，期望结果 |
+| `i` | Impact，影响范围 |
+| `p` | Plan，实施要求/执行步骤 |
+| `v` | Verification，验证方式 |
+| `q` | Questions，需要探索或回答的问题（`D`） |
+| `d` | Decision，已确认方案或决策（`P`） |
 
-## 使用与更新规则
+收到此格式时，按类型加载表中最小必要的 `core/agents/`、`core/skills/` 与规则；K2 或其他非后端任务没有适用角色时，不强行套用 Java 角色。完整示例和解析细节见 `core/prompt-compact-syntax.md`，仅在需要查阅时读取。
 
-采用渐进式读取：先读产品入口，仅加载完成当前判断所需的流程、架构或仓库文档。Template 是 Markdown 任务表单，不会自动读取、渲染或替换 `{{variable}}`；任务必须明确指定所用模板与上下文。
+`D` 和 `P` 的默认边界是**不修改代码**：`D` 的产物是带证据的可行性结论与推荐下一步；`P` 的产物是已确认方案对应的修改边界、代码入口、步骤、风险与验证计划。实施须由后续 `F/B/R/X` 任务明确授权。
 
-`workspace.yaml` 是唯一的本机路径映射。P0–P4 的代码目录迁移时，只更新该文件；产品知识仍通过稳定的仓库名关联。读取或修改 P1–P4 实现前，先确认其中的路径存在；不可访问时仅使用产品知识描述依赖，并将具体实现结论标为待核实。
+## 3. 条件读取
 
-事实冲突时遵循：**当前代码与仓库局部约束 > 产品上下文 > Core 通用规则**。产品事实应附代码、接口、配置或运行证据；未知项标记为“待验证”。跨服务事实发生变化时，同步更新对应产品文档，或在任务记录中说明无需更新的依据。
+| 条件 | 必须读取 | 不默认读取 |
+| --- | --- | --- |
+| 修改 P0 中 `ai-guidance` 的产品知识、架构、流程、清单或任务记录 | `docs/authoring-guide.md`、`docs/governance.md`，以及受影响文档 | 其他产品知识与所有使用教程 |
+| 修改 P0 的工具/脚本 | 目标目录局部约束、README 和代码 | 产品知识、知识编写规范 |
+| 修改 P1/P2/P3/P4/K1/K2 的单项目代码 | 范围内仓库的局部约束、相关代码与本任务所需 Core | `README.md`、`docs/usage-guide.md`、P0 知识收录规范、无关产品材料 |
+| `X`、`i` 涉及多个项目，或任务明确涉及服务关系/OSD/指令/协议/缓存链路 | `products/company/device-inspection-platform/index.md`，再按链接读取最小必要的架构、Flow、入口或缓存资料 | 整个产品目录 |
+| K1/K2 的 Knowledge Hub 产品架构或跨端任务 | `products/personal/knowledge-hub/index.md`，再按链接读取所需资料 | 无关公司产品材料 |
 
-禁止记录密钥、Token、凭据、客户数据或其他敏感运行信息。
+任务涉及多个仓库、公开 API、消息契约或数据所有权时，必须先确认产品知识和目标代码；不能以 P0 文档替代代码核实。
+
+## 4. 事实与安全边界
+
+冲突优先级：**用户最新明确要求与当前代码/仓库局部约束 > 产品知识 > Core 通用规则**。
+
+只能将已读取代码、契约、配置或带证据的产品知识作为事实；未知项标为待核实。不得记录或输出密钥、Token、凭据、客户数据或其他敏感运行信息。
