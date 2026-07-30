@@ -14,7 +14,8 @@ Core 只描述通用工程方法，不存放任何产品或仓库事实。使用
 
 ## 规则
 
-- [架构](rules/architecture.md)、[Java](rules/java.md)、[Spring Cloud](rules/spring-cloud.md)、[数据库](rules/database.md)、[Git](rules/git.md)。
+- [公共 Codex 开发基准](rules/development.md)：所有服务中代码、配置、脚本与测试任务的默认基准，涵盖上下文装载、分析与确认、最小实现、调试、验证、交接与安全。
+- [架构](rules/architecture.md)、[Java](rules/java.md)、[Spring Cloud](rules/spring-cloud.md)、[数据库](rules/database.md)、[Git](rules/git.md)：按技术和任务条件加载。
 
 ## 工作流
 
