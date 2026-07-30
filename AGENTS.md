@@ -18,17 +18,36 @@ P0 根目录的 `AGENTS.md` 已直接指向本文件；本文件是 P0 内所有
 
 用户若以一个大写字母开头、后接 `小写字母: 内容` 的形式描述任务，必须按 [`core/prompt-compact-syntax.md`](core/prompt-compact-syntax.md) 解析。这是默认日常 Prompt 协议：大写字母表示任务类型（例如 `F` 为开发），小写字母表示目标、背景、状态、约束、结果、影响与验证上下文。除非用户明确指定，**不要要求用户填写 `core/templates/` 下的 Markdown 模板**。
 
+## 会话首次范围声明
+
+用户通常会在会话的首次任务中声明工程范围，例如 `P0`、`P0 + P1` 或 `P0–P4`。该声明表示本次任务可读取、核实和修改的工程范围；后续消息沿用该范围，直到用户明确变更。
+
+| 标记 | 工程/职责 | 本机路径登记状态 |
+| --- | --- | --- |
+| `P0` | `tu-devkit`：AI 上下文与开发工具主库 | 已登记在 `workspace.yaml` |
+| `P1` | `c-drone-inspection`：巡检业务 | 已登记在 `workspace.yaml` |
+| `P2` | `c-iot-server`：IoT 服务 | 已登记在 `workspace.yaml` |
+| `P3` | `c-iot-gateway`：协议与连接入口 | 已登记在 `workspace.yaml` |
+| `P4` | `ad-iot-codec-adapter-dji`：DJI 编解码适配器 | 已登记在 `workspace.yaml` |
+| `K1` | `knowledge-hub`：Knowledge Hub 后端项目 | 待登记本机路径 |
+| `K2` | `knowledge-web`：Knowledge Hub 前端项目 | 待登记本机路径 |
+
+解析规则：`P0–P4` 表示 P0、P1、P2、P3、P4 全部范围；`P0 + P1` 表示仅 P0 与 P1。范围外的项目只可作为产品知识中的依赖背景，不读取、核实或修改其源码。`K1`、`K2` 在路径登记前只能读取其产品知识，不假定源码可访问；用户提供本机位置后，必须补充到 `workspace.yaml`。
+
 ## 默认读取顺序
+
+以下路径均相对于 `ai-guidance/` 目录：
 
 1. `README.md`：确认本目录职责和导航。
 2. `docs/usage-guide.md`：确认 P0–P4 定义、读取模式和 Template 的使用方式。
 3. `platform.yaml`：确认产品注册信息。
-4. `workspace.yaml`：确认 P0–P4 的本机源码路径；需要核实或修改实现时，从这里打开目标仓库。
-5. 与任务有关的产品 `index.md`：先获取范围、证据状态与按需导航。
-6. 最小必要的产品文档和 `core/` 文档；收到简写 Prompt 时，必须读取 `core/prompt-compact-syntax.md`。
+4. `workspace.yaml`：确认 P0–P4（及未来 K1/K2）的本机源码路径；需要核实或修改实现时，从这里打开目标仓库。
+5. 选择并读取任务所属产品的明确入口：
+   - P1–P4、无人机巡检、设备、IoT、DJI、OSD、指令、缓存或跨服务任务：`products/company/device-inspection-platform/index.md`。
+   - Knowledge Hub 个人产品任务：`products/personal/knowledge-hub/index.md`。
+6. 从已读取的产品入口按链接加载最小必要的架构、Flow、仓库入口或任务文档；收到简写 Prompt 时，必须读取 `core/prompt-compact-syntax.md`，再按任务类型选择最小必要的 `core/` 文档。
 
-当任务是无人机巡检系统或 P1–P4 的跨服务问题，产品入口为：
-`products/company/device-inspection-platform/index.md`。
+不得只写或只按文件名 `index.md` 搜索产品入口；必须使用上述完整相对路径，或以 `platform.yaml` 中的 `products[].index` 为准。
 
 ## 分层边界与固定结构
 
