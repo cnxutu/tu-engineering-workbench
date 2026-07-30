@@ -41,3 +41,45 @@ v: 单元测试与接口回归
 ## 4. 接入新仓库
 
 接入或迁移仓库时阅读 [接入指南](integration-guide.md)，并同步更新 `workspace.example.yaml`、本机的 `workspace.local.yaml`、产品清单与目标仓库的局部 `AGENTS.md`。
+
+## 5. 使用团队 Workflow Plugin
+
+`ai-guidance-workflows` 是可选的团队 Codex Plugin，为高价值且重复的场景提供原生 Skill；它补充 `AGENTS.md` 和 Core 规则，不替代任务类型、局部约束或代码核实。
+
+团队自定义 Skill 统一以 `tu-` 开头，便于在列表中筛选和在任务中显式调用；该前缀不属于 Compact Syntax，因此不改变 `B`、`X` 等任务类型的含义。
+
+首次使用时，在 P0 仓库根目录执行：
+
+```powershell
+codex plugin marketplace add .
+codex plugin add ai-guidance-workflows@tu-devkit
+```
+
+安装或更新 Plugin 后开启一个新任务，使 Codex 重新发现 Skill。Plugin 当前提供：
+
+| Skill | 适用场景 |
+| --- | --- |
+| `tu-diagnosing-spring-backend-incidents` | Spring Boot 异常、消息处理失败、数据不一致、性能退化或未知根因的线上事故。 |
+| `tu-loading-device-inspection-cross-service-context` | P1–P4 的 API、消息、数据归属、协议、MQTT、OSD、DJI 或上/下行链路变更前的全局理解。 |
+
+### 与 Compact Syntax 的关系
+
+`F/B/R/A/X/C/D/P` 仍是任务类型；Skill 是可选的专用工作流，不新增 `S-B` 之类的任务类型，也不改变 `B` 的缺陷修复语义。最可靠的显式调用方式是在任务首行写 Skill 名称，下一行仍写原任务类型：
+
+```text
+$ai-guidance-workflows:tu-diagnosing-spring-backend-incidents
+B
+g: P2 的设备状态消息偶发丢失
+i: P2
+v: 输出证据链、根因或下一步取证计划
+```
+
+```text
+$ai-guidance-workflows:tu-loading-device-inspection-cross-service-context
+X
+g: 支持新设备的状态上报和控制指令
+i: P1、P2、P3、P4
+p: 先核实上下行链路、契约与发布依赖，再给出方案
+```
+
+安装后，Codex 也可根据任务描述和运行时约束自动选择 Skill；显式写 `$插件名:Skill名` 更确定。仅出现多个项目标记但未说明服务交互时，不自动加载 P1–P4 的全局上下文。
