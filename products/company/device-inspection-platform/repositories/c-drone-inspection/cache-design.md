@@ -101,4 +101,4 @@ DRC 控制设计必须把这些 key 视为一个会话整体：自动会话依�
 4. 新增 DRC 能力：同时评估心跳、持久会话、序列号、参数请求和 stop 清理。
 5. 子机相关异常：依次核对 `iot_topology_child_parent`、`iot_topology_children`、在线 key、普通/DRC OSD 快照。
 
-相关上下文：[P1 关键入口地图](key-entry-points.md)、[DJI OSD 与设备指令链路](../../flows/dji-osd-command-flow.md)。
+相关上下文：[P1 关键入口地图](key-entry-points.md)、[DJI OSD 上行数据链路](../../flows/dji-osd-upstream-flow.md)、[DJI 设备指令下行链路](../../flows/dji-osd-command-flow.md)。

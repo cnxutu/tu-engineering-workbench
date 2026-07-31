@@ -13,7 +13,7 @@
 
 - 范围、术语与仓库定位：[上下文](context/system-overview.md)、[领域模型](context/domain-model.md)、[仓库地图](context/repository-map.md)。
 - 服务边界与契约：[服务地图](architecture/service-map.md)、[数据所有权](architecture/data-ownership.md)、[跨服务契约](architecture/cross-service-contracts.md)。
-- 设备、指令、DJI、巡检或媒体改动：读取对应 [流程目录](flows/)；机场/无人机 OSD、DRC 或跨 P1–P4 指令改动优先读 [DJI OSD 与设备指令链路](flows/dji-osd-command-flow.md)。
+- 设备、指令、DJI、巡检或媒体改动：读取对应 [流程目录](flows/)；机场/无人机 OSD、State 或 DRC 数据改动优先读 [DJI OSD 上行数据链路](flows/dji-osd-upstream-flow.md)，控制、任务或 DRC 指令改动优先读 [DJI 设备指令下行链路](flows/dji-osd-command-flow.md)。
 - 具体仓库：按 [仓库导航](repositories/index.md) 选择清单；设备、指令等改动按 [流程导航](flows/index.md) 定位。示例仅作演示，见 [minimal-demo](examples/minimal-demo/README.md)。
 
 部署节点、地址、端口、完整 Topic/接口清单均未在本知识包中确认，修改前须核实运行配置和代码。

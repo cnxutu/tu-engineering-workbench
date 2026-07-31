@@ -4,4 +4,4 @@
 
 按网关隔离的上、下行 MessageBus、P2 Data Rule 到 P1 `iot_business_event:DEFAULT_FLOW` 的投递、OSD identifier 与同步下行回执语义均已有代码核对证据；完整 Topic 命名、运行配置、Data Rule 启用状态和线上时序仍待验证。
 
-参见 [跨服务契约](cross-service-contracts.md) 与 [DJI OSD/指令链路](../flows/dji-osd-command-flow.md)。
+参见 [跨服务契约](cross-service-contracts.md)、[DJI OSD 上行数据链路](../flows/dji-osd-upstream-flow.md) 与 [DJI 设备指令下行链路](../flows/dji-osd-command-flow.md)。

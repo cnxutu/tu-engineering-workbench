@@ -58,7 +58,7 @@ flowchart LR
 
 主要接口：`/joystick`、`/emergencyStop`、`/emergencyLand`、`/heartBeatDown`、`/enterMode`、`/osd/session/start`、`/osd/session/stop`。
 
-DRC 不是单条普通控制命令：路由层负责控制权、DRC 模式、会话与心跳编排；Gateway 才构造下行 IoT 命令。修改摇杆、心跳、OSD 频率或会话生命周期时，必须同时阅读 [DJI OSD 与设备指令链路](../../flows/dji-osd-command-flow.md)。
+DRC 不是单条普通控制命令：路由层负责控制权、DRC 模式、会话与心跳编排；Gateway 才构造下行 IoT 命令。修改摇杆、心跳、会话生命周期或 OSD 频率配置时，先读 [DJI 设备指令下行链路](../../flows/dji-osd-command-flow.md)；若同时影响设备上报频率或 DRC OSD 消费，再读 [DJI OSD 上行数据链路](../../flows/dji-osd-upstream-flow.md)。
 
 ### 4. 非 HTTP 的任务命令入口
 
@@ -104,7 +104,7 @@ Consumer 不承载具体业务：它会将一条原始消息展开为多个内�
 
 1. **指令没有到设备：** HTTP/任务入口 → 路由层 → Gateway → P2 RPC → P3/P4 编码与 MQTT。
 2. **设备消息未生效：** P2 Data Rule → Consumer 的 Topic/Tag → Converter → Router → 对应 Handler。
-3. **OSD/DRC 异常：** 先读 [DJI OSD 与设备指令链路](../../flows/dji-osd-command-flow.md)，区分普通 OSD、State 与 DRC OSD。
+3. **OSD/DRC 上行异常：** 先读 [DJI OSD 上行数据链路](../../flows/dji-osd-upstream-flow.md)，区分普通 OSD、State 与 DRC OSD；指令未到设备时改按 [DJI 设备指令下行链路](../../flows/dji-osd-command-flow.md) 排查。
 
 缓存读取、分包 OSD 合并、运行任务状态和 DRC 会话边界见 [P1 缓存设计](cache-design.md)。
 
