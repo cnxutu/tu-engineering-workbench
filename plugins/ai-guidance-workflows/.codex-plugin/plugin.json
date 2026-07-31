@@ -1,0 +1,21 @@
+{
+  "name": "ai-guidance-workflows",
+  "version": "0.1.0+codex.20260731025324",
+  "description": "Evidence-led incident diagnosis and cross-service context workflows for the device-inspection platform.",
+  "author": {
+    "name": "tu-devkit"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AI Guidance Workflows",
+    "shortDescription": "Evidence-led incident and cross-service workflows.",
+    "longDescription": "Shared Codex Skills for diagnosing Spring backend incidents and loading the minimum verified context for P1\u2013P4 cross-service work.",
+    "developerName": "tu-devkit",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": [
+      "Diagnose a P2 backend message-processing incident with evidence.",
+      "Load P1\u2013P4 context before designing a cross-service change."
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "TU · Diagnose Spring Backend Incidents"
+  short_description: "Investigate Spring incidents with evidence"
+  default_prompt: "Diagnose this Spring backend incident before proposing a fix."

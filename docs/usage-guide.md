@@ -53,7 +53,7 @@ v: 单元测试与接口回归
 首次使用时，在 P0 仓库根目录执行：
 
 ```powershell
-codex plugin marketplace add .
+codex plugin marketplace add .\ai-guidance
 codex plugin add ai-guidance-workflows@tu-devkit
 ```
 

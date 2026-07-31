@@ -35,7 +35,7 @@ flowchart TD
     T -->|维护产品事实| A[authoring-guide.md + governance.md\n证据、目录结构与归档]
     T -->|维护公共规则| R[authoring-guide.md\n公共规则维护] --> C[core/rules/]
     T -->|维护角色/工作流| C
-    T -->|维护原生 Skill/Plugin| P[plugins/ai-guidance-workflows/\nSkill、manifest 与测试]
+    T -->|维护原生 Skill/Plugin| P[ai-guidance/plugins/ai-guidance-workflows/\nSkill、manifest 与测试]
     U --> V[validate_guidance.py]
     I --> V
     A --> V
@@ -57,7 +57,8 @@ flowchart TD
 | `ai-guidance/bootstrap/` | 目标仓库接入 P0 的 `AGENTS.md` 与清单模板 | 接入新仓库或修订接入模板时。 |
 | `ai-guidance/scripts/`、`tests/` | 文档结构、链接、路径和契约的校验实现 | 调整校验能力或修复校验问题时。 |
 | `workspace.example.yaml` / `workspace.local.yaml` | 可提交的路径模板 / 不提交的本机绝对路径映射 | 接入或移动本机工作区时；不得把本机路径写入可提交模板。 |
-| `plugins/ai-guidance-workflows/` | 团队原生 Codex Skill 与 Plugin 测试 | 新增、修改或重命名团队 Skill 时。 |
+| `ai-guidance/.agents/plugins/marketplace.json` | 团队 Plugin 市场清单；`ai-guidance/` 是市场根目录 | 新增 Plugin、调整市场元数据或重新配置本地市场时。 |
+| `ai-guidance/plugins/ai-guidance-workflows/` | 团队原生 Codex Skill 与 Plugin 测试 | 新增、修改或重命名团队 Skill 时。 |
 
 ## 常见维护入口
 
@@ -67,7 +68,7 @@ flowchart TD
 | 接入新服务仓库 | [接入指南](integration-guide.md) | `bootstrap/`、仓库清单、目标仓库局部 `AGENTS.md`、本机映射 | 不猜测路径或产品绑定；运行 guidance 校验。 |
 | 补充产品链路、边界或决策 | [编写指南](authoring-guide.md)、[治理规范](governance.md) | `products/` 中最小必要的权威页面 | 记录证据和可信度；不以文档替代代码核实。 |
 | 修改跨仓库公共规则 | [编写指南](authoring-guide.md) 的“公共规则维护” | `AGENTS.md` 或 `core/` | 保持条件、动作、例外清晰；避免加入产品事实。 |
-| 新增或更新团队 Skill | [使用指南](usage-guide.md) 的 Plugin 章节 | `plugins/ai-guidance-workflows/skills/` | 更新引用和测试；更新 cachebuster、重装 Plugin，并在新任务验证发现结果。 |
+| 新增或更新团队 Skill | [使用指南](usage-guide.md) 的 Plugin 章节 | `ai-guidance/plugins/ai-guidance-workflows/skills/` | 更新引用和测试；更新 cachebuster、重装 Plugin，并在新任务验证发现结果。 |
 | 修改校验脚本或结构规则 | 受影响脚本与测试 | `scripts/`、`tests/` 或 Plugin 测试 | 运行对应校验；不把校验器当作产品事实来源。 |
 
 ## 扩展原则
