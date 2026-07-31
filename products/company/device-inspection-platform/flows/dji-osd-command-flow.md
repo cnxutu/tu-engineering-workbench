@@ -4,7 +4,7 @@
 
 ## 运行时边界
 
-`ad-iot-codec-adapter-dji`（P4）不是独立部署或消息总线的一跳。它由 `c-iot-gateway`（P3）以 Maven 依赖、SPI/Bean 方式加载：P3 的下行处理器调用 P4 编码，再由 P3 通过 MQTT Broker 将指令发送至 DJI 机场或无人机。完整服务关系见[集成地图](../architecture/integration-map.md)。
+`ad-iot-codec-adapter-dji`（P4）不是独立部署或消息总线的一跳。它由 `c-iot-gateway`（P3）以 Maven 依赖、SPI/Bean 方式加载：P3 的下行处理器调用 P4 编码，再由 P3 通过 MQTT Broker 将指令发送至 DJI 机场或无人机。
 
 ## 关键契约
 

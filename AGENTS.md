@@ -73,7 +73,7 @@
 | 维护 P0 的运行时入口、`core/` 公共规则、角色、工作流、契约或模板 | `docs/authoring-guide.md` 的“公共规则维护”，以及受影响文件 | 产品知识、治理规范、使用教程 |
 | 维护 P0 的产品知识、架构、流程、服务边界、清单或任务记录 | `docs/authoring-guide.md`、`docs/governance.md`，以及受影响的权威页面 | 其他产品目录与所有使用教程 |
 | 修改 P0 的工具、脚本、校验或团队 Plugin | 目标目录的 README、实现与测试；Plugin 还读取 manifest、相关 `SKILL.md` 与 `tests/test-plugin.sh` | 产品知识、知识编写规范、无关 Plugin |
-| `X`、`i` 涉及多个项目，或任务明确涉及服务关系、OSD、指令、协议、缓存链路或跨服务发布依赖 | `products/company/device-inspection-platform/index.md`，再沿链接读取最小必要的架构、Flow、代码入口或缓存资料 | 整个产品目录、无关服务源码 |
+| `X`、`i` 涉及多个项目，或任务明确涉及服务关系、OSD、指令、协议、缓存链路或跨服务发布依赖 | `products/company/device-inspection-platform/index.md`，再沿链接读取当前已维护的最小 Flow 或 P1 入口/缓存资料；未覆盖场景以目标代码、契约和配置核实 | 整个产品目录、无关服务源码 |
 | K1/K2 的 Knowledge Hub 产品架构或跨端任务 | `products/personal/knowledge-hub/index.md`，再沿链接读取所需资料 | 无关公司产品材料 |
 
 涉及多个仓库、公开 API、消息契约或数据所有权时，必须先以目标代码和契约核实当前事实；产品知识只用于导航与已确认上下文，不能替代代码核实。

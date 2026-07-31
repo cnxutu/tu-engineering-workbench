@@ -1,6 +1,6 @@
 {
   "name": "ai-guidance-workflows",
-  "version": "0.1.0+codex.20260731025324",
+  "version": "0.1.0+codex.20260731104500",
   "description": "Evidence-led incident diagnosis and cross-service context workflows for the device-inspection platform.",
   "author": {
     "name": "tu-devkit"

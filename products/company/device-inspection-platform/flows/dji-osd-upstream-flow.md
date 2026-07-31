@@ -4,7 +4,7 @@
 
 ## 运行时边界
 
-`ad-iot-codec-adapter-dji`（P4）不是独立部署或消息总线的一跳。P3 以 Maven 依赖、SPI/Bean 方式加载 P4 进行 Topic 路由与解码，再由 P3 将规范化消息发送给 P2；P2 的 Data Rule 可投递给 P1。完整服务关系见[集成地图](../architecture/integration-map.md)。
+`ad-iot-codec-adapter-dji`（P4）不是独立部署或消息总线的一跳。P3 以 Maven 依赖、SPI/Bean 方式加载 P4 进行 Topic 路由与解码，再由 P3 将规范化消息发送给 P2；P2 的 Data Rule 可投递给 P1。
 
 ## 关键契约
 
