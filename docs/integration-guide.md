@@ -1,6 +1,6 @@
 # 接入指南
 
-本指南描述仓库接入模型；它不实现解析器、知识图谱、MCP Server 或 `ai-guidance init` 命令。运行时读取规则见 [`../AGENTS.md`](../AGENTS.md)，维护者使用方式见 [使用指南](usage-guide.md)。
+本指南描述仓库接入模型；它不实现解析器、知识图谱、MCP Server 或 `ai-guidance init` 命令。运行时读取规则见 [`../AGENTS.md`](../AGENTS.md)，工程师使用方式见 [工程师使用与维护指南](usage-guide.md)。
 
 ## 绑定一个仓库
 

@@ -1,6 +1,6 @@
 # 项目导航与维护地图
 
-本页面向 `tu-devkit` 与 `ai-guidance` 的维护者，用于理解项目骨架、两条协作链路和扩展入口。它不是 Codex 的默认上下文；AI 的运行时入口始终是 [`../AGENTS.md`](../AGENTS.md)。
+本页面面向使用或维护 `tu-devkit` 与 `ai-guidance` 的工程师，用于理解项目骨架、两条协作链路和扩展入口。它不是 Codex 的默认上下文；AI 的运行时入口始终是 [`../AGENTS.md`](../AGENTS.md)。
 
 ## 两条链路
 
@@ -34,7 +34,7 @@ flowchart TD
     E --> I[调查、设计、答复或最小实现\n并执行风险相称验证]
     W -->|否| A[不强制加载 development.md；继续遵循\nai-guidance/AGENTS.md 第 1、4 节\n及已适用的局部 AGENTS.md]
     A --> B
-    M[维护者] -. 人类按需查阅 .-> H[README.md 与 docs/\n不属于 AI 默认链路]
+    M[工程师] -. 工程师按需查阅 .-> H[README.md 与 docs/\n不属于 AI 默认链路]
 ```
 
 核心原则：仓库根目录 `AGENTS.md`、`ai-guidance/AGENTS.md` 与范围识别构成**必经的公共约束层**；它们不是条件加载项。范围内工程任务必须读取 `ai-guidance/AGENTS.md` 第 2 节指定的 `core/rules/development.md`；第 3 节只判定需要叠加读取哪些专项 Core、产品知识、维护规范或原生 Skill，命中多个条件时不是相互替代。`development.md` 只提供分析、实施、验证与交接的公共执行基准，不负责跨服务等条件分支。非工程任务并非没有约束：至少继续遵循 `ai-guidance/AGENTS.md` 第 1 节的范围规则和第 4 节的指令优先级、事实与安全边界，以及任何已经适用的局部 `AGENTS.md`；它只是不会因此被强制要求加载 `development.md`。该图仅供维护者理解，Codex 实际遵循的是平台、系统、开发者指令和各级 `AGENTS.md`，不会因这张位于 `docs/` 的图而执行额外操作。产品文档用于导航，当前代码、契约、配置和测试才用于核实现状。P0 提供公共约束，不会因被设为 Primary 而自动成为目标代码的阅读或修改范围。
@@ -57,7 +57,7 @@ flowchart TD
 
 因此，“是否会读取某份信息”不是靠图本身决定，而是靠用户任务中可辨认的范围和语义条件决定。例如，单写“P1 修复接口”不会让 AI 读取 DJI 产品链路；补充“该接口向 P2 下发 DJI 指令”后，跨服务条件命中，才会读取对应产品入口、下行 Flow 及受影响服务的最小代码上下文。
 
-### 2. 人类使用与维护链路
+### 2. 工程师使用与维护链路
 
 ```mermaid
 flowchart TD
@@ -75,7 +75,7 @@ flowchart TD
     P --> PT[test-plugin.sh\n更新 cachebuster、重装 Plugin]
 ```
 
-核心原则：面向人的说明和维护规范放在 `README.md`、`docs/`；面向 AI 的最小运行时约束放在 `AGENTS.md` 与按需加载的 Core、产品知识、原生 Skill 中。不要把人类教程反向塞进 AI 默认上下文。
+核心原则：面向工程师的使用说明和维护规范放在 `README.md`、`docs/`；面向 AI 的最小运行时约束放在 `AGENTS.md` 与按需加载的 Core、产品知识、原生 Skill 中。不要把工程师使用说明反向塞进 AI 默认上下文。
 
 ## 项目骨架与职责
 
@@ -85,7 +85,7 @@ flowchart TD
 | `ai-guidance/AGENTS.md` | 公共运行时入口：范围、任务简写、条件读取、优先级与事实边界 | 调整跨仓库且长期稳定的 AI 加载或协作规则时。 |
 | `ai-guidance/core/` | 跨产品复用的角色、规则、工作流、契约和模板 | 需要通用方法而非产品事实时；遵循渐进式加载。 |
 | `ai-guidance/products/` | 已有证据支撑的产品、服务边界、链路、决策和任务历史 | 改变长期入口、服务/数据边界、公开契约或端到端流程时。 |
-| `ai-guidance/docs/` | 仅供维护者查阅的使用、接入、编写、治理和项目导航 | 调整人类使用方式、维护入口或知识治理规则时。 |
+| `ai-guidance/docs/` | 仅供工程师按需查阅的使用、接入、编写、治理和项目导航 | 调整工程师使用方式、维护入口或知识治理规则时。 |
 | `ai-guidance/bootstrap/` | 目标仓库接入 P0 的 `AGENTS.md` 与清单模板 | 接入新仓库或修订接入模板时。 |
 | `ai-guidance/scripts/`、`tests/` | 文档结构、链接、路径和契约的校验实现 | 调整校验能力或修复校验问题时。 |
 | `workspace.example.yaml` / `workspace.local.yaml` | 可提交的路径模板 / 不提交的本机绝对路径映射 | 接入或移动本机工作区时；不得把本机路径写入可提交模板。 |
@@ -96,11 +96,11 @@ flowchart TD
 
 | 目标 | 首先阅读 | 主要修改位置 | 必做核对 |
 | --- | --- | --- | --- |
-| 使用 Compact Syntax 或团队 Skill | [使用指南](usage-guide.md) | 通常无需修改 | 安装 Plugin 后新建 Codex 任务以重新发现 Skill。 |
+| 使用 Compact Syntax 或团队 Skill | [工程师使用与维护指南](usage-guide.md) | 通常无需修改 | 安装 Plugin 后新建 Codex 任务以重新发现 Skill。 |
 | 接入新服务仓库 | [接入指南](integration-guide.md) | `bootstrap/`、仓库清单、目标仓库局部 `AGENTS.md`、本机映射 | 不猜测路径或产品绑定；运行 guidance 校验。 |
 | 补充产品链路、边界或决策 | [编写指南](authoring-guide.md)、[治理规范](governance.md) | `products/` 中最小必要的权威页面 | 记录证据和可信度；不以文档替代代码核实。 |
 | 修改跨仓库公共规则 | [编写指南](authoring-guide.md) 的“公共规则维护” | `AGENTS.md` 或 `core/` | 保持条件、动作、例外清晰；避免加入产品事实。 |
-| 新增或更新团队 Skill | [使用指南](usage-guide.md) 的 Plugin 章节 | `ai-guidance/plugins/ai-guidance-workflows/skills/` | 更新引用和测试；更新 cachebuster、重装 Plugin，并在新任务验证发现结果。 |
+| 新增或更新团队 Skill | [工程师使用与维护指南](usage-guide.md) 的 Plugin 章节 | `ai-guidance/plugins/ai-guidance-workflows/skills/` | 更新引用和测试；更新 cachebuster、重装 Plugin，并在新任务验证发现结果。 |
 | 修改校验脚本或结构规则 | 受影响脚本与测试 | `scripts/`、`tests/` 或 Plugin 测试 | 运行对应校验；不把校验器当作产品事实来源。 |
 
 ## 扩展原则
@@ -119,7 +119,7 @@ flowchart TD
 ## 维护边界速查
 
 - AI 默认阅读：根目录 `AGENTS.md`、`ai-guidance/AGENTS.md`、当前任务触发的局部约束和最小必要上下文。
-- 人类按需阅读：`README.md`、`docs/`、接入与治理说明、项目导航页。
+- 工程师按需阅读：`README.md`、`docs/`、接入与治理说明、项目导航页。
 - 当前事实：代码、契约、配置、测试和可复现命令结果。
 - 长期知识：经证据支撑的产品入口、链路、边界和设计决策。
 - 不应进入知识库：密钥、敏感运行数据、全量环境配置、未经核实猜测和一次性排查细节。
