@@ -19,6 +19,7 @@ SENSITIVE_KEY_PATTERN = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 PLACEHOLDER_PATTERN = re.compile(r"^(?:<[^>]+>|\$\{[^}]+\}|redacted)$", re.IGNORECASE)
+REGISTERED_REPOSITORY_CODES = {"P0", "P1", "P2", "P3", "P4"}
 
 
 def error_if_missing(path: Path, label: str, errors: list[str]) -> None:
@@ -93,6 +94,24 @@ def validate_workspace_configuration(repo_root: Path, errors: list[str]) -> None
             errors.append(f"workspace.local.yaml path does not exist: {value}")
 
 
+def validate_workspace_template(repo_root: Path, errors: list[str]) -> None:
+    template = repo_root / "ai-guidance" / "workspace.example.yaml"
+    if not template.is_file():
+        return
+    text = template.read_text(encoding="utf-8")
+    codes = re.findall(r"^\s*-\s+code:\s*(P[0-4])\s*$", text, re.MULTILINE)
+    missing_codes = sorted(REGISTERED_REPOSITORY_CODES - set(codes))
+    if missing_codes:
+        errors.append(f"workspace.example.yaml is missing repository codes: {', '.join(missing_codes)}")
+    duplicate_codes = sorted({code for code in codes if codes.count(code) > 1})
+    if duplicate_codes:
+        errors.append(f"workspace.example.yaml has duplicate repository codes: {', '.join(duplicate_codes)}")
+    for raw_path in re.findall(r"^\s+path:\s*(\S.*)\s*$", text, re.MULTILINE):
+        value = raw_path.strip().strip("\\\"'")
+        if not PLACEHOLDER_PATTERN.match(value):
+            errors.append(f"workspace.example.yaml has concrete repository path: {value}")
+
+
 def validate_sensitive_values(guidance_root: Path, errors: list[str]) -> None:
     for path in guidance_root.rglob("*.yaml"):
         if path.name.endswith("schema.yaml"):
@@ -116,6 +135,7 @@ def main() -> int:
     validate_markdown_links(repo_root, errors)
     validate_product_bindings(guidance_root, errors)
     validate_workspace_configuration(repo_root, errors)
+    validate_workspace_template(repo_root, errors)
     validate_sensitive_values(guidance_root, errors)
 
     if errors:

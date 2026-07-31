@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 VALIDATOR="${ROOT}/ai-guidance/scripts/validate_guidance.py"
 
 python3 "${VALIDATOR}" --repo-root "${ROOT}"
+python3 -m unittest "${ROOT}/ai-guidance/tests/test_guidance_validation.py" -v
 
 TEMP_ROOT="$(mktemp -d)"
 trap 'rm -rf "${TEMP_ROOT}"' EXIT
