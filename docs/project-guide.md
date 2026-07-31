@@ -8,22 +8,36 @@
 
 ```mermaid
 flowchart TD
-    U[用户任务] --> R[仓库根目录 AGENTS.md]
-    R --> P0[ai-guidance/AGENTS.md\n公共入口]
-    P0 --> S[识别项目范围与任务类型]
-    S --> L[目标仓库/目录的局部 AGENTS.md]
-    L --> C{按任务条件加载}
-    C --> CR[Core 规则、角色或工作流]
-    C --> PK[最小必要的产品知识]
-    C --> SK[适用的 Codex Skill]
-    CR --> E[核实代码、契约、配置与测试]
-    PK --> E
-    SK --> E
-    E --> I[最小实现与风险相称验证]
-    H[README.md 与 docs/] -. 仅供维护者按需查阅 .-> U
+    U[用户任务] --> R
+    subgraph REQUIRED[必经的公共约束层]
+        R[仓库根目录 AGENTS.md]
+        P0[ai-guidance/AGENTS.md\nP0 公共运行时约束]
+        S[识别项目范围与任务类型]
+        R --> P0 --> S
+    end
+    S --> W{是否为范围内工程任务？}
+    W -->|是| D[core/rules/development.md\n第 2 节指定的必读工程基准]
+    D --> L[目标仓库/目录的局部 AGENTS.md]
+    L --> B[ai-guidance/AGENTS.md 第 3 节\n判定条件读取]
+    B -->|任务类型匹配| CR[最小必要的 Core 角色或工作流]
+    B -->|跨服务、协议或链路| PK[最小必要的产品知识]
+    B -->|Plugin Skill 触发条件匹配| SK[适用的 Codex Skill]
+    B -->|维护 P0 运行时规则或 Core| RG[docs/authoring-guide.md\n与受影响文件]
+    B -->|维护 P0 产品知识、架构或流程| MG[docs/authoring-guide.md\n与 docs/governance.md]
+    B --> C[工程基准与所有命中上下文\n均已加载]
+    CR --> C
+    PK --> C
+    SK --> C
+    RG --> C
+    MG --> C
+    C --> E[按任务核实代码、契约、配置、测试或文档证据]
+    E --> I[调查、设计、答复或最小实现\n并执行风险相称验证]
+    W -->|否| A[不强制加载 development.md；继续遵循\nai-guidance/AGENTS.md 第 1、4 节\n及已适用的局部 AGENTS.md]
+    A --> B
+    M[维护者] -. 人类按需查阅 .-> H[README.md 与 docs/\n不属于 AI 默认链路]
 ```
 
-核心原则：`AGENTS.md` 决定 AI **何时读取什么**；产品文档用于导航，当前代码、契约、配置和测试才用于核实现状。P0 提供公共约束，不会因被设为 Primary 而自动成为目标代码的阅读或修改范围。
+核心原则：仓库根目录 `AGENTS.md`、`ai-guidance/AGENTS.md` 与范围识别构成**必经的公共约束层**；它们不是条件加载项。范围内工程任务必须读取 `ai-guidance/AGENTS.md` 第 2 节指定的 `core/rules/development.md`；第 3 节只判定需要叠加读取哪些专项 Core、产品知识、维护规范或原生 Skill，命中多个条件时不是相互替代。`development.md` 只提供分析、实施、验证与交接的公共执行基准，不负责跨服务等条件分支。非工程任务并非没有约束：至少继续遵循 `ai-guidance/AGENTS.md` 第 1 节的范围规则和第 4 节的指令优先级、事实与安全边界，以及任何已经适用的局部 `AGENTS.md`；它只是不会因此被强制要求加载 `development.md`。该图仅供维护者理解，Codex 实际遵循的是平台、系统、开发者指令和各级 `AGENTS.md`，不会因这张位于 `docs/` 的图而执行额外操作。产品文档用于导航，当前代码、契约、配置和测试才用于核实现状。P0 提供公共约束，不会因被设为 Primary 而自动成为目标代码的阅读或修改范围。
 
 ### 2. 人类使用与维护链路
 
