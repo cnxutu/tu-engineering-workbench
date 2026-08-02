@@ -5,6 +5,7 @@ workspace:
   roots:
     p0: <set-local-p0-path>
     company: <set-local-company-root>
+    personal: <set-local-personal-root>
 repositories:
   - code: P0
     repository: tu-devkit
@@ -30,3 +31,13 @@ repositories:
     path: <set-local-p4-path>
     product: company/device-inspection-platform
     role: DJI 协议解析、物模型转换与设备能力映射
+  - code: K1
+    repository: knowledge-hub
+    path: <set-local-k1-path>
+    product: personal/knowledge-hub
+    role: Knowledge Hub 后端
+  - code: K2
+    repository: knowledge-web
+    path: <set-local-k2-path>
+    product: personal/knowledge-hub
+    role: Knowledge Hub 前端

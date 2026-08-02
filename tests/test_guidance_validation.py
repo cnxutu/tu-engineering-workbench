@@ -52,6 +52,19 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("workspace.example.yaml is missing repository codes: P4", result.stderr)
 
+    def test_rejects_template_missing_registered_knowledge_repository_code(self) -> None:
+        repository = self.copied_repository()
+        template = repository / "ai-guidance" / "workspace.example.yaml"
+        template.write_text(
+            template.read_text(encoding="utf-8").replace("  - code: K2\n", "  # K2 mapping omitted\n"),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("workspace.example.yaml is missing repository codes: K2", result.stderr)
+
     def test_rejects_template_with_duplicate_repository_code(self) -> None:
         repository = self.copied_repository()
         template = repository / "ai-guidance" / "workspace.example.yaml"
@@ -77,6 +90,29 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("workspace.example.yaml has concrete repository path: D:/local/p1", result.stderr)
+
+    def test_accepts_local_workspace_with_only_available_repositories(self) -> None:
+        repository = self.copied_repository()
+        local = repository / "ai-guidance" / "workspace.local.yaml"
+        local.write_text(
+            "\n".join(
+                [
+                    "repositories:",
+                    "  - code: P0",
+                    f"    path: {repository}",
+                    "  - code: K1",
+                    f"    path: {repository}",
+                    "  - code: K2",
+                    f"    path: {repository}",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == "__main__":
