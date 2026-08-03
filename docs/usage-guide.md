@@ -38,6 +38,8 @@ v: 单元测试与接口回归
 - `bootstrap/`：其他仓库接入时复制的模板。
 - `docs/`：面向维护者的使用、接入、编写与治理资料。
 
+个人级 Codex 指令、团队级工程规则与其他配置入口的边界，分别见 [全局 `AGENTS.md` 指南](global-agents-guidance.md) 和 [Codex 可配置入口地图](codex-customization-map.md)。这两页用于工程师理解和维护，不应复制进 P0 运行时 `AGENTS.md`。
+
 日常 Prompt 使用 [Compact Syntax](../core/prompt-compact-syntax.md)。`core/templates/` 是防遗漏的完整参考表单，不是自动渲染器，也不是默认输入。
 
 ## 4. 接入新仓库
