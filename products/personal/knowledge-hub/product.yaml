@@ -2,6 +2,8 @@ id: personal/knowledge-hub
 name: Personal Knowledge Hub
 status: bootstrap
 entry: index.md
-repositories: []
-fact_policy: "This is an empty personal starter scaffold. It asserts no architecture, repository, service, or operational facts until evidence is added."
+repositories:
+  - repositories/knowledge-hub.yaml
+  - repositories/knowledge-web.yaml
+fact_policy: "K1 与 K2 的项目名称和职责来自项目注册；在仓库路径登记并以代码、契约、测试或已批准文档核实前，不声明架构、接口、数据、部署或运行事实。"
 

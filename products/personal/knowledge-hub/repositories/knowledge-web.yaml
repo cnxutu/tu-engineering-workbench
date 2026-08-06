@@ -1,0 +1,7 @@
+id: K2
+name: knowledge-web
+role: frontend
+status: pending_verification
+repository_path: unknown
+entry_document: repositories/knowledge-web.md
+evidence: "项目标识、名称与前端职责来自 ai-guidance/AGENTS.md 的项目注册；其余事实待仓库路径登记后核实。"
