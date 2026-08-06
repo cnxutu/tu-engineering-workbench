@@ -22,6 +22,7 @@
 - 需要一个已核对的远程调试下行与进度回显样例：读 [DJI 机场强制关舱盖：端到端案例](flows/dji-cover-force-close-case.md)。
 - P1 的业务命令路由、上行消费或 Handler：读 [P1 关键入口地图](repositories/c-drone-inspection/key-entry-points.md)。
 - P1 的 OSD/DRC 快照、拓扑、运行任务或 DRC 会话：读 [P1 缓存设计](repositories/c-drone-inspection/cache-design.md)。
+- P1 监控中心顶部统计刷新 WebSocket、状态触发与 CAMERA 覆盖：读 [顶部统计刷新 WebSocket 链路](repositories/c-drone-inspection/monitor-business-overview-websocket.md)。
 - P2 的上行消息订阅、Data Rule、RocketMQ 投递或消息未进入 P1：读 [P2 消息桥接与 Data Rule](repositories/c-iot-server/message-bridge-and-data-rule.md)。
 - P2 的设备查询、物模型服务、TSL、下行路由或同步调用：读 [P2 设备、物模型与 TSL 边界](repositories/c-iot-server/device-thing-model-tsl.md)。
 - P3 的协议实例、多协议接入、`protocolCodecId` 或 P4 集成：读 [P3 协议实例与 Codec 选择](repositories/c-iot-gateway/protocol-instance-and-codec-selection.md)。
