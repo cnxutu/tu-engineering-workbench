@@ -15,6 +15,7 @@
 | `P4` | `ad-iot-codec-adapter-dji`：DJI 编解码适配 | 本机工作区映射 |
 | `K1` | `knowledge-hub`：Knowledge Hub 后端 | 待登记 |
 | `K2` | `knowledge-web`：Knowledge Hub 前端 | 待登记 |
+| `K5` | `tu-language-lab`：语言学习与快速 Demo 运行 | 本机工作区映射 |
 | `A1` | `tu-ai-lab`：个人 AI 功能集合工程 | 本机工作区映射 |
 
 项目标记可出现在自然语言、列表、括号或字段中；`P1 + P2`、`P1,P2`、`P1，P2`、`P1、P2`、`P1 P2` 等均识别为 P1 与 P2。短横线 `-` 或连接号 `–` 表示连续范围：`P0–P4` 表示 P0、P1、P2、P3、P4；它可与其他标记混用，例如 `P0、P2-P4`。`范围：` 只是提高可读性的可选前缀，不是必需格式。

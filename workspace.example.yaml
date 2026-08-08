@@ -41,6 +41,10 @@ repositories:
     path: <set-local-k2-path>
     product: personal/knowledge-hub
     role: Knowledge Hub 前端
+  - code: K5
+    repository: tu-language-lab
+    path: <set-local-k5-path>
+    role: 语言学习与快速 Demo 运行
   - code: A1
     repository: tu-ai-lab
     path: <set-local-a1-path>

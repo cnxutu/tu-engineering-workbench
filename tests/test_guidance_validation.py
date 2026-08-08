@@ -65,6 +65,19 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("workspace.example.yaml is missing repository codes: K2", result.stderr)
 
+    def test_rejects_template_missing_registered_language_learning_repository_code(self) -> None:
+        repository = self.copied_repository()
+        template = repository / "ai-guidance" / "workspace.example.yaml"
+        template.write_text(
+            template.read_text(encoding="utf-8").replace("  - code: K5\n", "  # K5 mapping omitted\n"),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("workspace.example.yaml is missing repository codes: K5", result.stderr)
+
     def test_rejects_template_missing_registered_ai_repository_code(self) -> None:
         repository = self.copied_repository()
         template = repository / "ai-guidance" / "workspace.example.yaml"
