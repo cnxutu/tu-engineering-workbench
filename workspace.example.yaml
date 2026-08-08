@@ -41,3 +41,7 @@ repositories:
     path: <set-local-k2-path>
     product: personal/knowledge-hub
     role: Knowledge Hub 前端
+  - code: A1
+    repository: tu-ai-lab
+    path: <set-local-a1-path>
+    role: 个人 AI 功能集合工程

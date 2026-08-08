@@ -19,8 +19,8 @@ SENSITIVE_KEY_PATTERN = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 PLACEHOLDER_PATTERN = re.compile(r"^(?:<[^>]+>|\$\{[^}]+\}|redacted)$", re.IGNORECASE)
-REGISTERED_REPOSITORY_CODES = {"P0", "P1", "P2", "P3", "P4", "K1", "K2"}
-REPOSITORY_CODE_PATTERN = r"(?:P[0-4]|K[12])"
+REGISTERED_REPOSITORY_CODES = {"P0", "P1", "P2", "P3", "P4", "K1", "K2", "A1"}
+REPOSITORY_CODE_PATTERN = r"(?:P[0-4]|K[12]|A1)"
 
 
 def error_if_missing(path: Path, label: str, errors: list[str]) -> None:
