@@ -68,5 +68,6 @@ P2 设备 create/update/delete
 - P2 `c-iot-core/.../mq/producer/IotBusinessEventProducer.java`：`iot_business_event` 发送及发送失败处理。
 - P1 `b-inspection-platform-core/.../mq/DeviceProjection*Consumer.java`：三个 Tag 的消费入口与重试边界。
 - P1 `b-inspection-platform-core/.../service/device/DeviceProjectionRealtimeSyncService.java`：实时回查、幂等投影、身份校验与失效。
+- P1 监控统计入口：[`monitor-overview-websocket.md`](../repositories/c-drone-inspection/monitor-overview-websocket.md)、[`monitor-business-overview-websocket.md`](../repositories/c-drone-inspection/monitor-business-overview-websocket.md)。
 - P1 `b-inspection-platform-core/.../service/device/DeviceProjectionSyncTask.java`：分页完整性判定、差异记录和遗留清理。
 - P1 `b-inspection-platform-core/.../dao/device/IDeviceMapper.java`、`ManagedDeviceQueryService.java`、`MonitorDeviceServiceImpl.java`：已绑定空间的展示与统计查询边界。

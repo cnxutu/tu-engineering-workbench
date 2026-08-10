@@ -69,11 +69,11 @@ flowchart TD
 
 | 字段 | 当前计算口径 |
 |---|---|
-| `accessDeviceCount` | `listMonitorBusinessDeviceStatuses().size()`，当前统计快照中的机场、无人机及符合筛选条件的 CAMERA |
+| `accessDeviceCount` | `listMonitorBusinessDeviceStatuses().size()`，即 `manage_device` 中活动且已绑定空间的 DOCK、DRONE、CAMERA 投影数量 |
 | `mapAnnotationCount` | 地图标注表记录数 |
 | `electronicFenceCount` | 电子围栏表记录数 |
 
-其中 `accessDeviceCount` 会复用监控设备快照构建逻辑；它不是简单的 IoT 设备总数。详情以 `MonitorDeviceServiceImpl#listMonitorBusinessDeviceStatuses` 及其设备查询代码为准。
+其中 `accessDeviceCount` 会复用监控设备快照构建逻辑；集合统一要求 `is_deleted = 0 AND space_code IS NOT NULL`，拓扑缓存不参与统计集合判定，仅用于拓扑展示、父子关系和能力补充。它不是简单的 IoT 设备总数。详情以 `MonitorDeviceServiceImpl#listMonitorBusinessDeviceStatuses` 及 `IDeviceMonitorMapper` 的三个投影查询为准。
 
 ## 联调必验项
 

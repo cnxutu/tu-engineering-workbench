@@ -86,11 +86,11 @@ flowchart TD
 
 | 阶段 | 当前行为 | 代码证据 |
 |---|---|---|
-| 设备是否进入统计 | 机场来自 `loadDockDevices`；无人机来自机场拓扑子设备；CAMERA 来自 `selectMonitorCameraV2List`，条件是未删除、`category_code='CAM'`、已绑定空间 | P1 `MonitorDeviceServiceImpl#listMonitorBusinessDeviceStatuses`；`IDeviceMonitorMapper.xml#selectMonitorCameraV2List` |
+| 设备是否进入统计 | DOCK、DRONE、CAMERA 均来自 `manage_device` 投影查询，统一要求 `is_deleted=0`、对应 `category_code` 且 `space_code IS NOT NULL`；拓扑缓存不参与统计集合判定 | P1 `MonitorDeviceServiceImpl#listMonitorBusinessDeviceStatuses`；`IDeviceMonitorMapper.xml#selectMonitorDockV2List/selectMonitorDroneV2List/selectMonitorCameraV2List` |
 | CAMERA 状态 | 无 `online:{sn}` ⇒ `OFFLINE`；有 key 且 `isDeviceWorking(deviceId)` 为真 ⇒ `WORKING`；否则 `IDLE` | `CameraStatusResolver#resolve` |
 | 统计聚合 | `getMonitorBusinessOverview` 遍历快照，按 `MonitorBusinessStatus` 累加 | `MonitorDeviceServiceImpl#getMonitorBusinessOverview` |
 | 状态变化去重 | `notifyIfChanged` 读取 `monitor:business_status:{deviceSn}`；相同状态直接返回；不同状态才发顶部刷新，并写入新状态 | `MonitorBusinessStatusNotifier#notifyIfChanged` |
-| 全局刷新 | `notifyOverviewChanged` 不比较状态、不带设备 SN，仅发 `{source, deviceSn:null}` | `MonitorBusinessStatusNotifier#notifyOverviewChanged` |
+| 全局刷新 | `notifyOverviewChanged` 不比较状态、不带设备 SN，仅发 `{source, deviceSn:null}`；P2 投影创建（已绑定）、更新、删除或分类迁出在事务提交后触发 | `MonitorBusinessStatusNotifier#notifyOverviewChanged`；`DeviceProjectionRealtimeSyncService`；`DeviceProjectionSyncTask` |
 | 推送出口 | `sendBatchByDeviceType("drone", ...)`；接口契约说明该参数映射 `/ws/{deviceType}`，即 `/ws/drone` | `IWebSocketMessageService#sendBatchByDeviceType` |
 
 ## CAMERA 的状态变化能否被感知
