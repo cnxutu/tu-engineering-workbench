@@ -1,4 +1,4 @@
-# P1 设备列表任务状态 WebSocket 链路
+# P1 设备任务状态展示与 WebSocket 推送闭环
 
 > 主题：`/ws/drone`，`biz_code=device_task_status`。  
 > 证据状态：当前代码核对（2026-08-10）；本文描述现状，不是目标设计。
@@ -103,6 +103,19 @@ flowchart TD
 
 未来任务的完整集合仍在任务表中。状态解析只有在运行缓存为空、缓存为手动任务或缓存状态不支持时，才回查该机场 `executeTime > now` 的普通 `TO_BE_EXECUTED` 任务，并按执行时间升序取最早的一条作为 `PENDING`；没有则推送空状态。因此，设备列表任务状态的“未来任务”兜底来自数据库查询，而不是 Redis 运行任务缓存。
 
+### 无人机 `futureTaskCount` 查询口径
+
+无人机的未来待执行数量与 CAMERA 不是同一条查询：
+
+| 类型 | 聚合维度 | 任务类型 | 时间条件 | 设备关联 |
+|---|---|---|---|---|
+| DRONE | 机场 `dockId` | 普通任务 `task_type = 1` | `wayline_task.execute_time > now` | `wayline_task.device_id` 指向无人机，`manage_device.parent_id` 回溯机场 |
+| CAMERA | CAMERA `deviceId` | 固定点位任务 `task_type = 3` | `wayline_plan.plan_start_time > now` | `fixed_point_task_channel.device_id` 直接指向 CAMERA |
+
+无人机查询过滤未删除、待执行（`task_biz_status = 1`）记录，并按 `aircraft.parent_id` 分组，使用 `COUNT(DISTINCT wt.task_id)` 统计机场下所有无人机的任务数量。该数量在解析运行任务之前先查询，因此当前存在运行任务时，`futureTaskCount` 仍表示其余满足条件的未来普通任务数量；它不是运行任务缓存中的字段，也不是按当前无人机 SN 单独计数。
+
+代码证据：`WaylineTaskMapper.xml#selectFutureNormalTaskCounts`、`DeviceTaskStatusNotifier#resolveAndCacheBatch`、`DeviceTaskStatusNotifier#futureNormalTaskCount`。CAMERA 对应 `WaylineTaskMapper.xml#selectFutureFixedPointTaskCounts` 和 `CameraTaskStatusNotifier#futureCount`。
+
 任务状态枚举当前只有：
 
 | `deviceTaskStatus` | 描述 | 来源 |
@@ -125,6 +138,7 @@ flowchart TD
 | `deviceTaskStatusDesc` | 状态描述 |
 | `planId`、`taskId`、`taskName` | 任务/计划标识和名称 |
 | `taskExecuteTime`、`taskProgress` | 执行时间和进度 |
+| `futureTaskCount` | 未来待执行任务数量；DRONE 按机场聚合普通任务，CAMERA 按设备关联的固定点位任务统计 |
 | `flightMileage`、`waylineMileage`、`algorithmRecognitionCount` | 任务统计扩展字段 |
 
 这是按设备 SN 定向的消息，不是顶部统计那种全局刷新消息。前端设备列表应使用外层消息的 `deviceSn` 或载荷中的 `deviceSn` 定位卡片，再用快照覆盖任务状态和相关展示字段。HTTP 列表中的 `MonitorDeviceTaskInfoDTO` 与该载荷共享计划、任务、状态、执行时间、算法计数和未来任务数量字段；无人机额外映射进度、飞行里程和航线里程。
