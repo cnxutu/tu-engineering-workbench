@@ -1,13 +1,40 @@
 # P1 设备列表任务状态 WebSocket 链路
 
 > 主题：`/ws/drone`，`biz_code=device_task_status`。  
-> 证据状态：当前代码核对（2026-08-07）；本文描述现状，不是目标设计。
+> 证据状态：当前代码核对（2026-08-10）；本文描述现状，不是目标设计。
 
 ## 范围与结论
 
-本文说明监控中心设备列表任务状态消息的触发入口、任务状态来源、载荷组装和 WebSocket 推送边界。
+本文说明监控中心设备列表任务状态消息的触发入口、任务状态来源、载荷组装和 WebSocket 推送边界，并补充 HTTP 首次列表如何与实时消息闭环。
 
-结论先行：当前 `device_task_status` 不是任务表或任务缓存发生变化后独立触发的消息，而是**无人机子设备 OSD 到达时顺带刷新的一份任务状态快照**。每次有效的无人机 OSD 处理都会调用 `DeviceTaskStatusNotifier`，按无人机 SN 找到所属机场，再读取机场维度的运行任务缓存或查询未来待执行任务，最后按无人机设备 SN 推送给 `/ws/drone` 通道。CAMERA、DOCK 的 OSD 当前不会进入这条任务状态推送路径。
+结论先行：设备列表的初始任务信息与实时变更均以 `monitor:device_task_status:{deviceSn}` 快照为收口。旧版 `POST /drone/monitor/list` 和 2.0 `POST /drone/monitor/v2/list` 在组装列表时读取/回源同一任务解析器并返回 `taskInfo`；任务事件则按设备 SN 通过 `/ws/drone` 的 `device_task_status` 增量覆盖卡片。无人机 OSD 仍是常规刷新入口，计划删除/变更、任务控制等路径也会触发无人机刷新；CAMERA 使用独立的固定点位任务解析器和触发入口。
+
+## 设备列表初始展示与实时闭环
+
+```mermaid
+sequenceDiagram
+    participant UI as 监控设备列表
+    participant API as FlightMonitorController
+    participant S as MonitorDeviceServiceImpl
+    participant C as monitor:device_task_status:{deviceSn}
+    participant WS as /ws/drone
+    participant N as 任务状态触发器
+
+    UI->>API: POST /drone/monitor/list 或 /v2/list
+    API->>S: 查询设备主数据/拓扑
+    S->>C: 读取有效任务快照
+    S->>N: 缓存缺失时批量回源解析并回写
+    S-->>UI: 设备列表 + taskInfo
+    N-->>WS: device_task_status(deviceSn)
+    WS-->>UI: 按 deviceSn 覆盖 taskInfo
+```
+
+| 初始列表 | 任务字段 | 解析边界 |
+|---|---|---|
+| `POST /drone/monitor/list` | 机场/无人机旧版行中的 `taskInfo` | 当前实现为子无人机任务快照；机场本身不填充。通过 `DeviceTaskStatusNotifier#resolveAndCacheBatch` 按机场 ID 批量解析并缓存。 |
+| `POST /drone/monitor/v2/list` | 每个 CAMERA/DRONE 卡片的 `taskInfo` | 优先读 `monitor:device_task_status:{deviceSn}`，缺失时 CAMERA/DRONE 分别批量回源并回写；DOCK 不填充。 |
+
+前端应以 `deviceSn`（旧版使用 `droneDeviceSn`，2.0 使用卡片 `deviceSn`）作为合并键：首次 HTTP 响应建立设备卡片，后续 `device_task_status` 载荷覆盖 `taskInfo`；空任务快照用于清除残留任务。HTTP 列表不是 WebSocket 的替代通道，WebSocket 也不负责补发整份设备主数据。
 
 ## 全流程图
 
@@ -49,7 +76,7 @@ flowchart TD
 | 所属机场 ID | 优先使用 `context.getDockDeviceId()`；为空时通过 `getFathDeviceByChildSn(deviceSn)` 反查；仍无法得到机场 ID 时不发送 | `resolveDockId` |
 | 连接通道 | 使用 `webSocketMessageService.sendBatch(deviceSn, ...)`，由 WebSocket 服务按设备 SN 选择设备类型连接；无人机设备进入 `drone` 通道，对应 `/ws/drone` | `IWebSocketMessageService`、`WebSocketMessageServiceImpl#sendBatch(String, ...)` |
 
-这条链路没有独立的定时补偿任务，也没有基于任务状态字段的去重；前置条件满足时，每个有效无人机 OSD 都会尝试发送一次任务状态快照。
+无人机 OSD 路径没有独立的定时补偿任务，也没有基于任务状态字段的去重；前置条件满足时，每个有效无人机 OSD 都会尝试发送一次任务状态快照。任务计划删除/变更及部分任务控制路径会在事务提交后调用 `notifyByDockId`，不必等待下一条 OSD；是否覆盖所有任务状态转移仍以具体调用方核对为准。
 
 ## 任务状态解析规则
 
@@ -100,12 +127,12 @@ flowchart TD
 | `taskExecuteTime`、`taskProgress` | 执行时间和进度 |
 | `flightMileage`、`waylineMileage`、`algorithmRecognitionCount` | 任务统计扩展字段 |
 
-这是按设备 SN 定向的消息，不是顶部统计那种全局刷新消息。前端设备列表应使用外层消息的 `deviceSn` 或载荷中的 `deviceSn` 定位卡片，再用快照覆盖任务状态和相关展示字段。
+这是按设备 SN 定向的消息，不是顶部统计那种全局刷新消息。前端设备列表应使用外层消息的 `deviceSn` 或载荷中的 `deviceSn` 定位卡片，再用快照覆盖任务状态和相关展示字段。HTTP 列表中的 `MonitorDeviceTaskInfoDTO` 与该载荷共享计划、任务、状态、执行时间、算法计数和未来任务数量字段；无人机额外映射进度、飞行里程和航线里程。
 
 ## 实时性、兜底与风险边界
 
 - **正常实时路径：** 无人机 OSD 到达 → OSD 缓存更新 → 任务状态快照解析 → `device_task_status` 推送。
-- **任务状态变更不产生 OSD：** 当前不会单独触发 `device_task_status`；需等下一条无人机 OSD 才会刷新。
+- **未接入任务触发器的状态变更：** 当前不会单独触发 `device_task_status`；需等下一条无人机 OSD 才会刷新。已接入计划删除/变更和任务控制的路径会在事务提交后刷新关联无人机，但不是所有任务状态转移都已由本文证明覆盖。
 - **设备离线：** 当前在线/离线消息和顶部业务状态链路不会直接触发 `device_task_status`；若设备列表需要离线时清理任务状态，需另行设计消息契约或补偿入口。
 - **任务状态缓存/数据库读取异常：** `DeviceTaskStatusNotifier` 当前没有独立异常降级；异常可能影响当前 OSD 消息处理，需结合上游消费重试策略排查。
 - **没有专属对账任务：** `MonitorBusinessStatusReconciliationTask` 只负责顶部业务统计，不负责 `device_task_status` 的补发。
@@ -186,5 +213,7 @@ flowchart TD
 - 状态解析和推送：`DeviceTaskStatusNotifier#notifyDeviceTaskStatus`、`#resolveStatus`。
 - 业务码：`BizCodeEnum.DEVICE_TASK_STATUS`。
 - 载荷：`DeviceTaskStatusPushDTO`。
+- 初始列表：`FlightMonitorController#getMonitorDeviceList` → `MonitorDeviceServiceImpl#getMonitorDeviceList` → `MonitorDeviceListDTO#taskInfo`；2.0 入口为 `getMonitorDeviceV2List` → `MonitorDeviceV2ListDTO#taskInfo`。
+- 旧版列表任务批量解析：`MonitorDeviceServiceImpl#enrichLegacyTaskStatus` → `DeviceTaskStatusNotifier#resolveAndCacheBatch`。
 - 通道：`IWebSocketMessageService#sendBatch(String, ...)`、`WebSocketMessageServiceImpl#sendBatch(String, ...)`。
 - 测试：`DeviceTaskStatusNotifierTest`、`InspectionDeviceStatusBusinessServiceImplTest`。
