@@ -34,17 +34,17 @@
 
 | 消息 | 计算时机 | `data.businessStatus` | 依据 |
 | --- | --- | --- | --- |
-| `dock_osd` | 机场普通 OSD 写入 `osd:{dockSn}` 后 | 机场状态枚举名称 | 写入后的有效机场快照，避免 OSD 分包导致状态闪烁 |
+| `dock_osd` | 机场普通 OSD 处理时 | 机场状态枚举名称 | 当前分包优先、写入前 `osd:{dockSn}` 120 秒快照补齐缺失的异常字段 |
 | `device_osd` | 无人机普通 OSD 处理时 | 无人机状态枚举名称 | 当前普通无人机 OSD 快照 |
 | `device_osd`（DRC 高频 OSD） | DRC OSD 处理时 | `null` | DRC DTO 缺少完整业务状态判定所需字段，本链路不伪造该状态 |
 
 当前 P1 映射规则由 `MonitorBusinessStatusMapper` 统一复用：
 
-- 机场：离线为 `OFFLINE`；`modeCode` 1/2/3/5 为 `DEBUG_UPGRADE`，4 为 `WORKING`，0 为 `IDLE`，其他或缺失为 `UNCLASSIFIED`。
+- 机场：离线为 `OFFLINE`；`modeCode` 优先取当前分包、缺失时取 120 秒缓存。1/2/3/5 为 `DEBUG_UPGRADE`；4/0 时若 `coverState=3`、`emergencyStopState=true`、`alarmState=true`、`flighttaskStepCode=255/256`、`positionState.isFixed=3` 或 `networkState.quality=0` 任一命中，则为 `ABNORMAL`；未命中时分别为 `WORKING`/`IDLE`，其他或缺失为 `UNCLASSIFIED`。
 - 无人机：离线为 `OFFLINE`；`modeCode` 11/12/14 为 `ABNORMAL`，13/19 为 `DEBUG_UPGRADE`，0 为 `IDLE`，1–10、15–18、20/21 为 `WORKING`，其他或缺失为 `UNCLASSIFIED`。
 - `businessStatus` 传输为枚举名称字符串（如 `WORKING`），common DTO 不依赖 core 枚举；顶部业务统计与 OSD 展示复用同一映射器。
 
-该字段只控制 P1 OSD 展示及相关统计，不代表设备协议原始状态，也不由设备离线事件额外触发 OSD 推送。离线后的状态展示仍需结合 `online:{deviceSn}`、OSD TTL 和相应缓存读取边界判断。
+机场异常判定不新增缓存或改变现有缓存写入：当前分包显式携带 `false`、`0` 或其他非异常值时优先覆盖旧异常；字段未携带时才回退缓存。该字段只控制 P1 OSD 展示及相关统计，不代表设备协议原始状态，也不由设备离线事件额外触发 OSD 推送。离线后的状态展示仍需结合 `online:{deviceSn}`、OSD TTL 和相应缓存读取边界判断。
 
 ## 代码阅读入口
 
