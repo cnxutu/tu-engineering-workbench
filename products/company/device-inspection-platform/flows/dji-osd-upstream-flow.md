@@ -15,6 +15,7 @@
 | DRC OSD identifier | `inspection_drc_osd_report`，用于含位置的高频 DRC OSD。 |
 | P1 业务 Topic | P1 默认消费 `iot_business_event` / `DEFAULT_FLOW`；P2 是否实际投递取决于 Data Rule。 |
 | 身份路由 | P4 将机场 SN 映射自身设备名，将无人机 SN 映射父机场设备名；P1 再以 `parentDeviceSn` 与 `deviceSn` 恢复子机业务实体。 |
+| Dock 3 温度字段 | `temperature` 是舱内温度，`environment_temperature` 是环境温度；P4/P1 统一消息与 `dock_osd.data.host` 分别使用 `temperature`、`environmentTemperature`，缺失值保持 `null`，不得相互回退。 |
 
 ## OSD 上行
 
