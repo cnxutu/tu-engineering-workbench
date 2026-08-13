@@ -1,0 +1,7 @@
+id: personal/architecture-learning
+name: Personal Architecture Learning
+status: bootstrap
+entry: index.md
+repositories:
+  - repositories/tu-arch-learning.yaml
+fact_policy: "L1 的项目名称、用途与本地路径来自项目注册及本机工作区映射；学习笔记的具体内容、目录结构与资料来源须在目标仓库中核实。"

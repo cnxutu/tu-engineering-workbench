@@ -9,3 +9,6 @@ products:
   - id: personal/knowledge-hub
     manifest: products/personal/knowledge-hub/product.yaml
     index: products/personal/knowledge-hub/index.md
+  - id: personal/architecture-learning
+    manifest: products/personal/architecture-learning/product.yaml
+    index: products/personal/architecture-learning/index.md

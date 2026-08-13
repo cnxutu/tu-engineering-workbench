@@ -16,6 +16,7 @@
 | `K1` | `knowledge-hub`：Knowledge Hub 后端 | 待登记 |
 | `K2` | `knowledge-web`：Knowledge Hub 前端 | 待登记 |
 | `K5` | `tu-language-lab`：语言学习与快速 Demo 运行 | 本机工作区映射 |
+| `L1` | `tu-arch-learning`：个人软考高级系统架构师学习沉淀汇总 | 本机工作区映射 |
 | `A1` | `tu-ai-lab`：个人 AI 功能集合工程 | 本机工作区映射 |
 
 项目标记可出现在自然语言、列表、括号或字段中；`P1 + P2`、`P1,P2`、`P1，P2`、`P1、P2`、`P1 P2` 等均识别为 P1 与 P2。短横线 `-` 或连接号 `–` 表示连续范围：`P0–P4` 表示 P0、P1、P2、P3、P4；它可与其他标记混用，例如 `P0、P2-P4`。`范围：` 只是提高可读性的可选前缀，不是必需格式。
@@ -86,6 +87,7 @@
 | 修改 P0 的工具、脚本、校验或团队 Plugin | 目标目录的 README、实现与测试；Plugin 还读取 manifest、相关 `SKILL.md` 与 `tests/test-plugin.sh` | 产品知识、知识编写规范、无关 Plugin |
 | `X`、`i` 涉及多个项目，或任务明确涉及服务关系、OSD、指令、协议、缓存链路或跨服务发布依赖 | `products/company/device-inspection-platform/index.md`，再沿链接读取当前已维护的最小 Flow 或 P1 入口/缓存资料；未覆盖场景以目标代码、契约和配置核实 | 整个产品目录、无关服务源码 |
 | K1/K2 的 Knowledge Hub 产品架构或跨端任务 | `products/personal/knowledge-hub/index.md`，再沿链接读取所需资料 | 无关公司产品材料 |
+| L1 的软考高级系统架构师学习沉淀任务 | `products/personal/architecture-learning/index.md`，再沿链接读取所需资料 | 无关产品材料 |
 
 涉及多个仓库、公开 API、消息契约或数据所有权时，必须先以目标代码和契约核实当前事实；产品知识只用于导航与已确认上下文，不能替代代码核实。
 

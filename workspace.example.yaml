@@ -45,6 +45,11 @@ repositories:
     repository: tu-language-lab
     path: <set-local-k5-path>
     role: 语言学习与快速 Demo 运行
+  - code: L1
+    repository: tu-arch-learning
+    path: <set-local-l1-path>
+    product: personal/architecture-learning
+    role: 个人软考高级系统架构师学习沉淀汇总
   - code: A1
     repository: tu-ai-lab
     path: <set-local-a1-path>
