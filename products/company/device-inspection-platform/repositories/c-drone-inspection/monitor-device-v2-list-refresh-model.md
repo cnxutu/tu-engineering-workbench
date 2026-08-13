@@ -20,6 +20,28 @@ Controller 只接收 `MonitorDeviceV2ListReq` 并委托 `MonitorDeviceService#ge
 
 当前返回模型是 `MonitorDeviceV2ListDTO`。设备实时字段不直接平铺在列表 DTO 中；任务字段位于 `taskInfo`，因此前端应把初始列表视为“卡片基线”，再按设备 SN 合并 WebSocket 数据。
 
+## 接口与刷新链路总览
+
+```mermaid
+flowchart LR
+    UI["监控中心设备列表"]
+    API["POST /drone/monitor/v2/list"]
+    SVC["MonitorDeviceServiceImpl"]
+    PROJ["DOCK / DRONE / CAMERA 投影"]
+    ENRICH["配置、机场关系、位置、taskInfo 补齐"]
+    CARD["MonitorDeviceV2ListDTO 卡片基线"]
+    WS["/ws/drone"]
+    LOCAL["设备级增量消息\ndock_osd / device_osd / device_hms\ndevice_task_status / monitor_device_offline"]
+    GLOBAL["monitor_overview_changed\n{source, operation}"]
+
+    UI -->|"首次进入、筛选变化、全量刷新"| API
+    API --> SVC --> PROJ --> ENRICH --> CARD --> UI
+    WS --> LOCAL -->|"按 deviceSn 合并指定字段"| UI
+    WS --> GLOBAL -->|"不解析 data；重新请求列表"| API
+```
+
+上图的边界是：HTTP 返回负责重建设备卡片集合，设备级 WebSocket 只更新已存在卡片的指定字段，全局事件只作为重新查询信号。`monitor_business_overview_changed` 属顶部业务统计链路，不触发本接口的全量刷新。
+
 ## 前端刷新总原则
 
 1. 首次进入或需要重建卡片集合时，请求 `/drone/monitor/v2/list`，以返回列表覆盖本地设备集合。
@@ -40,6 +62,43 @@ Controller 只接收 `MonitorDeviceV2ListReq` 并委托 `MonitorDeviceService#ge
 ### `device_task_status` 与初始列表的映射
 
 `MonitorDeviceV2ListDTO.taskInfo` 当前包含任务状态、描述、计划/任务 ID、任务名、执行时间、算法识别数、未来任务数，以及 CAMERA 的 `taskEndTime`、DRONE 的 `taskProgress`、`flightMileage`、`waylineMileage`。因此前端合并 `device_task_status` 时，应更新 `taskInfo` 子对象，而不是在卡片根对象新增一套平铺字段。
+
+## P1 上行数据到设备列表增量的链路
+
+下图从 P1 接收到 P2 Data Rule 已投递的上行消息开始；P2 如何产生该 RocketMQ 消息，以及 P3/P4 的协议处理，见 [DJI OSD 上行数据链路](../../flows/dji-osd-upstream-flow.md)。
+
+```mermaid
+flowchart TD
+    MQ["RocketMQ: iot_business_event / DEFAULT_FLOW"] --> CONSUMER["InspectionIotUpstreamConsumer"]
+    CONSUMER --> CONVERT["InspectionIotMessageConverter\n展开内部物模型消息"]
+    CONVERT --> ROUTER["InspectionIotMessageRouter\n按 identifier 路由"]
+    ROUTER --> STATUS["DeviceStatusPropertyHandler\n普通 OSD / State"]
+    ROUTER --> DRC["DrcOsdPropertyHandler\nDRC 高频 OSD"]
+    STATUS --> BIZ["InspectionDeviceStatusBusinessServiceImpl"]
+    DRC --> BIZ
+    BIZ --> HOST["机场普通 OSD\ndock_osd + OSD/在线快照"]
+    BIZ --> DRONE["无人机普通 OSD\ndevice_osd + OSD/在线快照"]
+    DRONE --> TASK["DeviceTaskStatusNotifier\ndevice_task_status"]
+    BIZ --> DRCWS["DRC 高频 OSD\ndevice_osd + drc_osd 快照"]
+    HOST --> WS["/ws/drone"]
+    DRONE --> WS
+    TASK --> WS
+    DRCWS --> WS
+    WS --> UI["按 deviceSn 合并现有列表卡片"]
+```
+
+普通无人机 OSD 写入普通 `osd:{deviceSn}` 快照后才触发 `DeviceTaskStatusNotifier`；DRC OSD 使用独立 `drc_osd:{droneSn}` 快照，且其 `device_osd.data.businessStatus` 当前为 `null`。因此，设备列表的增量合并不能让 DRC 消息清空普通 OSD 的业务状态。
+
+## 影响范围
+
+| 变更或异常发生点 | 对 `/v2/list` 的影响 | 需要同时核对的链路/边界 |
+|---|---|---|
+| DOCK、DRONE、CAMERA 投影、空间归属或设备关联 | 改变卡片集合、关系、筛选结果或位置回退依据 | `MonitorDeviceServiceImpl` 的三个投影查询与补齐逻辑；成功事务后的 `monitor_overview_changed`；设备主数据投影同步链路。 |
+| 普通机场/无人机 OSD | 不重查列表，更新已有卡片的状态、模式、电量或坐标；无人机还可更新任务快照 | `InspectionIotUpstreamConsumer` → 状态 Handler → `InspectionDeviceStatusBusinessServiceImpl`；普通 `osd:{deviceSn}` 和在线快照。 |
+| DRC 高频 OSD | 不重查列表，按无人机 SN 更新位置等字段；不能用其空 `businessStatus` 覆盖普通 OSD 状态 | `DrcOsdPropertyHandler`、`handleDrcOsd`、`drc_osd:{droneSn}`；DRC 与普通 OSD 快照隔离。 |
+| 无人机或 CAMERA 任务状态 | 初始查询与实时消息都影响卡片 `taskInfo` | `monitor:device_task_status:{deviceSn}`、`DeviceTaskStatusNotifier`、`CameraTaskStatusNotifier`；按设备 SN 合并。 |
+| 离线或最终业务状态变化 | `monitor_device_offline` 只更新设备离线状态；顶部业务统计另走刷新消息 | `MonitorBusinessStatusNotifier`、`monitor_business_overview_changed`；不把离线载荷当完整卡片。 |
+| 地图标注、电子围栏、设备关联或设备投影同步 | 通过 `monitor_overview_changed` 触发前端重查列表 | `MonitorOverviewChangedEvent` → 事务提交后 `MonitorOverviewChangedNotifier`；事件 `data` 不是设备增量。 |
 
 ## 全局刷新
 
