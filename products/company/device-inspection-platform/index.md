@@ -26,10 +26,12 @@
 - P1 监控中心顶部统计刷新 WebSocket、状态触发与 CAMERA 覆盖：读 [顶部统计刷新 WebSocket 链路](repositories/c-drone-inspection/monitor-business-overview-websocket.md)。
 - P1 监控中心左上角基础统计刷新 WebSocket、标注/围栏/设备关联触发：读 [左上角基础统计刷新 WebSocket 链路](repositories/c-drone-inspection/monitor-overview-websocket.md)。
 - P1 设备任务状态展示、任务快照解析与 WebSocket 实时推送闭环：读 [设备任务状态展示与 WebSocket 推送闭环](repositories/c-drone-inspection/device-task-status-display-and-websocket.md)。
+- P1 监控中心核心设备列表、局部 WebSocket 字段合并与全局刷新：读 [监控中心设备核心列表与刷新模型](repositories/c-drone-inspection/monitor-device-v2-list-refresh-model.md)。
 - P2 的上行消息订阅、Data Rule、RocketMQ 投递或消息未进入 P1：读 [P2 消息桥接与 Data Rule](repositories/c-iot-server/message-bridge-and-data-rule.md)。
 - P2 的设备查询、物模型服务、TSL、下行路由或同步调用：读 [P2 设备、物模型与 TSL 边界](repositories/c-iot-server/device-thing-model-tsl.md)。
 - P3 的协议实例、多协议接入、`protocolCodecId` 或 P4 集成：读 [P3 协议实例与 Codec 选择](repositories/c-iot-gateway/protocol-instance-and-codec-selection.md)。
 - P3 的上行转发、下行订阅、连接、编码或回复模式：读 [P3 网关上/下行桥接](repositories/c-iot-gateway/gateway-upstream-downstream-bridge.md)。
 - P4 的 DJI Topic、字段、identifier、命令或回复映射：读 [P4 DJI 协议映射](repositories/ad-iot-codec-adapter-dji/dji-adapter-mapping.md)。
+- DJI 无人机行业术语、HMS、OSD、DRC 与姿态角语义：读 [DJI 无人机领域知识](context/domain/index.md)。
 
 未命中这两类场景时，不因项目名称自动加载整个产品目录；先从受影响仓库的局部 `AGENTS.md`、代码、契约和测试核实。新增长期可复用的产品事实时，遵循 `docs/authoring-guide.md` 与 `docs/governance.md`。
