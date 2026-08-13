@@ -29,6 +29,22 @@
 
 普通 OSD 与 DRC OSD 的 Redis/前端推送语义不同：前者驱动机场或子机状态、任务与业务联动；后者承载低延迟位置、姿态与视锥。不得将两者当成可相互覆盖的同一缓存。
 
+## 机场图传链路状态转换
+
+DJI 普通机场 OSD 的 `data.wireless_link` 不会原样进入 WebSocket。P4 读取 `sdr_quality`、`4g_quality` 与 `link_workmode`，将其规范化并通过 P2 的属性扁平化契约投递给 P1；其中 `4g_quality` 映射为 P1 的 `fourthGenerationQuality`，对应的扁平属性名为 `wirelessLinkFourthGenerationQuality`。
+
+P1 仅在机场普通 `DEVICE_TELEMETRY` 的处理分支中，根据 `linkWorkmode` 选择当前有效质量并发送独立的 `wireless_link` WebSocket 事件；它不是 `dock_osd.data.host` 的字段，也不适用于无人机普通 OSD 或 DRC 高频 OSD。
+
+| `linkWorkmode` | 选择的 P1 值 | WebSocket `data` |
+| --- | --- | --- |
+| `0`（仅 SDR） | `sdrQuality` | `quality=<sdrQuality>`, `mode=0` |
+| `1`（SDR + 4G） | `fourthGenerationQuality` | `quality=<4G quality>`, `mode=1` |
+| 其他或缺失 | 不处理 | 不发送 |
+
+推送消息外层为 `biz_code=wireless_link`，`data` 使用统一字段 `quality`、`mode`、`sdrCmdDelay`、`streamDelay`；前端不得按 DJI 原始字段名 `4g_quality` 或 `4gQuality` 过滤。设备 SN 对应机场且存在子机关联时，P1 将事件路由到 `/ws/dock`；否则路由到 `/ws/drone`。
+
+该事件以 `wireless_link:{deviceSn}` 缓存 60 秒，并比较当前 `mode` 与 `quality`：两者均未变化时不重复推送。质量值缺失或大于 `5` 时同样不推送。因此联调时，单次原始 OSD 带有 `4g_quality` 并不能单独证明 `/ws/dock` 会收到消息，必须同时确认模式为 `1`、机场身份路由正确且缓存值发生变化。
+
 ## P1 OSD 再包装：`businessStatus`
 
 `businessStatus` 不是 DJI Topic 或 P4 编解码字段，而是 P1 在普通 `DEVICE_TELEMETRY` 处理完成后，对 WebSocket OSD 消息 `data`（`InspectionTelemetryDTO`）增加的展示控制字段。它不改变 P2 Data Rule、P3 上行消息或 P4 的 `identifier`/payload 契约。
@@ -56,7 +72,7 @@
 | P3 | `IotEmqxUpstreamProtocol`、`MessageProcessingEngine` 与上行 handler |
 | P4 | `DjiCodecAdapter`、`DjiOsdTopicHandler`、`DjiDrcTopicHandler` |
 
-P1 再包装与状态判定的代码入口：`InspectionDeviceStatusBusinessServiceImpl#handleHostTelemetry`、`#handleSubDeviceTelemetry`、`#handleDrcOsd`，`MonitorBusinessStatusMapper`，以及 common 模块的 `InspectionTelemetryDTO`。
+P1 再包装与状态判定的代码入口：`InspectionDeviceStatusBusinessServiceImpl#handleHostTelemetry`、`#handleSubDeviceTelemetry`、`#handleDrcOsd`、`#updateWirelessLink`，`MonitorBusinessStatusMapper`，以及 common 模块的 `InspectionTelemetryDTO`、`WirelessLinkStatus`。P4 图传字段入口是 `DjiOsdTopicHandler` 与 `DjiMessageSupport#flattenDeviceStatusProperties`。
 
 ## 联调前必验项
 
@@ -65,6 +81,7 @@ P1 再包装与状态判定的代码入口：`InspectionDeviceStatusBusinessServ
 - P4 的机场—无人机身份注册依赖 `update_topo`；重启后先验证其重新建立。
 - 平台状态处理和 Data Rule 消费并行；P1 不得依赖“P2 已先落库”的时序。
 - 新增或调整 `businessStatus` 时，必须分别验证普通机场 OSD、普通无人机 OSD 与 DRC 高频 OSD；不得把 DRC 的空值误当成普通 OSD 的状态缺失，也不得把 P1 展示字段回写为 P4 原始协议字段。
+- 联调机场图传事件时，使用 `biz_code=wireless_link`、`data.mode=1`、`data.quality=<4G quality>` 过滤 `/ws/dock`；同时清除或变更 60 秒缓存中的相同值，以覆盖首次/变化推送路径。
 - EMQX 入口的认证、ACL、订阅 Topic 与 QoS 属运行配置事实，必须单独核实。
 
 相关资料：原始核对文档《机场OSD与设备指令上下行链路梳理》（用户提供，2026-07-24）。
