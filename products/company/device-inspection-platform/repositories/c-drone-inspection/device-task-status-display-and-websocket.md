@@ -1,13 +1,13 @@
 # P1 设备任务状态展示与 WebSocket 推送闭环
 
 > 主题：`/ws/drone`，`biz_code=device_task_status`。  
-> 证据状态：当前代码核对（2026-08-10）；本文描述现状，不是目标设计。
+> 证据状态：当前代码与回归测试核对（2026-08-14）；本文描述现状，不是目标设计。
 
 ## 范围与结论
 
 本文说明监控中心设备列表任务状态消息的触发入口、任务状态来源、载荷组装和 WebSocket 推送边界，并补充 HTTP 首次列表如何与实时消息闭环。
 
-结论先行：设备列表的初始任务信息与实时变更均以 `monitor:device_task_status:{deviceSn}` 快照为收口。旧版 `POST /drone/monitor/list` 和 2.0 `POST /drone/monitor/v2/list` 在组装列表时读取/回源同一任务解析器并返回 `taskInfo`；任务事件则按设备 SN 通过 `/ws/drone` 的 `device_task_status` 增量覆盖卡片。无人机 OSD 仍是常规刷新入口，计划删除/变更、任务控制等路径也会触发无人机刷新；CAMERA 使用独立的固定点位任务解析器和触发入口。
+结论先行：设备列表的初始任务信息与实时变更均以 `monitor:device_task_status:{deviceSn}` 快照为收口。旧版 `POST /drone/monitor/list` 和 2.0 `POST /drone/monitor/v2/list` 在组装列表时读取/回源同一任务解析器并返回 `taskInfo`；任务事件则按设备 SN 通过 `/ws/drone` 的 `device_task_status` 增量覆盖卡片。无人机 OSD 仍是常规刷新入口，计划删除/变更、任务控制等路径也会触发无人机刷新；普通航线任务的暂停态 `SUSPEND` 与执行中统一展示为 `RUNNING(2)`。CAMERA 使用独立的固定点位任务解析器和触发入口。
 
 ## 设备列表初始展示与实时闭环
 
@@ -50,12 +50,12 @@ flowchart TD
     H --> I{机场 ID 存在}
     I -->|否| G
     I -->|是| J[读取机场运行任务缓存]
-    J --> K{普通任务且状态支持}
-    K -->|执行中| L[状态为 RUNNING]
-    K -->|待执行| M[状态为 PENDING]
-    K -->|否| N[查询未来普通待执行任务]
-    N --> O{未来任务存在}
-    O -->|是| M
+    J --> K{普通运行缓存可展示}
+    K -->|执行中或暂停| L[状态为 RUNNING]
+    K -->|待执行或无效| N[查询普通任务候选]
+    N --> O{候选任务存在}
+    O -->|暂停| L
+    O -->|未来待执行| M[状态为 PENDING]
     O -->|否| P[空任务状态]
     L --> Q[组装任务快照]
     M --> Q
@@ -83,11 +83,12 @@ flowchart TD
 任务状态以**机场设备维度**读取，推送目标仍是当前无人机 SN：
 
 1. 读取 `IWaylineRedisService#getRunningTaskId(dockId)`。
-2. 如果缓存任务类型是普通任务 `NORMAL`：
-   - `EnumTaskBizStatus.IN_PROGRESS` → `EnumDeviceTaskStatus.RUNNING`，编码 `2`。
-   - `EnumTaskBizStatus.TO_BE_EXECUTED` → `EnumDeviceTaskStatus.PENDING`，编码 `1`。
-3. 缓存为空、缓存任务是手动任务、或缓存状态不是上述两种时，查询该机场未来执行时间大于当前时间的普通待执行任务：
-   - 查到任务 → `PENDING`。
+2. 缓存记录是非结束普通任务且带 `taskId` 时，回表读取该任务的业务状态：
+   - `EnumTaskBizStatus.IN_PROGRESS` 或 `SUSPEND` → `EnumDeviceTaskStatus.RUNNING`，编码 `2`。
+   - 缓存为 `TO_BE_EXECUTED`、手动任务、终态或无效状态时，不直接展示，进入候选任务回源。
+3. 回源查询该机场的普通任务候选：未来执行时间大于当前时间的 `TO_BE_EXECUTED` 任务，或 `SUSPEND` 任务。查询结果携带仅供后端判定的任务业务状态，不写入 HTTP 或 WebSocket 载荷：
+   - `SUSPEND` → `RUNNING`。
+   - `TO_BE_EXECUTED` → `PENDING`。
    - 查不到任务 → 发送空任务状态，用于清除设备列表残留状态。
 4. 任务存在时补充任务快照字段：计划、任务、执行时间、进度、飞行里程、航线里程和算法识别计数。
 
@@ -101,7 +102,7 @@ flowchart TD
 - 任务结束通常先写入 `ending=true` 并设置短期过期，随后由显式清理删除；因此终态缓存可能短暂存在，但不应视为仍在运行。
 - 缓存至多代表一个当前/最近任务快照，即使其中暂存 `TO_BE_EXECUTED`，也不等于保存了该机场全部未来任务。
 
-未来任务的完整集合仍在任务表中。状态解析只有在运行缓存为空、缓存为手动任务或缓存状态不支持时，才回查该机场 `executeTime > now` 的普通 `TO_BE_EXECUTED` 任务，并按执行时间升序取最早的一条作为 `PENDING`；没有则推送空状态。因此，设备列表任务状态的“未来任务”兜底来自数据库查询，而不是 Redis 运行任务缓存。
+未来任务的完整集合仍在任务表中。状态解析在运行缓存为空、缓存为手动任务或不可展示时，回查该机场的普通任务候选：未来 `TO_BE_EXECUTED` 任务与 `SUSPEND` 任务。按执行时间升序取第一条；暂停任务展示为 `RUNNING`，待执行任务展示为 `PENDING`。因此，设备列表任务状态的数据库兜底不依赖 Redis 运行任务缓存，服务重启或缓存失效后仍不会把暂停任务降为待执行。
 
 ### 无人机 `futureTaskCount` 查询口径
 
@@ -109,22 +110,22 @@ flowchart TD
 
 | 类型 | 聚合维度 | 任务类型 | 时间条件 | 设备关联 |
 |---|---|---|---|---|
-| DRONE | 机场 `dockId` | 普通任务 `task_type = 1` | `wayline_task.execute_time > now` | `wayline_task.device_id` 指向无人机，`manage_device.parent_id` 回溯机场 |
-| CAMERA | CAMERA `deviceId` | 固定点位任务 `task_type = 3` | `wayline_plan.plan_start_time > now` | `fixed_point_task_channel.device_id` 直接指向 CAMERA |
+| DRONE | 机场 `dockId` | 普通任务 `task_type = 1` | `IN_PROGRESS`、`SUSPEND`，或 `TO_BE_EXECUTED` 且 `wayline_task.execute_time > now` | `wayline_task.device_id` 指向无人机，`manage_device.parent_id` 回溯机场 |
+| CAMERA | CAMERA `deviceId` | 固定点位任务 `task_type = 3` | `SUSPEND`，或 `TO_BE_EXECUTED` 且 `wayline_plan.plan_start_time > now` | `fixed_point_task_channel.device_id` 直接指向 CAMERA |
 
-无人机查询过滤未删除、待执行（`task_biz_status = 1`）记录，并按 `aircraft.parent_id` 分组，使用 `COUNT(DISTINCT wt.task_id)` 统计机场下所有无人机的任务数量。该数量在解析运行任务之前先查询，因此当前存在运行任务时，`futureTaskCount` 仍表示其余满足条件的未来普通任务数量；它不是运行任务缓存中的字段，也不是按当前无人机 SN 单独计数。
+无人机查询按 `aircraft.parent_id` 分组，使用 `COUNT(DISTINCT wt.task_id)` 聚合未删除的运行、暂停和未来待执行普通任务。解析器会从总数中扣除当前卡片已展示的任务，因此 `futureTaskCount` 表示该机场剩余任务池数量；它不是运行任务缓存中的字段，也不是按当前无人机 SN 单独计数。
 
-代码证据：`WaylineTaskMapper.xml#selectFutureNormalTaskCounts`、`DeviceTaskStatusNotifier#resolveAndCacheBatch`、`DeviceTaskStatusNotifier#futureNormalTaskCount`。CAMERA 对应 `WaylineTaskMapper.xml#selectFutureFixedPointTaskCounts` 和 `CameraTaskStatusNotifier#futureCount`。
+代码证据：`WaylineTaskMapper.xml#selectNormalTaskPoolCounts`、`DeviceTaskStatusNotifier#resolveAndCacheBatch`、`DeviceTaskStatusNotifier#normalTaskPoolCount`。CAMERA 对应 `WaylineTaskMapper.xml#selectFutureFixedPointTaskCounts` 和 `CameraTaskStatusNotifier#futureCount`。
 
 任务状态枚举当前只有：
 
 | `deviceTaskStatus` | 描述 | 来源 |
 |---|---|---|
 | `1` | 任务待执行 | 普通任务待执行或未来待执行任务 |
-| `2` | 任务执行中 | 普通任务运行缓存为 `IN_PROGRESS` |
+| `2` | 任务执行中 | 普通任务为 `IN_PROGRESS` 或 `SUSPEND`；缓存缺失时由任务表回源判定 |
 | `null` | 空状态 | 没有运行任务且没有未来待执行普通任务 |
 
-完成、终止、失败、暂停等任务终态不会直接映射为新的设备任务状态；它们通常通过运行任务缓存失效/清理后，下一次 OSD 触发重新解析为空状态或未来待执行状态。
+完成、终止、失败等终态不会直接映射为新的设备任务状态；它们通常通过运行任务缓存失效/清理后，下一次 OSD 触发重新解析为空状态或未来待执行状态。暂停不是终态，始终归并为设备任务执行中。
 
 ## 推送载荷与设备列表关系
 
@@ -147,9 +148,10 @@ flowchart TD
 
 - **正常实时路径：** 无人机 OSD 到达 → OSD 缓存更新 → 任务状态快照解析 → `device_task_status` 推送。
 - **未接入任务触发器的状态变更：** 当前不会单独触发 `device_task_status`；需等下一条无人机 OSD 才会刷新。已接入计划删除/变更和任务控制的路径会在事务提交后刷新关联无人机，但不是所有任务状态转移都已由本文证明覆盖。
+- **存量暂停任务刷新：** `monitor.task-status.refresh-suspended-on-startup` 默认 `false`；仅在一个 P1 实例启动时显式设为 `true`，启动器查询普通 `SUSPEND` 任务、按机场去重并调用 `notifyByDockId` 覆写快照和推送。刷新完成后应恢复为 `false`。
 - **设备离线：** 当前在线/离线消息和顶部业务状态链路不会直接触发 `device_task_status`；若设备列表需要离线时清理任务状态，需另行设计消息契约或补偿入口。
 - **任务状态缓存/数据库读取异常：** `DeviceTaskStatusNotifier` 当前没有独立异常降级；异常可能影响当前 OSD 消息处理，需结合上游消费重试策略排查。
-- **没有专属对账任务：** `MonitorBusinessStatusReconciliationTask` 只负责顶部业务统计，不负责 `device_task_status` 的补发。
+- **没有常驻专属对账任务：** `MonitorBusinessStatusReconciliationTask` 只负责顶部业务统计，不负责 `device_task_status` 的补发；存量暂停任务仅通过上述受控启动刷新处理。
 
 ## CAMERA 任务状态扩展（已实施）
 
@@ -179,11 +181,11 @@ WHERE wp.is_deleted = 0
   AND fptc.is_deleted = 0
   AND fptc.device_id = #{cameraDeviceId}
   AND wt.task_type = 3
-  AND wt.task_biz_status = 1
-  AND wp.plan_start_time > NOW()
+  AND ((wt.task_biz_status = 1 AND wp.plan_start_time > NOW())
+       OR wt.task_biz_status = 6)
 ```
 
-其中 `3` 对应固定点位任务，`1` 对应待执行；最终实现应优先使用枚举参数或 MyBatis-Plus 条件，避免把数字散落在 SQL 中。若产品定义“未来”按任务执行时间而不是计划开始时间，应改用固定点位任务实际使用的计划时间字段并补充对应测试。
+其中 `3` 对应固定点位任务，`1` 对应待执行，`6` 对应暂停。当前 CAMERA 解析器将该候选统一填充为 `PENDING`；普通航线 DRONE 的暂停展示为 `RUNNING` 规则不适用于 CAMERA。最终实现应优先使用枚举参数或 MyBatis-Plus 条件，避免把数字散落在 SQL 中。若产品定义“未来”按任务执行时间而不是计划开始时间，应改用固定点位任务实际使用的计划时间字段并补充对应测试。
 
 ### 触发和读取设计
 
@@ -224,10 +226,11 @@ flowchart TD
 ## 证据
 
 - 触发入口：`InspectionDeviceStatusBusinessServiceImpl#handleSubDeviceTelemetry`。
-- 状态解析和推送：`DeviceTaskStatusNotifier#notifyDeviceTaskStatus`、`#resolveStatus`。
+- 状态解析和推送：`DeviceTaskStatusNotifier#notifyDeviceTaskStatus`、`#resolveStatus`、`#resolveFallbackDeviceTaskStatus`。
+- 存量暂停刷新：`SuspendedTaskStatusRefreshRunner`、`DeviceTaskStatusNotifier#refreshSuspendedTaskStatuses`。
 - 业务码：`BizCodeEnum.DEVICE_TASK_STATUS`。
 - 载荷：`DeviceTaskStatusPushDTO`。
 - 初始列表：`FlightMonitorController#getMonitorDeviceList` → `MonitorDeviceServiceImpl#getMonitorDeviceList` → `MonitorDeviceListDTO#taskInfo`；2.0 入口为 `getMonitorDeviceV2List` → `MonitorDeviceV2ListDTO#taskInfo`。
 - 旧版列表任务批量解析：`MonitorDeviceServiceImpl#enrichLegacyTaskStatus` → `DeviceTaskStatusNotifier#resolveAndCacheBatch`。
 - 通道：`IWebSocketMessageService#sendBatch(String, ...)`、`WebSocketMessageServiceImpl#sendBatch(String, ...)`。
-- 测试：`DeviceTaskStatusNotifierTest`、`InspectionDeviceStatusBusinessServiceImplTest`。
+- 测试：`DeviceTaskStatusNotifierTest`、`SuspendedTaskStatusRefreshRunnerTest`、`InspectionDeviceStatusBusinessServiceImplTest`。
