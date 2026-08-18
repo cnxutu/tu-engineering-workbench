@@ -1,4 +1,4 @@
 interface:
   display_name: "TU · Load P1-P4 Cross-Service Context"
   short_description: "Understand verified device-inspection flows"
-  default_prompt: "Load the minimum P1-P4 context for this cross-service change."
+  default_prompt: "Use $tu-loading-device-inspection-cross-service-context to load the minimum P1-P4 context for this cross-service change."

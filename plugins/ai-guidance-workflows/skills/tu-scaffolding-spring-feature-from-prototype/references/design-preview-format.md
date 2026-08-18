@@ -6,19 +6,21 @@ Use the smallest sections needed, but preserve decisions affecting public API or
 
 - Goal and acceptance outcome.
 - Target repository and module.
-- Prototype pages and comparable code inspected.
-- Non-goals and inaccessible evidence.
+- Prototype sources, page/frame coverage, variants, and comparable code inspected.
+- Non-goals, inaccessible or unreadable regions, and contradictions affecting confidence.
 
 ## 2. Prototype-to-contract traceability
 
-Include the field/action traceability table from the extraction checklist. Highlight open decisions rather than hiding them in prose.
+Include the field/action traceability table from the extraction checklist. Account explicitly for frontend-only, computed, joined, and unresolved elements; highlight open decisions rather than hiding them in prose.
+
+Add the contradiction and coverage log when frames disagree or evidence is missing. State which endpoints, schemas, or rules are unaffected and which remain blocked.
 
 ## 3. Endpoint inventory
 
 | Operation | Method and path | Authorization/data scope | Request | Response | Failure semantics |
 | --- | --- | --- | --- | --- | --- |
 
-For each request and response schema, state field type, requiredness, validation, enum values, example, and whether the field is create-only, update-only, output-only, or shared.
+For each request and response schema, state field type, requiredness, validation, enum wire values and labels, example, null/clear behavior, and whether the field is create-only, update-only, query-only, output-only, or shared. Call out identifier, date/time, precision/unit, upload, pagination, and sorting semantics when applicable.
 
 ## 4. Data design
 
@@ -30,6 +32,8 @@ State primary/foreign keys, unique constraints, indexes tied to real query paths
 ## 5. Business flow
 
 Describe the normal flow and only the key failure paths. Include validation, not-found, conflict, permission, transaction, and concurrency semantics when applicable.
+
+For state-changing actions, state allowed source state, target state, authorization/data scope, idempotency or retry behavior, and conflict handling when applicable.
 
 ## 6. Decision log
 

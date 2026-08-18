@@ -1,6 +1,6 @@
 ---
 name: tu-scaffolding-spring-feature-from-prototype
-description: Use when a user provides a product prototype URL, image, screenshot, or annotated wireframe and wants Codex to autonomously turn it into a Spring Boot backend design and implementation, including API contracts, database changes, persistence models, layered code, basic business logic, Swagger/OpenAPI annotations, and an Apifox-ready interface definition.
+description: Use when a user provides a product prototype URL, image set, screenshot, exported PDF, or annotated wireframe and wants Codex to extract backend requirements, produce a Spring Boot API/data design, or implement the feature with repository-conformant contracts, database changes, layered code, business rules, tests, Swagger/OpenAPI annotations, and an Apifox-ready interface definition.
 ---
 
 # Scaffolding a Spring Feature from a Prototype
@@ -9,22 +9,35 @@ Turn prototype evidence into a repository-conformant Spring Boot feature through
 
 ## Accept minimal input and start
 
-Require only a prototype source: an accessible URL, attached image, or local image path. Treat a one-line goal and target project/module as optional hints.
+Require only a prototype source: an accessible URL, attached image or PDF, or local file path. Treat a one-line goal and target project/module as optional hints.
 
-1. Open or inspect the prototype immediately with the available browser, connector, or image-reading capability. Follow an accessible prototype link instead of asking the user to restate its visible contents.
-2. Infer the target repository and module from the active workspace, current project scope, prototype terminology, and comparable code. If exactly one target is not identifiable, ask one focused target question; do not request a full task template.
-3. Infer operations, non-goals, acceptance behavior, project conventions, and verification commands from the prototype and current repository evidence. Do not ask the user to repeat `c/r/p/v` fields or the rules already encoded here.
-4. Default to the full workflow: analyze, inspect the repository, present the decision preview, implement after the required decision, then verify. Stop after the preview only when the user explicitly requests design-only output.
-5. If the prototype source cannot be accessed or read, state the exact access problem and request only the smallest replacement, such as a shareable URL or the affected screenshot.
-6. Read the target repository and nearest `AGENTS.md`. When P0 is primary, also read `ai-guidance/AGENTS.md`, `core/rules/development.md`, `core/skills/feature-development.md`, and the Java, architecture, and database rules it references.
+1. Open or inspect the prototype immediately with the available browser, connector, PDF, or image-reading capability. Follow an accessible prototype link instead of asking the user to restate its visible contents.
+2. Establish a source inventory before interpreting details: source identifier, page/frame name, order, variant or revision when visible, and readable or missing regions. Do not treat a file name, page title, OCR output, or prototype annotation as sufficient visual evidence by itself.
+3. Infer the target repository and module from the active workspace, current project scope, prototype terminology, and comparable code. If exactly one target is not identifiable, ask one focused target question; do not request a full task template.
+4. Infer operations, non-goals, acceptance behavior, project conventions, and verification commands from the prototype and current repository evidence. Do not ask the user to repeat `c/r/p/v` fields or rules already encoded here.
+5. Default to the full workflow: analyze, inspect the repository, present the decision preview, implement after the decision gate, then verify. Stop after the preview only when the user explicitly requests design-only output.
+6. If a dynamic or authenticated prototype cannot expose its frames, request the smallest usable export, such as the affected screenshots or PDF. State the exact access or legibility problem instead of guessing from surrounding metadata.
+7. Read the target repository and nearest `AGENTS.md`. When P0 is primary, also read `ai-guidance/AGENTS.md`, `ai-guidance/core/rules/development.md`, `ai-guidance/core/skills/feature-development.md`, and the Java, architecture, and database rules it references.
 
 ## Extract prototype evidence
 
-1. Read every supplied prototype image at a usable resolution. Establish page order and group list, detail, create, edit, and state-action views.
-2. Extract visible fields, actions, filters, pagination, sorting, labels, required markers, defaults, enum options, help text, and page relationships.
-3. Build traceability from prototype location to UI field, API field, persistence field, rule, and evidence status. Use [prototype-extraction-checklist.md](references/prototype-extraction-checklist.md).
-4. Separate **verified prototype evidence**, **verified repository convention**, **inference**, and **open decision**. Do not infer authorization, tenant scope, delete semantics, uniqueness, state transitions, concurrency, idempotency, cascades, or audit behavior from UI appearance alone.
-5. If an image is missing or illegible, identify the exact missing region and continue with unaffected evidence. Do not invent its contents.
+1. Read every supplied page or frame at a usable resolution. For composite boards or dense screens, inspect both the full frame and targeted crops; use OCR only as an aid and verify its result against the pixels.
+2. Establish page order and relationships among entry, list, detail, create, edit, dialog, confirmation, and state-action views. Reconcile desktop/mobile variants, repeated components, and before/after states instead of counting each frame as an independent feature.
+3. Extract visible fields, actions, filters, pagination, sorting, labels, required markers, displayed values, placeholders, defaults, enum labels, help text, loading/empty/error states, and conditional visibility.
+4. Distinguish literal labels, example records, placeholders, design annotations, and confirmed defaults. Do not convert sample text into a default, a display label into a stable code, or a disabled control into an authorization rule without supporting evidence.
+5. Compare repeated fields and actions across screens. Record contradictions in naming, requiredness, option sets, editability, state, and success/failure behavior; do not silently choose one frame as authoritative.
+6. Build traceability from prototype location to UI field/action, backend disposition, API field or endpoint, persistence field, rule, and evidence status. Account explicitly for frontend-only, computed, joined, or unknown elements. Use [prototype-extraction-checklist.md](references/prototype-extraction-checklist.md).
+7. Separate **verified prototype evidence**, **verified repository convention**, **inference**, and **open decision**. Do not infer authorization, tenant scope, delete semantics, uniqueness, state transitions, concurrency, idempotency, cascades, audit behavior, time-zone policy, monetary precision, upload lifecycle, or enum wire values from UI appearance alone.
+8. If an image is missing or illegible, identify the exact missing region and continue with unaffected evidence. Block only the contract or behavior that depends on the missing evidence.
+
+## Translate UI evidence into backend semantics
+
+1. Identify backend-affecting user outcomes before proposing endpoints. Do not create one endpoint per button, one request field per visible value, or one database column per table/detail item.
+2. Classify each element as input, output, query criterion, command, navigation-only, presentation-only, computed, joined, or unresolved. Keep create, update, query, and response models asymmetric when the evidence requires it.
+3. Resolve types and wire semantics from repository conventions and explicit evidence: identifier representation, enum codes versus labels, date/time and time zone, decimal precision and units, nullability, list ordering, upload/reference lifecycle, and pagination or sorting semantics.
+4. Treat filters and search boxes as UI evidence that a query capability exists, not proof of exact match, fuzzy match, case sensitivity, combination logic, default sort, or index strategy.
+5. Model state-changing actions as business commands or state transitions only after verifying allowed source states, target states, authorization, concurrency, idempotency, and failure behavior.
+6. Run a coverage pass before the design preview: every in-scope page is inventoried; every backend-relevant field/action has a disposition; every contradiction and missing region is recorded; every material inference is either repository-verified or listed as a decision.
 
 ## Verify repository conventions
 
@@ -53,6 +66,8 @@ Use [design-preview-format.md](references/design-preview-format.md) and keep it 
 
 Treat an explicit, current, user-approved API/database specification as satisfying the decision gate. Otherwise ask only about decisions that materially change behavior, public contracts, data semantics, security, or scope. Batch related blocking decisions into one concise confirmation. Resolve low-risk details from verified repository conventions and do not turn minor naming choices into approval gates.
 
+If no material open decision remains and the user requested implementation, continue without asking for ceremonial approval. If a material decision remains, do not implement the affected contract, migration, or security behavior until it is resolved; continue independent analysis and implementation where safe.
+
 ## Implement the confirmed feature
 
 1. Implement the smallest confirmed behavior using the comparable feature and existing abstractions.
@@ -60,7 +75,8 @@ Treat an explicit, current, user-approved API/database specification as satisfyi
 3. Keep protocol adaptation and validation in the Controller boundary, business rules in the service/application layer, and persistence details in the repository layer.
 4. Implement CRUD operations only when supported by the confirmed contract. Preserve authorization, tenancy, logical deletion, auditing, transaction, pagination, and error conventions.
 5. Add Swagger/OpenAPI annotations to the API and schema models using the project's installed library. Document summaries, descriptions, requiredness, formats, enum values, examples, and response shapes accurately; keep Bean Validation and documentation consistent.
-6. Do not add speculative abstractions, future-proof fields, silent fallbacks, fake business rules, or unrelated refactors.
+6. Preserve traceability in code review terms: each endpoint, public field, persistence change, validation rule, and state transition must map to prototype evidence, an approved decision, or a verified repository convention.
+7. Do not add speculative abstractions, future-proof fields, silent fallbacks, fake business rules, or unrelated refactors.
 
 ## Verify the deliverable
 

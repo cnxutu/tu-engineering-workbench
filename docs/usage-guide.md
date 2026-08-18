@@ -65,7 +65,7 @@ codex plugin add ai-guidance-workflows@tu-devkit
 | --- | --- |
 | `tu-diagnosing-spring-backend-incidents` | Spring Boot 异常、消息处理失败、数据不一致、性能退化或未知根因的线上事故。 |
 | `tu-loading-device-inspection-cross-service-context` | P1–P4 的 API、消息、数据归属、协议、MQTT、OSD、DJI 或上/下行链路变更前的全局理解。 |
-| `tu-scaffolding-spring-feature-from-prototype` | 从产品原型图提取接口与数据需求，先确认契约，再按目标仓库约定生成 Spring Boot 分层代码、迁移 SQL 和 Swagger/OpenAPI 文档。 |
+| `tu-scaffolding-spring-feature-from-prototype` | 从多页原型、截图或 PDF 建立可追溯的视觉证据，识别冲突与待决语义，再按目标仓库约定设计或实现 Spring Boot 接口、数据模型、迁移 SQL 和 Swagger/OpenAPI 文档。 |
 
 ### 与 Compact Syntax 的关系
 
