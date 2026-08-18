@@ -1,0 +1,20 @@
+repository: c-gateway
+product: company/device-inspection-platform
+product_manifest: ../product.yaml
+product_index: ../index.md
+guidance_home:
+  resolution: AI_GUIDANCE_HOME-or-explicit-repository-config
+local_instructions:
+  - AGENTS.md
+knowledge_update:
+  assess_cross_service_facts: true
+role: 巡检系统统一网关
+pending_verification:
+  - route-configuration
+  - authentication-and-authorization-boundary
+  - downstream-service-contracts
+evidence_sources:
+  - user-confirmed-service-scope
+notes: 服务职责由用户在 2026-08-18 确认；当前 README 仅包含配置说明，具体实现边界待通过代码和配置核实。
+unknowns:
+  - deployment

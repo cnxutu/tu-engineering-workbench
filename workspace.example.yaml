@@ -31,6 +31,21 @@ repositories:
     path: <set-local-p4-path>
     product: company/device-inspection-platform
     role: DJI 协议解析、物模型转换与设备能力映射
+  - code: P5
+    repository: c-gateway
+    path: <set-local-p5-path>
+    product: company/device-inspection-platform
+    role: 巡检系统统一网关
+  - code: P6
+    repository: c-system
+    path: <set-local-p6-path>
+    product: company/device-inspection-platform
+    role: RBAC、基础用户与系统管理服务
+  - code: P7
+    repository: c-tag
+    path: <set-local-p7-path>
+    product: company/device-inspection-platform
+    role: 树模型、标签资源关联与标签数据权限服务
   - code: K1
     repository: knowledge-hub
     path: <set-local-k1-path>

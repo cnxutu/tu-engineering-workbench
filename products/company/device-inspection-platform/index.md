@@ -2,9 +2,9 @@
 
 > **当前维护边界：设备数据上行与设备指令下行。** 本产品知识包暂不维护设备在线状态、巡检任务、媒体的详细领域资料、部署拓扑、完整领域模型或全量协议资料；架构总览只标注这些能力的服务边界，具体事实必须以目标仓库代码、契约和运行配置核实。
 
-## 当前已验证范围
+## 当前已登记服务
 
-设备消息与指令跨 P1–P4 的最小职责边界如下：
+无人机巡检平台的已登记服务职责如下。其中设备消息与指令主链路仅覆盖 P1–P4；P5 是系统统一网关，P6/P7 是平台公共服务，尚未在本知识包中登记为该主链路的跳点。
 
 | 服务 | 当前链路中的职责 |
 | --- | --- |
@@ -12,6 +12,9 @@
 | P2 `c-iot-server` | IoT 消息处理、Data Rule 投递与下行服务调用。 |
 | P3 `c-iot-gateway` | 协议接入、设备连接与上/下行转发。 |
 | P4 `ad-iot-codec-adapter-dji` | P3 进程内 DJI 编解码与协议映射，不承担业务编排。 |
+| P5 `c-gateway` | 巡检系统统一网关；具体路由、鉴权和下游服务契约待核实。 |
+| P6 `c-system` | RBAC、基础用户信息与系统管理能力。 |
+| P7 `c-tag` | 树模型、标签资源关联与标签维度的数据权限能力；不拥有接入业务系统的资源本体。 |
 
 当前核心证据覆盖设备消息上行和设备指令下行两条链路；架构页另外标注流媒体边界。当前代码、契约、配置和测试仍优先于本页。
 
@@ -32,6 +35,9 @@
 - P3 的协议实例、多协议接入、`protocolCodecId` 或 P4 集成：读 [P3 协议实例与 Codec 选择](repositories/c-iot-gateway/protocol-instance-and-codec-selection.md)。
 - P3 的上行转发、下行订阅、连接、编码或回复模式：读 [P3 网关上/下行桥接](repositories/c-iot-gateway/gateway-upstream-downstream-bridge.md)。
 - P4 的 DJI Topic、字段、identifier、命令或回复映射：读 [P4 DJI 协议映射](repositories/ad-iot-codec-adapter-dji/dji-adapter-mapping.md)。
+- P5 的统一入口、路由或鉴权问题：从 `c-gateway` 仓库的 `README.md` 和局部 `AGENTS.md` 开始核实。
+- P6 的用户、部门、岗位、角色、权限或系统管理能力：从 `c-system` 仓库的 `README.md` 和局部 `AGENTS.md` 开始核实。
+- P7 的标签树、资源关联或标签维度数据权限能力：从 `c-tag` 仓库的 `README.md` 和局部 `AGENTS.md` 开始核实。
 - DJI 无人机行业术语、HMS、OSD、DRC 与姿态角语义：读 [DJI 无人机领域知识](context/domain/index.md)。
 - P1-P4 技术栈、中间件、职责边界、消息/指令/视频流媒体架构与问题定位范围：读 [P1-P4 技术栈与系统架构](architecture/p1-p4-technology-and-system-architecture.md)。
 

@@ -13,6 +13,9 @@
 | `P2` | `c-iot-server`：IoT 服务 | 本机工作区映射 |
 | `P3` | `c-iot-gateway`：协议与连接入口 | 本机工作区映射 |
 | `P4` | `ad-iot-codec-adapter-dji`：DJI 编解码适配 | 本机工作区映射 |
+| `P5` | `c-gateway`：巡检系统统一网关 | 本机工作区映射 |
+| `P6` | `c-system`：RBAC 与基础用户信息服务 | 本机工作区映射 |
+| `P7` | `c-tag`：树模型与标签资源服务 | 本机工作区映射 |
 | `K1` | `knowledge-hub`：Knowledge Hub 后端 | 待登记 |
 | `K2` | `knowledge-web`：Knowledge Hub 前端 | 待登记 |
 | `K5` | `tu-language-lab`：语言学习与快速 Demo 运行 | 本机工作区映射 |

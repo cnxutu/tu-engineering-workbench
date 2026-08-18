@@ -1,0 +1,20 @@
+repository: c-system
+product: company/device-inspection-platform
+product_manifest: ../product.yaml
+product_index: ../index.md
+guidance_home:
+  resolution: AI_GUIDANCE_HOME-or-explicit-repository-config
+local_instructions:
+  - AGENTS.md
+knowledge_update:
+  assess_cross_service_facts: true
+role: RBAC、基础用户与系统管理服务
+verified_responsibilities:
+  - user-management
+  - organization-management
+  - role-and-permission-management
+evidence_sources:
+  - README.md
+unknowns:
+  - integration-contracts-with-inspection-platform
+  - deployment

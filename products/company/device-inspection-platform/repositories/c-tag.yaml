@@ -1,0 +1,22 @@
+repository: c-tag
+product: company/device-inspection-platform
+product_manifest: ../product.yaml
+product_index: ../index.md
+guidance_home:
+  resolution: AI_GUIDANCE_HOME-or-explicit-repository-config
+local_instructions:
+  - AGENTS.md
+knowledge_update:
+  assess_cross_service_facts: true
+role: 树模型、标签资源关联与标签数据权限服务
+verified_responsibilities:
+  - tag-tree-management
+  - resource-tag-association
+  - tag-dimension-data-permission
+boundaries:
+  - does-not-own-integrated-business-resource-entities
+evidence_sources:
+  - README.md
+unknowns:
+  - integration-contracts-with-inspection-platform
+  - deployment
