@@ -21,7 +21,19 @@ flowchart LR
 
 `c_tag_relation` 不承载项目空间池、项目空间、项目成员或项目角色，避免通用标签关系与项目业务关系形成双重真相。
 
-项目节点只按结构识别：`parent_code = 0003` 是项目集；其直属子节点是项目。`config` 仅存储 JSON 扩展字段，P1 当前只维护 `description`，更新时保留未知扩展字段；P7 不再使用 `config.type` 初始化项目根或识别项目节点。
+项目节点只按结构识别：`parent_code = 0003` 是项目集；其直属子节点是项目。`config` 仅存储 JSON 扩展字段：项目集当前维护 `description`，项目还维护 `longitude`、`latitude`；更新时保留未知扩展字段。P7 不再使用 `config.type` 初始化项目根或识别项目节点。
+
+## 面向前端的门面契约
+
+项目管理页面只调用 P1 `ProjectManagementController` 的统一保存与详情接口；不公开成员、项目集角色、项目集空间或项目空间的原子页面操作。项目集和项目的创建、编辑各通过一次请求提交基本信息及关系编码集合。
+
+| 页面能力 | P1 输出边界 | 前端组合责任 |
+| --- | --- | --- |
+| 项目集列表/详情 | 项目集卡片、基本信息、`members(userId, roleCode, projectCodes)` 与空间编码 | 按 `userId` 调用 P6 补齐姓名、账号和部门。 |
+| 项目列表 | 项目卡片及中心点 `longitude`、`latitude` | 使用坐标渲染项目地图标记。 |
+| 项目编辑详情 | 所属项目集编码和名称、成员选择状态、可用/已选/禁用空间编码 | 复用 P1 空间树接口，按 `availableSpaceCodes` 过滤并用 `spaceCodes`、`disabledSpaceCodes` 标记选择和禁用状态。 |
+
+`disabledSpaceCodes` 仅包含同项目集其他项目已绑定的空间；当前项目已选空间不会被标记为禁用，以便页面取消选择。列表和详情响应不得透传 P7 `TagDTO` 或 P1 持久化实体。
 
 ## 表设计与关键关系
 
@@ -56,33 +68,17 @@ erDiagram
 
 四张关系表均继承 P1 `BaseEntity`，必须完整包含 `create_user`、`create_time`、`update_user`、`update_time` 和 `is_deleted`。前两个用户审计字段保存系统操作人名称；项目集角色池和项目成员另使用 `user_id` 保存项目业务用户 ID。所有唯一键将 `is_deleted` 纳入约束，逻辑删除后允许按业务规则重新建立同一关系。
 
-## 关键时序
+## 保存与删除约束
 
-```mermaid
-sequenceDiagram
-  participant U as 管理员
-  participant P1 as P1 项目管理
-  participant DB as P1 数据库
-  U->>P1: 绑定项目空间(projectCode, spaceCode)
-  P1->>P1: 从 P7 确认项目父节点是 0003 的直属子节点
-  P1->>DB: 锁定 project_set_space_pool 空间记录
-  P1->>DB: 校验空间在所属项目集池且未绑定其他项目
-  P1->>DB: 写 project_space_binding
-  P1-->>U: 提交成功
-```
+统一保存将请求中的成员、项目授权和空间编码作为目标集合同步到 P1 关系表；项目创建和更新还同步项目中心点配置。创建项目以请求中的 `projectSetCode` 确定所属项目集；更新项目时以路径中的既有项目确定所属项目集，请求中的 `projectSetCode` 不参与变更。
 
-空间池移除也锁定同一池记录，再检查项目空间绑定，因此不会产生“池已移除但项目同时绑定”的并发结果。唯一索引是最终并发兜底。
+前端仅可删除空项目或空项目集：项目存在成员或空间绑定时不可删除；项目集存在直属项目、角色或空间池关系时不可删除。不提供项目集/项目的级联删除、关闭/重新开启或关系级联解除接口。
 
-## 生命周期约束
-
-- 移除项目集角色前，如用户仍在任一子项目中，拒绝；先移除项目成员。
-- 移除项目集空间前，如空间仍被项目绑定，拒绝；先解除项目空间。
-- 删除项目须无成员和空间绑定；删除项目集须无项目、角色和空间池关系。
-- P1 不再把空间关系投影到 P7，故不需要 outbox。项目树的创建、编辑、删除是同步 P7 标签操作；删除前 P1 关系已清空，不构成跨服务双写。
+P1 不再把空间关系投影到 P7，故不需要 outbox。项目树的创建、编辑、删除是同步 P7 标签操作；删除仅适用于 P1 关系已清空的节点，不构成跨服务双写。
 
 ## 当前实现与待验证
 
-**已实现（本地代码变更，尚未发布）**：P1 四张业务关系表、项目管理门面及 Controller；空间池和项目空间均在 P1 本地事务内处理。P7 保留项目根迁移与 `PROJECT_ROOT_CODE`。
+**已实现（本地代码变更，尚未发布）**：P1 四张业务关系表、项目管理门面及页面 Req/Resp；项目集和项目统一保存，项目列表包含中心点，项目详情包含项目集名称及空间选择状态。P7 保留项目根迁移与 `PROJECT_ROOT_CODE`。
 
 **待发布 / 待确认**：
 
@@ -93,5 +89,5 @@ sequenceDiagram
 ## 证据
 
 - P1：`b-inspection-platform-core/.../service/project/impl/ProjectManagementServiceImpl.java`、`controller/admin/project/ProjectManagementController.java`。
-- P1：`b-inspection-platform-common/.../project/` 与 `docs/sql/v2.1.0_add_project_management.sql`。
+- P1：`b-inspection-platform-common/.../project/`（实体、页面 Req/Resp）与 `docs/sql/v2.1.0_add_project_management.sql`。
 - P7：`c-tag-api/.../constants/TagCodes.java`、`c-tag-bootstrap/.../V1.2.0__project_root.sql` 与 `V1.2.1__clear_project_type_config.sql`。
