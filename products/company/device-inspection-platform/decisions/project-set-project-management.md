@@ -8,18 +8,20 @@ P7 仅保存项目树；P1 是人员池、空间池、项目成员和项目空�
 flowchart LR
   P1[P1 项目管理门面] -->|创建 / 编辑 / 删除项目节点| P7[P7 c_tag 项目树]
   P1 --> DB[(P1 项目关系表)]
-  P7 --> PS[PROJECT_ROOT → PROJECT_SET → PROJECT]
+  P7 --> PS[0003 项目根 → 项目集 → 项目]
 ```
 
 | 范围 | 归属 | 约束 |
 | --- | --- | --- |
-| 项目树节点 | P7 `c_tag` | `0003` 项目根 → `PROJECT_SET` → `PROJECT`；根节点只初始化，不允许业务编辑或删除。 |
+| 项目树节点 | P7 `c_tag` | `0003` 项目根 → 直属项目集 → 直属项目；根节点只初始化，不允许业务编辑或删除，节点类型不写入 `config`。 |
 | 项目集人员池与角色 | P1 `project_set_user_role` | 仅允许 `INS_PM_ADMIN`、`INS_PM_STAFF`；同一用户可拥有两个角色。 |
 | 项目集空间池 | P1 `project_set_space_pool` | 活动记录的 `space_code` 全局唯一，空间仅能进入一个项目集池。 |
 | 项目成员 | P1 `project_member` | 只保存项目和用户；角色继承所属项目集，不重复保存角色。 |
 | 项目空间 | P1 `project_space_binding` | 活动记录的 `space_code` 全局唯一，一个项目可选多个池内空间。 |
 
 `c_tag_relation` 不承载项目空间池、项目空间、项目成员或项目角色，避免通用标签关系与项目业务关系形成双重真相。
+
+项目节点只按结构识别：`parent_code = 0003` 是项目集；其直属子节点是项目。`config` 仅存储 JSON 扩展字段，P1 当前只维护 `description`，更新时保留未知扩展字段；P7 不再使用 `config.type` 初始化项目根或识别项目节点。
 
 ## 表设计与关键关系
 
@@ -62,7 +64,7 @@ sequenceDiagram
   participant P1 as P1 项目管理
   participant DB as P1 数据库
   U->>P1: 绑定项目空间(projectCode, spaceCode)
-  P1->>P1: 从 P7 确认项目父节点为 PROJECT_SET
+  P1->>P1: 从 P7 确认项目父节点是 0003 的直属子节点
   P1->>DB: 锁定 project_set_space_pool 空间记录
   P1->>DB: 校验空间在所属项目集池且未绑定其他项目
   P1->>DB: 写 project_space_binding
@@ -90,6 +92,6 @@ sequenceDiagram
 
 ## 证据
 
-- P1：`b-inspection-platform-core/.../service/project/ProjectManagementService.java`、`controller/admin/project/ProjectManagementController.java`。
+- P1：`b-inspection-platform-core/.../service/project/impl/ProjectManagementServiceImpl.java`、`controller/admin/project/ProjectManagementController.java`。
 - P1：`b-inspection-platform-common/.../project/` 与 `docs/sql/v2.1.0_add_project_management.sql`。
-- P7：`c-tag-api/.../constants/TagCodes.java` 与 `c-tag-bootstrap/.../V1.2.0__project_root.sql`。
+- P7：`c-tag-api/.../constants/TagCodes.java`、`c-tag-bootstrap/.../V1.2.0__project_root.sql` 与 `V1.2.1__clear_project_type_config.sql`。

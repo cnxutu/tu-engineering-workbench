@@ -1,0 +1,4 @@
+interface:
+  display_name: "TU - Scaffold Spring Feature from Prototype"
+  short_description: "Turn prototypes into verified Spring API scaffolds"
+  default_prompt: "Use $tu-scaffolding-spring-feature-from-prototype with this prototype: [URL or attachment]. Optional goal: [one sentence]."

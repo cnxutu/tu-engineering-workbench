@@ -12,7 +12,10 @@ grep -Fq '"name": "ai-guidance-workflows"' "${PLUGIN_ROOT}/.codex-plugin/plugin.
 grep -Fq '"name": "tu-devkit"' "${MARKETPLACE}"
 grep -Fq '"path": "./plugins/ai-guidance-workflows"' "${MARKETPLACE}"
 
-for skill in tu-diagnosing-spring-backend-incidents tu-loading-device-inspection-cross-service-context; do
+for skill in \
+  tu-diagnosing-spring-backend-incidents \
+  tu-loading-device-inspection-cross-service-context \
+  tu-scaffolding-spring-feature-from-prototype; do
   skill_file="${PLUGIN_ROOT}/skills/${skill}/SKILL.md"
   ui_file="${PLUGIN_ROOT}/skills/${skill}/agents/openai.yaml"
   [[ -f "${skill_file}" && -f "${ui_file}" ]]

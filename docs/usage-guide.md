@@ -65,6 +65,7 @@ codex plugin add ai-guidance-workflows@tu-devkit
 | --- | --- |
 | `tu-diagnosing-spring-backend-incidents` | Spring Boot 异常、消息处理失败、数据不一致、性能退化或未知根因的线上事故。 |
 | `tu-loading-device-inspection-cross-service-context` | P1–P4 的 API、消息、数据归属、协议、MQTT、OSD、DJI 或上/下行链路变更前的全局理解。 |
+| `tu-scaffolding-spring-feature-from-prototype` | 从产品原型图提取接口与数据需求，先确认契约，再按目标仓库约定生成 Spring Boot 分层代码、迁移 SQL 和 Swagger/OpenAPI 文档。 |
 
 ### 与 Compact Syntax 的关系
 
@@ -85,5 +86,13 @@ g: 支持新设备的状态上报和控制指令
 i: P1、P2、P3、P4
 p: 先核实上下行链路、契约与发布依赖，再给出方案
 ```
+
+```text
+$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+原型：https://prototype.example/device-group
+目标：实现设备分组管理后端
+```
+
+也可以只调用 Skill 并附上原型图。目标项目、分层与数据约定、设计预览、确认门禁、实现范围和验证方式由 Skill 从当前工程上下文与代码中核实；只有无法可靠推断且会改变接口或数据语义的事项才需要补充确认。
 
 安装后，Codex 也可根据任务描述和运行时约束自动选择 Skill；显式写 `$插件名:Skill名` 更确定。仅出现多个项目标记但未说明服务交互时，不自动加载 P1–P4 的全局上下文。
