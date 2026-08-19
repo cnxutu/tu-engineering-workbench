@@ -1,0 +1,17 @@
+id: p0-v2.1.0-project-management-prd
+title: 沉淀 v2.1.0 项目管理模块 PRD
+status: active
+repository: tu-devkit
+product: company/device-inspection-platform
+created_at: 2026-08-19T13:16:00+08:00
+evidence:
+  - source: prd/v2.1.0/project-management.md
+    summary: 版本化项目管理 PRD，记录需求范围、流程、规则和验收标准。
+  - source: decisions/project-set-project-management.md
+    summary: 已维护的 P1/P7 技术边界、关系模型和删除约束。
+  - source: https://axhub.im/ax10/5dcf360dcc1007af/
+    summary: 三个 Axure 原型页面作为需求来源；当前环境无法取得可视帧，标记为 pending_verification。
+  - source: browser-runtime / platform verification
+    summary: 已按用户授权尝试 Chrome 与内置浏览器；浏览器运行时受可信路径校验拦截，网络直读亦未获平台审核，因此未取得新的像素级原型证据。
+knowledge_update_assessment: updated
+sensitive_data_review: no secrets, credentials, or production payloads added

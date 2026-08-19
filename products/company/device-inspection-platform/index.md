@@ -39,6 +39,7 @@
 - P6 的用户、部门、岗位、角色、权限或系统管理能力：从 `c-system` 仓库的 `README.md` 和局部 `AGENTS.md` 开始核实。
 - P7 的标签树、资源关联或标签维度数据权限能力：从 `c-tag` 仓库的 `README.md` 和局部 `AGENTS.md` 开始核实。
 - 评审 P1 项目集/项目、角色池、空间池与 P7 项目树边界：读 [项目集与项目管理设计（P1 + P7）](decisions/project-set-project-management.md)。
+- 维护按版本归档的产品 PRD：从 [产品 PRD 目录](prd/index.md) 开始，当前版本读 [v2.1.0 项目管理 PRD](prd/v2.1.0/project-management.md)。
 - DJI 无人机行业术语、HMS、OSD、DRC 与姿态角语义：读 [DJI 无人机领域知识](context/domain/index.md)。
 - P1-P4 技术栈、中间件、职责边界、消息/指令/视频流媒体架构与问题定位范围：读 [P1-P4 技术栈与系统架构](architecture/p1-p4-technology-and-system-architecture.md)。
 
