@@ -1,6 +1,6 @@
 {
   "name": "ai-guidance-workflows",
-  "version": "0.1.0+codex.20260818144309",
+  "version": "0.1.0+codex.20260819030734",
   "description": "Evidence-led Spring backend workflows for incidents, cross-service context, and prototype-driven feature scaffolding.",
   "author": {
     "name": "tu-devkit"
