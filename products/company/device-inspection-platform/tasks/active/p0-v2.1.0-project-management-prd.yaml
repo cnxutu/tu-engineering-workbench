@@ -10,8 +10,10 @@ evidence:
   - source: decisions/project-set-project-management.md
     summary: 已维护的 P1/P7 技术边界、关系模型和删除约束。
   - source: https://axhub.im/ax10/5dcf360dcc1007af/
-    summary: 三个 Axure 原型页面作为需求来源；当前环境无法取得可视帧，标记为 pending_verification。
+    summary: 三个 Axure 原型页面作为需求来源；本地导出已读取项目管理和项目集表单内容，项目编辑表单导出实际指向项目详情页，保留 partial/pending_verification。
   - source: browser-runtime / platform verification
     summary: 已按用户授权尝试 Chrome 与内置浏览器；浏览器运行时受可信路径校验拦截，网络直读亦未获平台审核，因此未取得新的像素级原型证据。
+  - source: prd/v2.1.0/project-management.md
+    summary: 基于本地 Axure HTML 导出补充地图联动、表单字段、成员授权、空间影响、关闭/开启/移除流程、用户反馈和冲突日志。
 knowledge_update_assessment: updated
 sensitive_data_review: no secrets, credentials, or production payloads added
