@@ -39,6 +39,7 @@
 - P6 的用户、部门、岗位、角色、权限或系统管理能力：从 `c-system` 仓库的 `README.md` 和局部 `AGENTS.md` 开始核实。
 - P7 的标签树、资源关联或标签维度数据权限能力：从 `c-tag` 仓库的 `README.md` 和局部 `AGENTS.md` 开始核实。
 - 评审 P1 项目集/项目、角色池、空间池与 P7 项目树边界：读 [项目集与项目管理设计（P1 + P7）](decisions/project-set-project-management.md)。
+- P1 按用户与项目返回菜单、项目角色与 P6 权限接口联调：读 [P1 项目菜单权限（P1 + P6）](repositories/c-drone-inspection/project-menu-permission.md)。
 - 评审 P1 项目或项目集移除、成员权限减少后的 WebSocket 广播：读 [P1 项目权限失效 WebSocket 广播](repositories/c-drone-inspection/project-permission-websocket.md)。
 - 维护按版本归档的产品 PRD：从 [产品 PRD 目录](prd/index.md) 开始，当前版本读 [v2.1.0 项目管理 PRD](prd/v2.1.0/project-management.md)。
 - v2.1.0 项目管理原型已完成本地 HTML 导出解析；阅读 PRD 的“原型核验补充”和“冲突日志”以区分已验证产品要求与待决技术语义。

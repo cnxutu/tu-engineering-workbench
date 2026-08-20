@@ -14,14 +14,17 @@ flowchart LR
 | 范围 | 归属 | 约束 |
 | --- | --- | --- |
 | 项目树节点 | P7 `c_tag` | `0003` 项目根 → 直属项目集 → 直属项目；根节点只初始化，不允许业务编辑或删除，节点类型不写入 `config`。 |
-| 项目集人员池与角色 | P1 `project_set_user_role` | 仅允许 `INS_PM_ADMIN`、`INS_PM_STAFF`；同一用户可拥有两个角色。 |
+| 项目集人员池与角色 | P1 `project_set_user_role` | 仅允许 `INS_PM_ADMIN`、`INS_PM_STAFF`；同一用户在同一项目集中只能有一个角色。 |
 | 项目集空间池 | P1 `project_set_space_pool` | 活动记录的 `space_code` 全局唯一，空间仅能进入一个项目集池。 |
 | 项目成员 | P1 `project_member` | 只保存项目和用户；角色继承所属项目集，不重复保存角色。 |
 | 项目空间 | P1 `project_space_binding` | 活动记录的 `space_code` 全局唯一，一个项目可选多个池内空间。 |
+| 项目（集）活动名称 | P1 `project_node_identity` | 以节点类型隔离的有效名称唯一登记；P7 的 `tag_name` 不作为名称唯一性的最终裁决。 |
 
 `c_tag_relation` 不承载项目空间池、项目空间、项目成员或项目角色，避免通用标签关系与项目业务关系形成双重真相。
 
 项目节点只按结构识别：`parent_code = 0003` 是项目集；其直属子节点是项目。`config` 仅存储 JSON 扩展字段：项目集当前维护 `description`，项目还维护 `longitude`、`latitude`；更新时保留未知扩展字段。P7 不再使用 `config.type` 初始化项目根或识别项目节点。
+
+P1 用 `project_node_identity` 维护项目节点的活动名称。`node_type` 为 `PROJECT_SET` 或 `PROJECT`，活动记录固定 `is_deleted = 0`，唯一键为 `(node_type, normalized_name, is_deleted)`：项目集之间、项目之间分别不能重名；项目和项目集可以同名；节点标记 `REMOVED` 后释放其名称，后续可复用。数据库唯一键是并发场景的最终裁决，服务端的活动记录查询只用于提前给出业务校验结果。`project_set_identity` 仅保存 `project_set_code` 与创建者 ID；历史项目集没有该记录时不施加创建者锁定，也不再永久占用名称。
 
 ## 面向前端的门面契约
 
@@ -60,6 +63,13 @@ erDiagram
     varchar project_code
     varchar space_code UK
   }
+  PROJECT_NODE_IDENTITY {
+    bigint id PK
+    varchar node_code
+    varchar node_type
+    varchar normalized_name
+    bigint is_deleted
+  }
   PROJECT_SET_USER_ROLE ||--o{ PROJECT_MEMBER : "项目从人员池选择"
   PROJECT_SET_SPACE_POOL ||--o| PROJECT_SPACE_BINDING : "项目从空间池选择"
 ```
@@ -68,19 +78,25 @@ erDiagram
 
 四张关系表均继承 P1 `BaseEntity`，必须完整包含 `create_user`、`create_time`、`update_user`、`update_time` 和 `is_deleted`。前两个用户审计字段保存系统操作人名称；项目集角色池和项目成员另使用 `user_id` 保存项目业务用户 ID。所有唯一键将 `is_deleted` 纳入约束，逻辑删除后允许按业务规则重新建立同一关系。
 
+`project_node_identity` 和关系表一样继承 `BaseEntity` 的审计与逻辑删除约定。节点名称登记的删除值沿用秒级 `UNIX_TIMESTAMP(now())`；因此极端自动化场景在同一秒内对同名节点反复“创建—移除”可能与既有已删除记录冲突，此风险与仓库现有逻辑删除唯一键约定一致。
+
 ## 保存与删除约束
 
-统一保存将请求中的成员、项目授权和空间编码作为目标集合同步到 P1 关系表；项目创建和更新还同步项目中心点配置。创建项目以请求中的 `projectSetCode` 确定所属项目集；更新项目时以路径中的既有项目确定所属项目集，请求中的 `projectSetCode` 不参与变更。
+统一保存将请求中的成员、项目授权和空间编码作为目标集合同步到 P1 关系表；项目创建和更新还同步项目中心点配置。创建项目以请求中的 `projectSetCode` 确定所属项目集；更新项目时以路径中的既有项目确定所属项目集，请求中的 `projectSetCode` 不参与变更。项目集创建者自动成为项目管理员，管理员的授权项目始终为该项目集全部直属项目；创建者不得被移除或降级，当前登录用户若为项目管理员也不得在本次保存中移除自身。
 
-项目删除采用“移除”语义，不物理删除 P7 项目节点及历史任务数据。删除入口执行前必须通过项目任务状态校验；存在 `task_biz_status in (2, 6)`（执行中或暂停）任务时拒绝移除。校验通过后，P1 逻辑删除项目成员和项目空间绑定，P7 节点保留原名称、坐标、描述及未知扩展字段，并在 `config.status` 写入 `REMOVED`。
+项目集与项目创建均按“先在 P7 创建节点，再登记 P1 活动名称”执行。名称登记触发唯一键冲突时，P1 补偿删除刚创建的空 P7 节点。改名在 P1 本地事务中释放旧活动登记并写入新登记，只有成功后才更新 P7 名称；失败时事务回滚，旧名称及 P7 名称保持不变。
 
-项目集移除先收集直属有效项目并完成全量任务状态校验，任何子项目存在执行中或暂停任务时整体失败，不产生部分移除。校验通过后，逐项释放项目成员和空间绑定，删除项目集角色池、空间池关系，并将所有子项目及项目集节点标记为 `REMOVED`。不提供恢复或重新开启接口。
+项目删除采用“移除”语义，不物理删除 P7 项目节点及历史任务数据。删除入口执行前必须通过项目任务状态校验；存在 `task_biz_status in (2, 6)`（执行中或暂停）任务时拒绝移除。校验通过后，P1 逻辑删除项目成员、项目空间绑定及该项目的活动名称登记，P7 节点保留原名称、坐标、描述及未知扩展字段，并在 `config.status` 写入 `REMOVED`。
+
+项目集移除先收集直属有效项目并完成全量任务状态校验，任何子项目存在执行中或暂停任务时整体失败，不产生部分移除。校验通过后，逐项释放项目成员、项目空间绑定、项目集角色池、空间池关系，以及项目集和全部直属项目的活动名称登记，并将所有子项目及项目集节点标记为 `REMOVED`。不提供恢复或重新开启接口。
 
 P1 本地关系删除与 P7 生命周期更新不具备分布式事务。实施顺序为：完成全部本地校验 → 更新 P7 `config.status` → 删除 P1 关系；若后续本地操作失败，使用保存的原始 `config` 回写 P7 作为补偿，并记录失败上下文。P7 `deleteTag` 不用于项目移除。
 
 P1 不再把空间关系投影到 P7，故不需要 outbox。项目树的创建、编辑和移除是同步 P7 标签操作；移除不构成跨服务双写事务。
 
 项目权限失效通知复用 P1 现有 `/ws/drone` 全局通道和 `sendBatchByDeviceType`，业务码为 `project_permission_changed`。通知只在项目关系变更造成 `beforeAccess - afterAccess` 非空时发送，数据数组由 `userId` 与失效项目编码增量组成；事务提交后由 `@TransactionalEventListener(AFTER_COMMIT)` 广播，发送失败不回滚已提交关系。具体快照判定、触发入口和代码证据见 [P1 项目权限失效 WebSocket 广播](../repositories/c-drone-inspection/project-permission-websocket.md)。
+
+前端需要按项目加载菜单时，P1 使用项目关系解析 `INS_PM_ADMIN` 或 `INS_PM_STAFF`，再调用 P6 获取角色菜单；接口响应复用 P6 通用权限结构。项目角色判定、P6 角色归属前提与发布约束见 [P1 项目菜单权限（P1 + P6）](../repositories/c-drone-inspection/project-menu-permission.md)。
 
 ## 删除前置校验接口
 
@@ -118,18 +134,19 @@ P1 先收集项目全部有效空间绑定，再解析其下设备 ID。对每�
 
 ## 当前实现与待验证
 
-**已实现（本地代码变更，尚未发布）**：P1 四张业务关系表、项目管理门面及页面 Req/Resp；项目集和项目统一保存，项目列表包含中心点，项目详情包含项目集名称及空间选择状态；项目和项目集移除、`REMOVED` 读取隔离、任务状态拦截及失败补偿已在 P1 本地实现。P7 保留项目根迁移与 `PROJECT_ROOT_CODE`。
+**已实现（本地代码变更，尚未发布）**：P1 四张业务关系表、项目管理门面及页面 Req/Resp；项目集和项目统一保存，项目列表包含中心点，项目详情包含项目集名称及空间选择状态；项目和项目集移除、`REMOVED` 读取隔离、任务状态拦截及失败补偿已在 P1 本地实现。P1 另已实现 `project_node_identity` 活动名称登记、`project_set_identity` 创建者识别，以及创建、改名、移除时的名称登记与 P7 补偿。P7 保留项目根迁移与 `PROJECT_ROOT_CODE`。
 
-**本次设计待实施**：删除前置空间任务校验和人员驾驶舱控制权校验接口尚未写入 P1；本页接口与查询链路是实施基线。实现后应补充 P1 服务单元测试和接口契约验证。
+**已实现（本地代码变更，尚未发布）**：删除前置空间任务校验和人员驾驶舱控制权校验接口已写入 P1，并复用空间子树设备解析、运行任务查询及驾驶舱控制权查询逻辑；项目集保存仍在服务端再次执行相同阻断校验，前端预检不能绕过提交校验。服务单元测试已覆盖前置校验结果、名称并发裁决相关补偿、名称释放和移除阻断。
 
 **待发布 / 待确认**：
 
 - P1 已发布依赖尚未包含 P7 的 `TagCodes.PROJECT_ROOT_CODE`，当前使用兼容性常量 `"0003"`；发布 P7 API 并升级 P1 依赖后移除该硬编码。
 - 平台级接口访问权限编码尚未确认；项目域角色继承不替代系统级接口访问控制。
 - 在集成环境验证 P7 项目根迁移、项目树接口权限和 P1 空间池行锁并发行为。
+- 发布名称登记前，须从 P7 `0003` 树导出全部未标记 `REMOVED` 的项目集及直属项目，按节点类型扫描重名；确认无冲突后回填 `project_node_identity`，再部署 P1。迁移脚本见 P1 `docs/sql/v2.1.0_add_project_node_identity.sql`，回填步骤见 `docs/sql/v2.1.0_project_node_identity_backfill.md`。
 
 ## 证据
 
 - P1：`b-inspection-platform-core/.../service/project/impl/ProjectManagementServiceImpl.java`、`controller/admin/project/ProjectManagementController.java`。
-- P1：`b-inspection-platform-common/.../project/`（实体、页面 Req/Resp）与 `docs/sql/v2.1.0_add_project_management.sql`。
+- P1：`b-inspection-platform-common/.../project/`（实体、页面 Req/Resp）与 `docs/sql/v2.1.0_add_project_management.sql`、`v2.1.0_add_project_node_identity.sql`。
 - P7：`c-tag-api/.../constants/TagCodes.java`、`c-tag-bootstrap/.../V1.2.0__project_root.sql` 与 `V1.2.1__clear_project_type_config.sql`。
