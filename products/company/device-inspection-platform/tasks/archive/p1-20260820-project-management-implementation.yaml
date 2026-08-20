@@ -1,0 +1,19 @@
+id: p1-20260820-project-management-implementation
+title: P1 项目管理实现补充归档（2026-08-20）
+status: completed
+repository: c-drone-inspection
+product: company/device-inspection-platform
+created_at: 2026-08-20T09:27:14+08:00
+archived_at: 2026-08-20T18:12:05+08:00
+adr: decisions/project-set-project-management.md
+evidence:
+  - source: "P1 Git commits f673b21c, e3baa6ea, 0bb5ede2, 1e936bd, 98f7202, af1684c, 396b88e, d6b4b05, 784e08c"
+    summary: 今日已提交的项目管理实现：权限失效通知、创建人身份、名称唯一性、项目菜单权限、项目集移除前置校验、可选空间状态、成员资料回显和创建人置顶。
+  - source: "P1 Git commit 47b37da"
+    summary: 项目成员移除前新增驾驶舱控制权阻断校验及结构化用户返回。
+  - source: "P1 Git commit 2a16d9e"
+    summary: 项目管理 SQL 与当前实体、名称登记结构同步调整。
+  - source: decisions/project-set-project-management.md
+    summary: 已更新项目集/项目关系所有权、创建人展示与保存语义，以及专项文档导航。
+knowledge_update_assessment: updated
+sensitive_data_review: no secrets, credentials, or production payloads added

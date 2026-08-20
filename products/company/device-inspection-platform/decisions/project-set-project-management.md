@@ -32,11 +32,19 @@ P1 用 `project_node_identity` 维护项目节点的活动名称。`node_type` �
 
 | 页面能力 | P1 输出边界 | 前端组合责任 |
 | --- | --- | --- |
-| 项目集列表/详情 | 项目集卡片、基本信息、`members(userId, roleCode, projectCodes)` 与空间编码 | 按 `userId` 调用 P6 补齐姓名、账号和部门。 |
+| 项目集列表/详情 | 项目集卡片、基本信息、`members(userId, roleCode, projectCodes, isCreator)` 与空间编码 | P1 批量调用 P6 补齐姓名、账号和部门；前端不再自行组合人员基础资料。 |
 | 项目列表 | 项目卡片及中心点 `longitude`、`latitude` | 使用坐标渲染项目地图标记。 |
 | 项目编辑详情 | 所属项目集编码和名称、成员选择状态、可用/已选/禁用空间编码 | 复用 P1 空间树接口，按 `availableSpaceCodes` 过滤并用 `spaceCodes`、`disabledSpaceCodes` 标记选择和禁用状态。 |
 
 `disabledSpaceCodes` 仅包含同项目集其他项目已绑定的空间；当前项目已选空间不会被标记为禁用，以便页面取消选择。列表和详情响应不得透传 P7 `TagDTO` 或 P1 持久化实体。
+
+### 成员详情、创建人和保存语义
+
+项目集详情的成员列表以 `project_set_user_role` 为主数据；`project_member` 仅用于计算普通成员的项目授权集合。项目详情同样以项目集角色池返回可选成员，`project_member` 仅用于标记该成员是否已选中当前项目。两类详情均通过 `project_set_identity.creator_user_id` 标记项目集创建人并将其置顶；身份记录存在但角色关系缺失时，详情按项目管理员补出创建人记录，避免页面缺失创建人。
+
+`project_set_identity` 只在创建项目集时写入，编辑不改变创建人。项目集保存将 `members` 作为完整目标集合：创建人必须以项目管理员身份保留，不能被移除或降级；当前实现会拒绝未回传创建人或将其降级的请求。项目管理员有效授权为全部直属项目，因此项目集保存重建关系时会为管理员写入全部直属项目的 `project_member` 关系；项目详情的单独保存只根据 `memberUserIds` 写入当前项目成员，不会因身份表自动新增创建人关系。
+
+项目详情 `members` 增加 `isCreator` 字段；未登记身份记录的历史项目集不虚构创建人标识，成员按角色关系记录的主键升序返回。
 
 ## 表设计与关键关系
 
@@ -137,6 +145,8 @@ P1 先收集项目全部有效空间绑定，再解析其下设备 ID。对每�
 **已实现（本地代码变更，尚未发布）**：P1 四张业务关系表、项目管理门面及页面 Req/Resp；项目集和项目统一保存，项目列表包含中心点，项目详情包含项目集名称及空间选择状态；项目和项目集移除、`REMOVED` 读取隔离、任务状态拦截及失败补偿已在 P1 本地实现。P1 另已实现 `project_node_identity` 活动名称登记、`project_set_identity` 创建者识别，以及创建、改名、移除时的名称登记与 P7 补偿。P7 保留项目根迁移与 `PROJECT_ROOT_CODE`。
 
 **已实现（本地代码变更，尚未发布）**：删除前置空间任务校验和人员驾驶舱控制权校验接口已写入 P1，并复用空间子树设备解析、运行任务查询及驾驶舱控制权查询逻辑；项目集保存仍在服务端再次执行相同阻断校验，前端预检不能绕过提交校验。服务单元测试已覆盖前置校验结果、名称并发裁决相关补偿、名称释放和移除阻断。
+
+**2026-08-20 已提交的 P1 项目管理补充**：项目集详情补齐人员昵称、账号和部门，项目新增/编辑新增可选空间状态接口，项目集移除新增任务阻断前置检查；项目菜单权限接口与权限失效 WebSocket 的具体契约分别见 [P1 项目菜单权限](../repositories/c-drone-inspection/project-menu-permission.md) 和 [P1 项目权限失效 WebSocket 广播](../repositories/c-drone-inspection/project-permission-websocket.md)。当天提交范围和可复现 Git 证据见 [项目管理实现归档（2026-08-20）](../tasks/archive/p1-20260820-project-management-implementation.yaml)。
 
 **待发布 / 待确认**：
 
