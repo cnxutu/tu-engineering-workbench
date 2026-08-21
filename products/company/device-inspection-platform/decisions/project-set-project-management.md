@@ -125,12 +125,59 @@ P1 先确认空间编码属于该项目的 `project_space_binding`，再通过 P
 ```text
 POST /drone/projects/{projectCode}/delete-check/users
 Body: { "userIds": [10001, 10002] }
-Response: { "blockedUserNames": ["张三", "李四"] }
+Response: { "blockedUsers": [{ "userId": 10001, "nickname": "张三", "username": "zhangsan" }] }
 ```
 
 P1 先收集项目全部有效空间绑定，再解析其下设备 ID。对每个设备读取现有 `RedisService#getAuthorityUser(deviceId)` 对应的 `flight_authority:{deviceId}` 缓存；按缓存 `LoginUser.id` 与请求 `userIds` 过滤，从 `LoginUser.info.nickname` 返回去重后的人员名称。同一人员控制多个项目设备时只返回一次，不扫描 Redis 未知 Key。
 
-接口响应建议同时保留 `spaceCode`/`userId` 与名称，名称集合用于原型提示，编码和 ID 用于前端精确定位；若当前前端只消费名称，可暂时只暴露名称字段。
+项目级接口保持上述 `ProjectDeleteCheckUserResp` 契约。项目集成员移除预检使用专属接口 `POST /drone/projects/sets/{projectSetCode}/delete-check/users` 和专属响应：
+
+```json
+{
+  "blocked": true,
+  "blockedUserCount": 1,
+  "blockedUsers": [
+    {
+      "userId": 10001,
+      "nickname": "张三",
+      "username": "zhangsan",
+      "projectNames": ["东区巡检项目", "西区巡检项目"]
+    }
+  ]
+}
+```
+
+该接口先确认待移除用户仍属于当前项目集，再按其变更前的有效项目访问范围检查控制权：项目集管理员覆盖全部直属项目，普通成员仅覆盖 `project_member` 关联项目。P1 只收集成员实际占用驾驶舱控制权的项目名称，按直属项目返回顺序去重；仅有项目访问权限但未占用控制权不构成阻断。`blocked` 与 `blockedUserCount` 由阻断成员列表派生，前端据此组合原型提示，不由后端返回展示文案。
+
+```mermaid
+sequenceDiagram
+  participant UI as 项目集编辑页
+  participant API as P1 项目管理门面
+  participant DB as P1 项目关系
+  participant TAG as P7 空间资源关联
+  participant REDIS as 驾驶舱控制权缓存
+  participant USER as P6 用户资料
+
+  UI->>API: POST sets/{projectSetCode}/delete-check/users(userIds)
+  API->>DB: 校验项目集角色与成员授权范围
+  API->>TAG: 按直属项目空间级联解析设备
+  API->>REDIS: 读取各设备 authority user
+  REDIS-->>API: 当前控制人
+  API->>USER: 批量补齐阻断成员账号信息
+  USER-->>API: nickname / username
+  API-->>UI: blocked、blockedUserCount、成员及 projectNames
+
+  UI->>API: 保存项目集成员变更
+  API->>DB: 重新计算待移除成员
+  API->>TAG: 再次解析设备
+  API->>REDIS: 再次验证控制权
+  alt 仍占用控制权
+    API-->>UI: 拒绝保存，不写入半成品关系
+  else 未占用控制权
+    API->>DB: 同步项目集角色和项目成员关系
+    API-->>UI: 保存成功
+  end
+```
 
 ## 删除校验的责任边界与风险
 

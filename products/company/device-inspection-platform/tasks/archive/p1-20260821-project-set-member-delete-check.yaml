@@ -1,0 +1,17 @@
+id: p1-20260821-project-set-member-delete-check
+title: 项目集成员移除预检返回阻断项目（2026-08-21）
+status: completed
+repository: c-drone-inspection
+product: company/device-inspection-platform
+created_at: 2026-08-21T18:15:00+08:00
+archived_at: 2026-08-21T18:25:00+08:00
+adr: decisions/project-set-project-management.md
+evidence:
+  - source: "P1 工作区：b-inspection-platform-core/.../ProjectManagementController.java、ProjectManagementServiceImpl.java"
+    summary: 项目集成员移除预检使用专属响应，返回阻断状态、人数、成员资料及实际占用控制权的直属项目名称。
+  - source: "P1 工作区：b-inspection-platform-common/.../ProjectSetDeleteCheckUserResp.java、ProjectSetDeleteCheckUserItemResp.java"
+    summary: 项目集预检不复用项目级响应模型，避免改变项目级删除预检的公开契约。
+  - source: "mvn -pl b-inspection-platform-core -am -Dtest=ProjectManagementServiceTest#checkDeleteProjectSetUsersShouldReturnAuthorityUserAndOccupiedProjectNamesInProjectOrder+checkDeleteUsersShouldReturnAuthorityUserAccount -Dsurefire.failIfNoSpecifiedTests=false test"
+    summary: Reactor 编译及两条定向测试通过：项目集项目名称顺序/无阻断路径，以及项目级旧接口回归。
+knowledge_update_assessment: updated
+sensitive_data_review: no secrets, credentials, or production payloads added
