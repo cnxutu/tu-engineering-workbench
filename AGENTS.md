@@ -90,6 +90,7 @@
 | 维护 P0 的运行时入口、`core/` 公共规则、角色、工作流、契约或模板 | `docs/authoring-guide.md` 的“公共规则维护”，以及受影响文件 | 产品知识、治理规范、使用教程 |
 | 维护 P0 的产品知识、架构、流程、服务边界、清单或任务记录 | `docs/authoring-guide.md`、`docs/governance.md`，以及受影响的权威页面 | 其他产品目录与所有使用教程 |
 | 修改 P0 的工具、脚本、校验或团队 Plugin | 目标目录的 README、实现与测试；Plugin 还读取 manifest、相关 `SKILL.md` 与 `tests/test-plugin.sh` | 产品知识、知识编写规范、无关 Plugin |
+| 用户明确指定 `P0` 并明确提出 VPS 部署、升级、调整、网络排查、性能或稳定性问题，或在同一已明确的 `P0 VPS` 问题中继续 | `docs/vps/AGENTS.md`，再按其导航读取当前链路所需的最小运行态资料；涉及实现时仍读取 `development.md` 与 `vps-init/README.md` | 仅因 P0 是 Primary、当前目录位于 P0、偶然提到 VPS、一般网络问答或无真实 VPS/网络目标的仓库开发，不触发该专项入口 |
 | `X`、`i` 涉及多个项目，或任务明确涉及服务关系、OSD、指令、协议、缓存链路或跨服务发布依赖 | `products/company/device-inspection-platform/index.md`，再沿链接读取当前已维护的最小 Flow 或 P1 入口/缓存资料；未覆盖场景以目标代码、契约和配置核实 | 整个产品目录、无关服务源码 |
 | K1/K2 的 Knowledge Hub 产品架构或跨端任务 | `products/personal/knowledge-hub/index.md`，再沿链接读取所需资料 | 无关公司产品材料 |
 | L1 的软考高级系统架构师学习沉淀任务 | `products/personal/architecture-learning/index.md`，再沿链接读取所需资料 | 无关产品材料 |
