@@ -24,7 +24,73 @@ flowchart LR
 
 项目节点只按结构识别：`parent_code = 0003` 是项目集；其直属子节点是项目。`config` 仅存储 JSON 扩展字段：项目集当前维护 `description`，项目还维护 `longitude`、`latitude`；更新时保留未知扩展字段。P7 不再使用 `config.type` 初始化项目根或识别项目节点。
 
-P1 用 `project_node_identity` 维护项目节点的活动名称。`node_type` 为 `PROJECT_SET` 或 `PROJECT`，活动记录固定 `is_deleted = 0`，唯一键为 `(node_type, normalized_name, is_deleted)`：项目集之间、项目之间分别不能重名；项目和项目集可以同名；节点标记 `REMOVED` 后释放其名称，后续可复用。数据库唯一键是并发场景的最终裁决，服务端的活动记录查询只用于提前给出业务校验结果。`project_set_identity` 仅保存 `project_set_code` 与创建者 ID；历史项目集没有该记录时不施加创建者锁定，也不再永久占用名称。
+P1 用 `project_node_identity` 维护项目节点的活动名称。`node_type` 为 `PROJECT_SET` 或 `PROJECT`，活动记录固定 `is_deleted = 0`，唯一键为 `(node_type, parent_node_code, normalized_name, is_deleted)`：项目集在项目根下不能重名；同一项目集内的项目不能重名；不同项目集下的项目可以同名，项目和项目集也可以同名。节点标记 `REMOVED` 后释放其名称，后续可复用。数据库唯一键是并发场景的最终裁决，服务端的活动记录查询只用于提前给出业务校验结果。`project_set_identity` 与 `project_identity` 分别保存项目集、项目的创建者 ID；历史节点没有对应记录时不施加创建者锁定。
+
+## 数据表总览：创建、挂载、授权与业务隔离
+
+本节是查询项目管理问题的首选入口。图中实线表示项目管理保存时写入或更新的关系；虚线表示校验、查询或业务数据消费。`project_code`、业务表的 `project_id` 和 P7 `c_tag.tag_code` 是同一个业务标识，不存在转换表。
+
+```mermaid
+flowchart TB
+  UI[项目管理页面] --> API[P1 ProjectManagementService]
+
+  API -->|创建 / 改名 / 标记 REMOVED| TAG[c_tag<br/>P7 项目树]
+  ROOT[0003 项目根] --> SET[项目集节点]
+  SET --> PROJ[项目节点]
+  TAG --- ROOT
+  TAG --- SET
+  TAG --- PROJ
+
+  API --> PSUR[(project_set_user_role<br/>项目集人员池与角色)]
+  API --> PSID[(project_set_identity<br/>项目集创建者)]
+  API --> PSP[(project_set_space_pool<br/>项目集空间池)]
+  API --> PM[(project_member<br/>项目成员授权)]
+  API --> PID[(project_identity<br/>项目创建者)]
+  API --> PSB[(project_space_binding<br/>项目挂载空间)]
+  API --> PNI[(project_node_identity<br/>活动名称登记)]
+
+  PSUR -.管理员覆盖全部直属项目；普通成员须有成员关系.-> PM
+  PSP -.空间必须先入池，才可挂载.-> PSB
+  PSID -.创建人不可被移除或降级.-> PSUR
+  PID -.项目创建人须保留为成员.-> PM
+  PNI -.node_code 对应.-> TAG
+  PSB -.按空间及子空间解析设备.-> REL[c_tag_relation<br/>P7 空间—资源关联]
+  PSB -.项目归属与任务删除校验.-> TASK[wayline_task 等 P1 项目业务表<br/>project_id]
+```
+
+### 读写链路
+
+1. **创建项目集**：P1 先在 P7 `c_tag` 的 `0003` 根下创建节点；随后登记名称、项目集创建者、成员角色池和空间池。后续 P1 写入失败时，当前代码会强制删除刚创建的 P7 空节点作为补偿。
+2. **创建项目并挂载资源**：P1 在项目集节点下创建 P7 子节点；再写名称登记、项目创建者、项目成员和项目空间绑定。成员只能来自该项目集人员池，空间只能来自该项目集空间池。
+3. **访问业务数据**：P1 根据 `project_set_user_role` 和 `project_member` 计算用户可访问项目，将选定项目编码作为 `X-Project-Id` / `project_id` 的数据隔离边界；业务表不回写项目管理关系。
+4. **变更或移除前校验**：P1 通过 `project_space_binding` 找空间，再由 P7 `c_tag_relation` 解析空间及子空间设备；以业务表 `project_id` 和任务状态检查运行任务。成员变更还会读取驾驶舱控制权缓存和 P6 用户资料。它们均不是项目管理表的写入目标。
+5. **移除**：P7 节点不物理删除，而是由 P1 将其 `config.status` 标记为 `REMOVED`；P1 逻辑删除名称、成员、角色池、空间池和空间绑定等活动关系，历史任务仍按原 `project_id` 保留。
+
+### 逐表职责、收益与移除影响
+
+| 表 | 保存的唯一事实 / 设计意图 | 保留它带来的收益 | 若去除或由其他表替代的影响 |
+| --- | --- | --- | --- |
+| P7 `c_tag` | 项目根、项目集、项目三层树及显示名称、扩展配置。P7 是树结构唯一真相，P1 不复制树。 | 通用树能力统一复用；项目编码可直接作为跨表、跨服务业务标识。 | P1 需自建项目树并失去 P7 的统一树查询与节点生命周期；若 P1、P7 同时存树会产生双写和不一致。 |
+| P1 `project_set_user_role` | 项目集的人员池与固定角色（管理员/成员）；一个用户在一个项目集中只能有一个有效角色。 | 将“能否进入项目集”与“能否访问具体项目”拆开；管理员可继承全部直属项目，避免逐项目重复授予角色。 | 只能把角色冗余进 `project_member` 或外部权限系统，无法表达项目集级成员池、管理员全覆盖和后续项目自动可见。 |
+| P1 `project_set_identity` | 项目集创建者身份，不等同于审计列中的操作人。 | 创建者可置顶展示、被保护为管理员，避免一次编辑后失去创建主体。 | 无法可靠保护/展示项目集创建人，只能把“首次审计操作人”错误当作长期业务身份。 |
+| P1 `project_set_space_pool` | 项目集可分配的空间范围；有效 `space_code` 全局唯一。 | 先划定资源池再挂载项目，阻止一个空间同时落入多个项目集；编辑页可计算可选/禁用空间。 | 项目可直接任意绑定空间，跨项目集资源归属冲突只能靠应用层临时判断，无法可靠加唯一约束。 |
+| P1 `project_node_identity` | P7 节点的活动名称登记，含节点类型、父节点和规范化名称。 | P7 的通用 `tag_name` 不承担项目命名规则；数据库唯一键可处理并发创建/改名，移除后可复用名称。 | 项目命名校验退化为非原子查询；并发时会重名，或必须错误地将 P7 通用标签名称规则当作项目规则。 |
+| P1 `project_identity` | 项目独立创建者身份。 | 可在项目编辑和成员变更时强制保留项目创建人，且不把项目集创建人误当作所有项目的创建人。 | 项目创建人可被移出成员集合，或只能用项目集创建人替代，都会改变已实现的保护语义。 |
+| P1 `project_member` | 普通成员到具体项目的授权关系；不存 `role_code`。 | 角色只在项目集层维护，避免“同一用户在同一项目集/项目有两套角色”的双重真相；适合精确计算普通成员可访问项目。 | 普通成员无法限定到项目；若加回角色字段，会与 `project_set_user_role` 产生角色漂移。 |
+| P1 `project_space_binding` | 项目到已入池空间的实际挂载关系；有效 `space_code` 全局唯一。 | 明确项目资源范围，支撑按空间找设备、任务阻断校验和项目业务数据定位。 | 无法回答空间属于哪个项目；任务检查需要扫描项目集池或 P7 全量资源，且会失去“一个空间只能挂载一个项目”的约束。 |
+| P7 `c_tag_relation` | 通用空间—资源（如设备）关联；项目管理仅查询它，不写项目成员、角色或空间绑定。 | P1 可通过空间及子空间解析设备，而不复制设备归属。 | 若项目管理改为复制这份关系，设备空间变更会出现两份真相；移除此表则项目变更/删除无法从空间定位受影响设备。 |
+| P1 `wayline_task` 等带 `project_id` 的业务表 | 项目内任务等业务数据的归属；不是项目管理主数据。 | 以同一项目编码实现隔离，并为项目/空间移除提供运行任务阻断依据。 | 若移除 `project_id`，项目成员关系仍在但无法限制或统计业务数据，删除前也无法准确判断任务影响。 |
+
+### 查询导航
+
+| 遇到的问题 | 从哪张表 / 条件开始 | 继续追查 |
+| --- | --- | --- |
+| 某项目或项目集“不见了” | P7 `c_tag`：按 `tag_code`，检查父子结构与 `config.status` | P1 `project_node_identity`：按 `node_code` 查询是否仍有活动名称登记。 |
+| 用户看得到项目集却进不了项目 | `project_set_user_role`：`project_set_code + user_id` | 管理员应覆盖直属项目；普通成员再查 `project_member.project_code + user_id`。 |
+| 空间在编辑页不可选或被占用 | `project_set_space_pool.space_code` | 再查 `project_space_binding.space_code`，确认该空间是否已被同项目集项目挂载。 |
+| 项目不能移除 / 空间不能解绑 | `project_space_binding.project_code` | 由空间查 P7 `c_tag_relation` 的设备，再查 `wayline_task.project_id` 的执行中/暂停任务。 |
+| 创建或改名提示重名 | `project_node_identity`：`node_type + parent_node_code + normalized_name + is_deleted=0` | 与 P7 `c_tag.tag_code/tag_name/parent_code` 对照，定位 P1 登记和树节点是否失配。 |
+| 创建人无法被移除或降级 | `project_set_identity` 或 `project_identity`：按相应节点编码 | 再查角色池/项目成员，确认保存请求是否保留该用户。 |
 
 ## 面向前端的门面契约
 
@@ -78,13 +144,23 @@ erDiagram
     varchar normalized_name
     bigint is_deleted
   }
+  PROJECT_SET_IDENTITY {
+    bigint id PK
+    varchar project_set_code
+    bigint creator_user_id
+  }
+  PROJECT_IDENTITY {
+    bigint id PK
+    varchar project_code
+    bigint creator_user_id
+  }
   PROJECT_SET_USER_ROLE ||--o{ PROJECT_MEMBER : "项目从人员池选择"
   PROJECT_SET_SPACE_POOL ||--o| PROJECT_SPACE_BINDING : "项目从空间池选择"
 ```
 
 项目授权由 `project_member`、项目集有效角色和角色可执行权限共同决定；项目成员表不保存 `role_code`。
 
-四张关系表均继承 P1 `BaseEntity`，必须完整包含 `create_user`、`create_time`、`update_user`、`update_time` 和 `is_deleted`。前两个用户审计字段保存系统操作人名称；项目集角色池和项目成员另使用 `user_id` 保存项目业务用户 ID。所有唯一键将 `is_deleted` 纳入约束，逻辑删除后允许按业务规则重新建立同一关系。
+四张关系表、`project_node_identity`、`project_set_identity` 与 `project_identity` 均继承 P1 `BaseEntity`，包含 `create_user`、`create_time`、`update_user`、`update_time` 和 `is_deleted`。前两个用户审计字段保存系统操作人名称；项目集角色池和项目成员另使用 `user_id` 保存项目业务用户 ID。关系表和名称登记的唯一键将 `is_deleted` 纳入约束，逻辑删除后允许按业务规则重新建立同一关系。
 
 `project_node_identity` 和关系表一样继承 `BaseEntity` 的审计与逻辑删除约定。节点名称登记的删除值沿用秒级 `UNIX_TIMESTAMP(now())`；因此极端自动化场景在同一秒内对同名节点反复“创建—移除”可能与既有已删除记录冲突，此风险与仓库现有逻辑删除唯一键约定一致。
 
@@ -189,7 +265,7 @@ sequenceDiagram
 
 ## 当前实现与待验证
 
-**已实现（本地代码变更，尚未发布）**：P1 四张业务关系表、项目管理门面及页面 Req/Resp；项目集和项目统一保存，项目列表包含中心点，项目详情包含项目集名称及空间选择状态；项目和项目集移除、`REMOVED` 读取隔离、任务状态拦截及失败补偿已在 P1 本地实现。P1 另已实现 `project_node_identity` 活动名称登记、`project_set_identity` 创建者识别，以及创建、改名、移除时的名称登记与 P7 补偿。P7 保留项目根迁移与 `PROJECT_ROOT_CODE`。
+**已实现（本地代码变更，尚未发布）**：P1 四张业务关系表、项目管理门面及页面 Req/Resp；项目集和项目统一保存，项目列表包含中心点，项目详情包含项目集名称及空间选择状态；项目和项目集移除、`REMOVED` 读取隔离、任务状态拦截及失败补偿已在 P1 本地实现。P1 另已实现 `project_node_identity` 活动名称登记，以及 `project_set_identity`、`project_identity` 两类创建者识别，并在创建、改名、移除时执行名称登记与 P7 补偿。P7 当前仓库保留项目根迁移与 `PROJECT_ROOT_CODE`。
 
 **已实现（本地代码变更，尚未发布）**：删除前置空间任务校验和人员驾驶舱控制权校验接口已写入 P1，并复用空间子树设备解析、运行任务查询及驾驶舱控制权查询逻辑；项目集保存仍在服务端再次执行相同阻断校验，前端预检不能绕过提交校验。服务单元测试已覆盖前置校验结果、名称并发裁决相关补偿、名称释放和移除阻断。
 
@@ -200,10 +276,10 @@ sequenceDiagram
 - P1 已发布依赖尚未包含 P7 的 `TagCodes.PROJECT_ROOT_CODE`，当前使用兼容性常量 `"0003"`；发布 P7 API 并升级 P1 依赖后移除该硬编码。
 - 平台级接口访问权限编码尚未确认；项目域角色继承不替代系统级接口访问控制。
 - 在集成环境验证 P7 项目根迁移、项目树接口权限和 P1 空间池行锁并发行为。
-- 发布名称登记前，须从 P7 `0003` 树导出全部未标记 `REMOVED` 的项目集及直属项目，按节点类型扫描重名；确认无冲突后回填 `project_node_identity`，再部署 P1。迁移脚本见 P1 `docs/sql/v2.1.0_add_project_node_identity.sql`，回填步骤见 `docs/sql/v2.1.0_project_node_identity_backfill.md`。
+- 发布名称登记前，须从 P7 `0003` 树导出全部未标记 `REMOVED` 的项目集及直属项目，按节点类型和父节点扫描重名；确认无冲突后回填 `project_node_identity`，再部署 P1。当前工作区提供的重建脚本为 P1 `docs/sql/v2.1.0_recreate_project_management.sql`；独立回填脚本仍待补充或在发布方案中明确。
 
 ## 证据
 
 - P1：`b-inspection-platform-core/.../service/project/impl/ProjectManagementServiceImpl.java`、`controller/admin/project/ProjectManagementController.java`。
-- P1：`b-inspection-platform-common/.../project/`（实体、页面 Req/Resp）与 `docs/sql/v2.1.0_add_project_management.sql`、`v2.1.0_add_project_node_identity.sql`。
-- P7：`c-tag-api/.../constants/TagCodes.java`、`c-tag-bootstrap/.../V1.2.0__project_root.sql` 与 `V1.2.1__clear_project_type_config.sql`。
+- P1：`b-inspection-platform-common/.../project/`（实体、页面 Req/Resp）与 `docs/sql/v2.1.0_recreate_project_management.sql`。
+- P7：`c-tag-api/.../constants/TagCodes.java`、`c-tag-bootstrap/.../V1.0.0__baseline.sql` 与 `V1.1.0__project_root.sql`。
