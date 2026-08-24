@@ -32,6 +32,23 @@ P1 的缓存不是单纯的性能优化，而是“异步设备消息 → 可直
 - TTL 到期只代表 P1 未在窗口内收到有效遥测，不等价于设备物理故障。
 - 主数据坐标仅在缺失时可被有效机场 OSD 一次性回填；OSD 不是设备档案的长期存储。
 
+### 代码入口与 Redis 排查
+
+普通 OSD 从 `inspection_device_status_report` 进入 `InspectionIotUpstreamConsumer`，经
+`DeviceStatusPropertyHandler` 转交 `InspectionDeviceStatusBusinessServiceImpl#handle`；该服务按
+机场/子机遥测分流至 `handleHostTelemetry` 或 `handleSubDeviceTelemetry`，最终由 `setOsd` 写入
+`osd:{deviceSn}`。机场分包遥测会先读取旧快照后合并并回写；子机遥测直接刷新其自身快照。
+
+在 Redis 工具或 `redis-cli` 中，可先用 `SCAN 0 MATCH osd:* COUNT 100` 查找候选 key，再对目标设备使用
+`GET osd:{deviceSn}` 与 `TTL osd:{deviceSn}` 查看快照和剩余有效期。实际序列化展示格式取决于运行时 Redis
+客户端配置；不要用 `KEYS osd:*` 在生产实例全量扫描。
+
+代码证据：`b-inspection-platform-iot/.../InspectionIotUpstreamConsumer.java`、
+`b-inspection-platform-iot/.../DeviceStatusPropertyHandler.java`、
+`b-inspection-platform-core/.../InspectionDeviceStatusBusinessServiceImpl.java`（`setOsd`、
+`handleHostTelemetry`、`handleSubDeviceTelemetry`）、
+`b-inspection-platform-common/.../RedisConst.java`（`OSD_PREFIX`、`DEVICE_ALIVE_SECOND`）。
+
 ## 2. DRC OSD：独立的高频快照
 
 | 项目 | 设计 |
