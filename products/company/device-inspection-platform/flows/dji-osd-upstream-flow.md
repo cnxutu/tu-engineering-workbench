@@ -57,7 +57,7 @@ P1 仅在机场普通 `DEVICE_TELEMETRY` 的处理分支中，根据 `linkWorkmo
 
 当前 P1 映射规则由 `MonitorBusinessStatusMapper` 统一复用：
 
-- 机场：离线为 `OFFLINE`；`modeCode` 优先取当前分包、缺失时取 120 秒缓存。1/2/3/5 为 `DEBUG_UPGRADE`；4/0 时若 `coverState=3`、`emergencyStopState=true`、`alarmState=true`、`flighttaskStepCode=255/256`、`positionState.isFixed=3` 或 `networkState.quality=0` 任一命中，则为 `ABNORMAL`；未命中时分别为 `WORKING`/`IDLE`，其他或缺失为 `UNCLASSIFIED`。
+- 机场：离线为 `OFFLINE`；`modeCode` 优先取当前分包、缺失时取 120 秒缓存。1/2/3/5 为 `DEBUG_UPGRADE`；4/0 时若 `coverState=3`、`emergencyStopState=true`、`alarmState=true`、`flighttaskStepCode=255/256`、`positionState.isFixed=3`，或 `networkState.type=1` 且 `networkState.quality=0` 任一命中，则为 `ABNORMAL`；未命中时分别为 `WORKING`/`IDLE`，其他或缺失为 `UNCLASSIFIED`。
 - 无人机：离线为 `OFFLINE`；`modeCode` 11/12/14 为 `ABNORMAL`，13/19 为 `DEBUG_UPGRADE`，0 为 `IDLE`，1–10、15–18、20/21 为 `WORKING`，其他或缺失为 `UNCLASSIFIED`。
 - `businessStatus` 传输为枚举名称字符串（如 `WORKING`），common DTO 不依赖 core 枚举；顶部业务统计与 OSD 展示复用同一映射器。
 
