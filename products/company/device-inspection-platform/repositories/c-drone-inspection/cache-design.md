@@ -79,11 +79,21 @@ P1 的缓存不是单纯的性能优化，而是“异步设备消息 → 可直
 | --- | --- |
 | Key | `wayline_task_running:{dockId}` |
 | 值 | `WaylineTaskDTO` |
-| 写入 | 任务开始/暂停/恢复、DRC 手动飞行、任务进度与部分 IoT 命令路径 |
+| 写入 | 普通/固定点位任务开始、暂停、恢复；一键起飞创建的手动飞行任务；DRC 控制、任务进度与部分 IoT 命令路径 |
 | 读取 | 任务指令、OSD 落库关联、任务状态与监控逻辑 |
 | 清理 | 显式删除；任务终态可标记 `ending` 后短暂保留再过期 |
 
-该缓存按**机场设备 ID**而非飞机 SN 组织。`WaylineRedisServiceImpl#setRunningTask` 只用新 DTO 中的非空字段覆盖旧值，避免进度、航程、动作类型等分批事件相互覆盖。
+该缓存按**机场设备 ID**而非飞机 SN 组织。同一机场 key 同时承载不同任务类型的运行态，必须以 DTO 的 `taskType` 区分，不能仅凭 key 名或 `actionType` 判断任务类别。`WaylineRedisServiceImpl#setRunningTask` 只用新 DTO 中的非空字段覆盖旧值，避免进度、航程、动作类型等分批事件相互覆盖。
+
+### `taskType`：运行任务类别
+
+| `taskType` | `EnumTaskType` | 枚举名称 | 当前写入/使用边界 |
+| --- | --- | --- | --- |
+| `1` | `NORMAL` | 飞行巡检 | 普通航线任务。`TaskCommandExecStart` 将任务表中的类型写入运行缓存；设备列表的运行任务快照只展示该类型。 |
+| `2` | `MANUAL` | 手动飞行任务 | 一键起飞 `POST /drone/control/actions/takeoffToPoint` 成功下发后，`InspectionIotCommandGatewayImpl#createManualFlightTask` 创建 `wayline_task` 并写入该类型的运行缓存。它不是普通航线任务；暂停时的可恢复语义也由该类型单独处理。 |
+| `3` | `FIXED_POINT_INSPECTION` | 固定点位巡检 | 固定点位巡检任务。任务调度/执行链路会沿用任务实体类型写入运行缓存；不能按普通航线任务的展示和任务池规则处理。 |
+
+`WaylineTaskDTO.taskType` 是缓存值的一部分，而不是 Redis key 的分片维度：一个机场在同一时刻只应有一个当前运行态。读取方如果需要回源 `wayline_task`，必须同时校验 `taskId + projectId`，再按 `taskType` 选择业务处理；缺少 `taskType` 时不得擅自按普通任务解释。
 
 适合用于“当前正在执行哪个任务、当前进度/航程/暂停状态是什么”的实时判断；不适合作为任务历史或最终业务状态唯一来源。任务终态、重试和恢复操作仍须结合任务表及业务状态核实。
 
@@ -102,7 +112,9 @@ P1 的缓存不是单纯的性能优化，而是“异步设备消息 → 可直
 代码入口：
 
 - [`WaylineRedisServiceImpl`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/wayline/impl/WaylineRedisServiceImpl.java)
+- `b-inspection-platform-common/.../EnumTaskType.java`
 - [`TaskCommandExecStart`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/controller/admin/waylineTask/taskHandler/command/TaskCommandExecStart.java)
+- [`InspectionIotCommandGatewayImpl`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/iot/impl/InspectionIotCommandGatewayImpl.java)（一键起飞创建手动飞行任务）
 - [`InspectionTaskProgressBusinessServiceImpl`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/iot/impl/InspectionTaskProgressBusinessServiceImpl.java)
 - [`DroneTaskStatusReconciliationTask`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/monitor/DroneTaskStatusReconciliationTask.java)
 
