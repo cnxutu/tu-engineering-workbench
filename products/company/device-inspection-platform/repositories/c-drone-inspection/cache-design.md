@@ -73,13 +73,17 @@ P1 的缓存不是单纯的性能优化，而是“异步设备消息 → 可直
 
 这是“近期存在有效活动”的快速判断，用于监控和 OSD 状态 Resolver。它必须与 OSD 快照结合：在线 key 存在但 OSD 缓存缺失时，不能伪造遥测；OSD 存在但在线 key 已失效时，应按在线策略而不是只展示旧 OSD 判断设备可控性。
 
-## 4. 运行中的航线任务：按机场维度的工作态
+## 4. 任务缓存：DRONE/DOCK 与 CAMERA 分域维护
+
+`wayline_task` 是两类任务共同的持久化事实表，但运行态缓存按设备类型分域：机场/无人机飞行任务使用按机场组织的单任务快照；CAMERA 固定点位巡检使用按项目和相机设备组织的任务集合。两者不能仅因 `EnumTaskType` 同属任务表而互相替代。
+
+### 4.1 DRONE/DOCK：运行中的航线或手动飞行任务
 
 | 项目 | 设计 |
 | --- | --- |
 | Key | `wayline_task_running:{dockId}` |
 | 值 | `WaylineTaskDTO` |
-| 写入 | 普通/固定点位任务开始、暂停、恢复；一键起飞创建的手动飞行任务；DRC 控制、任务进度与部分 IoT 命令路径 |
+| 写入 | 普通航线任务开始、暂停、恢复；一键起飞创建的手动飞行任务；DRC 控制、任务进度与部分 IoT 命令路径 |
 | 读取 | 任务指令、OSD 落库关联、任务状态与监控逻辑 |
 | 清理 | 显式删除；任务终态可标记 `ending` 后短暂保留再过期 |
 
@@ -91,23 +95,45 @@ P1 的缓存不是单纯的性能优化，而是“异步设备消息 → 可直
 | --- | --- | --- | --- |
 | `1` | `NORMAL` | 飞行巡检 | 普通航线任务。`TaskCommandExecStart` 将任务表中的类型写入运行缓存；设备列表的运行任务快照只展示该类型。 |
 | `2` | `MANUAL` | 手动飞行任务 | 一键起飞 `POST /drone/control/actions/takeoffToPoint` 成功下发后，`InspectionIotCommandGatewayImpl#createManualFlightTask` 创建 `wayline_task` 并写入该类型的运行缓存。它不是普通航线任务；暂停时的可恢复语义也由该类型单独处理。 |
-| `3` | `FIXED_POINT_INSPECTION` | 固定点位巡检 | 固定点位巡检任务。任务调度/执行链路会沿用任务实体类型写入运行缓存；不能按普通航线任务的展示和任务池规则处理。 |
+| `3` | `FIXED_POINT_INSPECTION` | 固定点位巡检 | CAMERA 固定点位巡检任务。它**不写入**本节的 `wayline_task_running:{dockId}`；运行态见下一节的 CAMERA 专属缓存。 |
 
-`WaylineTaskDTO.taskType` 是缓存值的一部分，而不是 Redis key 的分片维度：一个机场在同一时刻只应有一个当前运行态。读取方如果需要回源 `wayline_task`，必须同时校验 `taskId + projectId`，再按 `taskType` 选择业务处理；缺少 `taskType` 时不得擅自按普通任务解释。
+`WaylineTaskDTO.taskType` 是该缓存值的一部分，而不是 Redis key 的分片维度：一个机场在同一时刻只应有一个当前飞行运行态。读取方如果需要回源 `wayline_task`，必须同时校验 `taskId + projectId`，再按 `taskType` 选择业务处理；缺少 `taskType` 时不得擅自按普通任务解释。
 
 适合用于“当前正在执行哪个任务、当前进度/航程/暂停状态是什么”的实时判断；不适合作为任务历史或最终业务状态唯一来源。任务终态、重试和恢复操作仍须结合任务表及业务状态核实。
 
-### 当前实现与数据库一致性边界
+### 4.2 CAMERA：固定点位巡检的设备任务集合与展示快照
+
+固定点位巡检（`taskType=3`）可同时关联多个 CAMERA 通道，不能用“每个机场一个 DTO”的 `wayline_task_running:{dockId}` 表达。当前实现使用以下 Redis 状态：
+
+| Key | 类型/范围 | 值与用途 | 写入与清理 |
+| --- | --- | --- | --- |
+| `fixed_point_device_running_tasks:{projectId}:{deviceId}` | Set；单个 CAMERA 的作业中任务集合 | 成员为 `taskId + projectId` 组合；用于判定 CAMERA 是否作业中、计算运行任务数。允许同一 CAMERA 存在多个作业中任务。 | 固定点位任务至少一个关联通道启动成功后写入；任务完成、终止或启动失败时移除成员，集合为空后删除 key。读写受设备维度锁 `fixed_point_device_running_lock:{projectId}:{deviceId}` 串行保护。 |
+| `monitor:device_task_status:{projectId}:{deviceSn}` | 带 3 天 TTL 的监控展示快照 | `CameraTaskStatusPushDTO`；供 `/drone/monitor/v2/list` 的 CAMERA 卡片 `taskInfo` 首次加载，以及 `device_task_status` WebSocket 推送复用。 | `CameraTaskStatusNotifier` 在固定点位任务创建、启动、结束、终止时回源任务表计算并回写；缓存缺失或项目不匹配时，`/v2/list` 批量回源后重建。 |
+| `fixed_point_task_timed_finish` | Sorted Set；固定点位任务自动结束队列 | 成员为 `taskId + projectId`，score 为计划结束时间。 | 创建后事务提交写入；完成、终止或启动失败时移除；停止会话失败时按 5 秒延后重入队列。它是调度状态，不是 CAMERA 卡片任务详情来源。 |
+
+`POST /drone/monitor/v2/list` 的 CAMERA 分支先查询 `manage_device` 投影，再按项目和 CAMERA `deviceSn` 读取 `monitor:device_task_status:{projectId}:{deviceSn}`。命中有效 `CameraTaskStatusPushDTO` 直接填充 `taskInfo`；未命中时由 `CameraTaskStatusNotifier#resolveAndCacheBatch` 批量查询固定点位任务表及关联通道后回填。运行中判断还会读取 `fixed_point_device_running_tasks:{projectId}:{deviceId}`，因此 CAMERA 的任务状态不能从机场任务缓存或无人机 OSD 推断。
+
+**两类设备任务缓存的选择：**
+
+| 设备/任务场景 | 首选运行态 | 展示快照 | 不应使用 |
+| --- | --- | --- | --- |
+| DOCK/DRONE 的普通航线任务或一键起飞手动飞行 | `wayline_task_running:{dockId}` | `monitor:device_task_status:{projectId}:{droneSn}` | CAMERA 固定点位设备集合 |
+| CAMERA 的固定点位巡检 | `fixed_point_device_running_tasks:{projectId}:{deviceId}` | `monitor:device_task_status:{projectId}:{cameraSn}` | `wayline_task_running:{dockId}`、无人机 OSD |
+
+两类展示快照共用 `monitor:device_task_status:{projectId}:{deviceSn}` 前缀，但值类型不同：DRONE 为 `DeviceTaskStatusPushDTO`，CAMERA 为 `CameraTaskStatusPushDTO`。读取方必须按设备类别和实际 DTO 类型校验，不能把同名 key 视为可互换的载荷。
+
+### 4.3 与数据库的一致性边界
 
 > **证据等级：代码核对已确认。** 下述内容描述当前实现，不是跨存储强一致设计。
 
-- `WaylineRedisServiceImpl#setRunningTask` 只在 Redis 中读取、按非空字段合并并写回 `WaylineTaskDTO`，不会自动更新 `wayline_task` 表。
-- 正常任务开始、暂停、恢复等控制入口，通常先更新任务实体的业务状态，再写入运行任务缓存；任务进度上报会更新任务表状态/结束时间，并分别回写 Redis 的进度字段和数据库百分比。两者不是一个跨 Redis/数据库的原子事务。
-- OSD 计算得到的 `distanceToGo`、`timeToGo` 等实时字段只写入运行任务缓存；DRC/点飞等控制场景也可能只写入缓存，因为它们不一定对应持久化的 `wayline_task`。
-- 任务进入终态后不会立即删除缓存：`markRunningTaskEnding` 将 `ending=true` 并设置 10 秒 TTL，供稍晚到达的设备状态完成收尾；读取侧会过滤 `ending`，并用 `taskId + projectId` 回查任务表校验任务身份和数据库状态。之后由显式删除或 TTL 清理。
-- `DroneTaskStatusReconciliationTask` 每 5 分钟读取 Redis 任务快照并补发设备任务状态通知，用于补偿事件丢失、服务重启或缓存残留；它不是 Redis 与数据库的全量修复机制。
+- 对 4.1 的机场运行任务缓存，`WaylineRedisServiceImpl#setRunningTask` 只在 Redis 中读取、按非空字段合并并写回 `WaylineTaskDTO`，不会自动更新 `wayline_task` 表。
+- 普通任务开始、暂停、恢复等控制入口，通常先更新任务实体的业务状态，再写入机场运行任务缓存；任务进度上报会更新任务表状态/结束时间，并分别回写 Redis 的进度字段和数据库百分比。两者不是一个跨 Redis/数据库的原子事务。
+- OSD 计算得到的 `distanceToGo`、`timeToGo` 等实时字段只写入机场运行任务缓存；DRC/点飞等控制场景也可能只写入缓存，因为它们不一定对应持久化的 `wayline_task`。
+- 普通飞行任务进入终态后不会立即删除机场缓存：`markRunningTaskEnding` 将 `ending=true` 并设置 10 秒 TTL，供稍晚到达的设备状态完成收尾；读取侧会过滤 `ending`，并用 `taskId + projectId` 回查任务表校验任务身份和数据库状态。之后由显式删除或 TTL 清理。
+- 对 4.2 的 CAMERA 固定点位缓存，运行集合和监控快照同样不是持久任务事实：`CameraTaskStatusNotifier` 在展示快照缺失时会从固定点位任务/通道表重新计算，运行集合则在任务生命周期的启动、完成和终止操作中显式维护。
+- `DroneTaskStatusReconciliationTask` 仅针对 DRONE 任务快照，每 5 分钟读取 Redis 并补发设备任务状态通知，用于补偿事件丢失、服务重启或缓存残留；它不是 Redis 与数据库的全量修复机制，也不替代 CAMERA 固定点位任务的回源计算。
 
-因此，当前一致性模型是：**数据库保存任务的持久事实，Redis 保存机场维度的实时投影；允许短暂不一致，通过数据库回源、终态延迟清理和低频对账降低影响**。缓存缺失不能直接解释为任务结束；需要回查任务表或返回状态未知。若需要严格一致，仍需另行设计事务消息、可靠事件/重建机制或统一状态写入边界。
+因此，当前一致性模型是：**数据库保存任务的持久事实，Redis 保存按机场或 CAMERA 设备维度组织的实时投影；允许短暂不一致，通过数据库回源、终态延迟清理和低频对账降低影响**。缓存缺失不能直接解释为任务结束；需要回查任务表或返回状态未知。若需要严格一致，仍需另行设计事务消息、可靠事件/重建机制或统一状态写入边界。
 
 代码入口：
 
@@ -115,6 +141,8 @@ P1 的缓存不是单纯的性能优化，而是“异步设备消息 → 可直
 - `b-inspection-platform-common/.../EnumTaskType.java`
 - [`TaskCommandExecStart`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/controller/admin/waylineTask/taskHandler/command/TaskCommandExecStart.java)
 - [`InspectionIotCommandGatewayImpl`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/iot/impl/InspectionIotCommandGatewayImpl.java)（一键起飞创建手动飞行任务）
+- `b-inspection-platform-core/.../waylineTask/impl/FixedPointInspectionServiceImpl.java`（CAMERA 固定点位任务集合、自动结束队列）
+- `b-inspection-platform-core/.../monitor/CameraTaskStatusNotifier.java`、`.../monitor/impl/MonitorDeviceServiceImpl.java`（CAMERA `/drone/monitor/v2/list` 任务快照）
 - [`InspectionTaskProgressBusinessServiceImpl`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/iot/impl/InspectionTaskProgressBusinessServiceImpl.java)
 - [`DroneTaskStatusReconciliationTask`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/monitor/DroneTaskStatusReconciliationTask.java)
 
