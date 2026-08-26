@@ -17,6 +17,7 @@
 - [DJI Dock 3 OSD 属性](dji-dock3-osd.md)：当前对接机场型号的官方 MQTT 属性参考。
 - [DJI Matrice 4TD OSD 属性](dji-m4td-osd.md)：当前对接无人机型号的官方 MQTT 属性参考。
 - [DRC](drc.md)：远程控制链路与高频遥测的术语边界。
+- [物联网物模型（TSL）：从极简内核到巡检平台](iot-thing-model-tsl.md)：属性、服务、事件、P2/P3/P4/P1 链路、适配器加载及教学模拟。
 - OSD 角度判定：当前项目阈值和异常规则尚未形成可复用、可追溯的批准结论；新增规则前应在 `decisions/` 建立 ADR，并引用代码、协议文档或测试证据。
 
 ## 证据状态

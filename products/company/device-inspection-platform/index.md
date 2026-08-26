@@ -70,5 +70,6 @@
 - 维护按版本归档的产品 PRD：从 [产品 PRD 目录](prd/index.md) 开始，当前版本读 [v2.1.0 项目管理 PRD](prd/v2.1.0/project-management.md)。
 - v2.1.0 项目管理原型已完成本地 HTML 导出解析；阅读 PRD 的“原型核验补充”和“冲突日志”以区分已验证产品要求与待决技术语义。
 - DJI 无人机行业术语、HMS、OSD、DRC 与姿态角语义：读 [DJI 无人机领域知识](context/domain/index.md)。
+- 理解物模型 TSL、P2 导入、P3/P4 Adapter 加载和 P1 消费链路：读 [物联网物模型专题](context/domain/iot-thing-model-tsl.md)。
 
 未命中这两类场景时，不因项目名称自动加载整个产品目录；先从受影响仓库的局部 `AGENTS.md`、代码、契约和测试核实。新增长期可复用的产品事实时，遵循 `docs/authoring-guide.md` 与 `docs/governance.md`。
