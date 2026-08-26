@@ -87,6 +87,25 @@ P1 的缓存不是单纯的性能优化，而是“异步设备消息 → 可直
 
 适合用于“当前正在执行哪个任务、当前进度/航程/暂停状态是什么”的实时判断；不适合作为任务历史或最终业务状态唯一来源。任务终态、重试和恢复操作仍须结合任务表及业务状态核实。
 
+### 当前实现与数据库一致性边界
+
+> **证据等级：代码核对已确认。** 下述内容描述当前实现，不是跨存储强一致设计。
+
+- `WaylineRedisServiceImpl#setRunningTask` 只在 Redis 中读取、按非空字段合并并写回 `WaylineTaskDTO`，不会自动更新 `wayline_task` 表。
+- 正常任务开始、暂停、恢复等控制入口，通常先更新任务实体的业务状态，再写入运行任务缓存；任务进度上报会更新任务表状态/结束时间，并分别回写 Redis 的进度字段和数据库百分比。两者不是一个跨 Redis/数据库的原子事务。
+- OSD 计算得到的 `distanceToGo`、`timeToGo` 等实时字段只写入运行任务缓存；DRC/点飞等控制场景也可能只写入缓存，因为它们不一定对应持久化的 `wayline_task`。
+- 任务进入终态后不会立即删除缓存：`markRunningTaskEnding` 将 `ending=true` 并设置 10 秒 TTL，供稍晚到达的设备状态完成收尾；读取侧会过滤 `ending`，并用 `taskId + projectId` 回查任务表校验任务身份和数据库状态。之后由显式删除或 TTL 清理。
+- `DroneTaskStatusReconciliationTask` 每 5 分钟读取 Redis 任务快照并补发设备任务状态通知，用于补偿事件丢失、服务重启或缓存残留；它不是 Redis 与数据库的全量修复机制。
+
+因此，当前一致性模型是：**数据库保存任务的持久事实，Redis 保存机场维度的实时投影；允许短暂不一致，通过数据库回源、终态延迟清理和低频对账降低影响**。缓存缺失不能直接解释为任务结束；需要回查任务表或返回状态未知。若需要严格一致，仍需另行设计事务消息、可靠事件/重建机制或统一状态写入边界。
+
+代码入口：
+
+- [`WaylineRedisServiceImpl`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/wayline/impl/WaylineRedisServiceImpl.java)
+- [`TaskCommandExecStart`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/controller/admin/waylineTask/taskHandler/command/TaskCommandExecStart.java)
+- [`InspectionTaskProgressBusinessServiceImpl`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/iot/impl/InspectionTaskProgressBusinessServiceImpl.java)
+- [`DroneTaskStatusReconciliationTask`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/monitor/DroneTaskStatusReconciliationTask.java)
+
 ## 5. DRC 会话与命令序列：控制面临时状态
 
 | Key | 用途 | 生命周期 |
