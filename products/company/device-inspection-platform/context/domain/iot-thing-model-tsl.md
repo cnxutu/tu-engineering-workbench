@@ -16,6 +16,18 @@
 
 阿里云官方说明也解释了这一分层的价值：结构化数据、状态缓存/设备影子、可视化与在线调试。当前项目借鉴的是“以模型作为统一契约”的思想，但 P2 的 Redis 运行态、P1 的业务缓存和前端展示并不等同于阿里云设备影子。[阿里云：设备连接与物模型能力](https://help.aliyun.com/zh/iot/developer-reference/link-sdks)
 
+## 官方文档入口（通用参考）
+
+以下页面说明的是阿里云物联网平台的通用模型与产品能力，用于理解术语、JSON 结构和导入思路；它们不能替代本项目 P2/P3/P4 的代码、运行配置或设备厂商协议。
+
+| 需要解决的问题 | 官方入口 | 使用边界 |
+| --- | --- | --- |
+| 属性、服务、事件分别是什么 | [物联网平台术语与物模型](https://help.aliyun.com/zh/iot/product-overview/terms) | 统一概念与能力类型，避免将属性、服务、事件混用。 |
+| TSL JSON 有哪些字段与数据类型 | [物模型 TSL 字段说明](https://help.aliyun.com/zh/iot/user-guide/tsl-parameters) | 参考 identifier、`dataType`、struct、array 等格式；先经 P2 校验确认兼容性。 |
+| 怎样定义、查看或导出产品模型 | [物模型（TSL）模型说明](https://help.aliyun.com/zh/iot/user-guide/what-is-a-tsl-model/) | 理解产品/模块/功能的组织方式，不假设项目存在同样的控制台能力。 |
+| 怎样通过 API 导入 TSL | [ImportThingModelTsl API](https://help.aliyun.com/zh/iot/developer-reference/api-nu0i7a) | 作为“导入是产品契约变更”的参考；不能直接替代 P2 导入接口。 |
+| 为什么选择模型通信，而非只用自定义 Topic | [设备连接与物模型能力](https://help.aliyun.com/zh/iot/developer-reference/link-sdks) | 理解结构化、状态缓存和调试收益；设备接入协议仍由 P3/P4 决定。 |
+
 ## 当前项目的真实链路
 
 ```mermaid
