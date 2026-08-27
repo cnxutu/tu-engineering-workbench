@@ -15,7 +15,7 @@
   "biz_code": "project_permission_changed",
   "timestamp": 0,
   "data": [
-    {"userId": 1001, "projectCodeList": ["PROJECT-001"]}
+    {"userId": 1001, "projectCodeList": ["PROJECT-001"], "projectSetName": "华东区域项目集"}
   ]
 }
 ```
@@ -25,6 +25,7 @@
 | `biz_code` | 固定为 `project_permission_changed`，来自 P1 `BizCodeEnum.PROJECT_PERMISSION_CHANGED`。 |
 | `userId` | 项目集关系中的业务用户 ID，供前端匹配当前登录用户。 |
 | `projectCodeList` | 该用户在本次变更中失效的项目编码增量；项目集级完全移除时包含其原有项目。 |
+| `projectSetName` | 被删除的项目集名称；仅 `PROJECT_SET_REMOVED` 项目集删除事件返回，其他事件省略。 |
 
 只有至少一个用户存在失效项目编码时才发布事件。事件数组包含变更前后关系快照中的用户并集；当前实现对没有失效编码的并集用户保留空数组，但若整次变更没有任何失效编码，则不广播。
 
