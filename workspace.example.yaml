@@ -46,6 +46,10 @@ repositories:
     path: <set-local-p7-path>
     product: company/device-inspection-platform
     role: 树模型、标签资源关联与标签数据权限服务
+  - code: P10
+    repository: tu-device-platform-kernel-lab
+    path: <set-local-p10-path>
+    role: 复杂设备场景微内核与可运行实验
   - code: K1
     repository: knowledge-hub
     path: <set-local-k1-path>
