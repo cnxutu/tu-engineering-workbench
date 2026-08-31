@@ -70,6 +70,8 @@ flowchart LR
 
 **视频流媒体链路：** DJI 设备视频流经设备侧网络进入 ZLMediaKit，P1 负责业务侧的流状态、播放地址或页面展示衔接。该链路与 OSD/HMS/Task 的消息链路相互关联但不是同一条消息通道；排查黑屏、拉流失败、转码或推流问题时优先检查 ZLM、媒体会话和网络，而不是先从 RocketMQ 或 WebSocket 推断。
 
+以上图和三条链路仅描述**当前已核对的 DJI 接入实现**。新增机器狗或其他设备厂商时，不得把 P4 DJI Codec、EMQX Topic 或 DJI 媒体链路视为通用前提；先按[多厂商设备接入边界](../context/domain/vendor-device-integration.md)核对厂商/型号资料和 P3 接入分流。
+
 ## 四个项目的职责与技术栈
 
 | 项目 | 已核实职责 | 主要技术与中间件 |

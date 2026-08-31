@@ -1,10 +1,10 @@
-# P3 与原生 SDK Bridge：gRPC、HTTP 与 MQTT 的选型
+# 原生 SDK Bridge 与 P3：gRPC、HTTP 与 MQTT 的选型
 
-> **证据等级：当前 P3 代码与官方 gRPC/Protocol Buffers 文档核对（2026-08-31）。** 本页解决“P3 如何对接独立的 C++ SDK Bridge”，不替代智元设备的产品、TSL 或安全决策。推荐方案是后续 PoC 的起点，不是已经上线的架构。
+> **证据等级：当前 P3 代码与官方 gRPC/Protocol Buffers 文档核对（2026-08-31）。** 本页解决“P3 如何对接独立的 C++/原生 SDK Bridge”，适用于具备同类边界的任意设备厂商；它不替代具体型号的产品、TSL 或安全决策。候选方案仅是后续 PoC 的起点，不是已经上线的架构。
 
 ## 何时读取
 
-- 设计智元或其他 C++/原生 SDK Bridge 与 P3 的通信边界。
+- 设计任意 C++/原生 SDK Bridge 与 P3 的通信边界。
 - 需要在 gRPC、HTTP/JSON 和 MQTT 之间选择，或为该选择设计 PoC。
 - Java 团队需要理解 gRPC、Protobuf 与 Hessian 类方案的区别。
 
@@ -22,23 +22,23 @@
 
 ## 当前边界与推荐取舍
 
-P3 的 `IoTCustomGatewayServer` 适配“第三方 SDK 自行维护设备连接”的模式：它调用 Java `CustomProtocolAdapter#downstream`，并接收该 Adapter 上行回调。若智元 Bridge 是独立 C++ 进程，P3 仍需要一个**薄 Java Adapter/Ingress**，把 Bridge 事件转成 `UpstreamDecodedData`，并把 P3 下行委托给 Bridge；独立 C++ 进程不能被 Maven classpath 直接加载。
+P3 的 `IoTCustomGatewayServer` 适配“第三方 SDK 自行维护设备连接”的模式：它调用 Java `CustomProtocolAdapter#downstream`，并接收该 Adapter 上行回调。若厂商 Bridge 是独立 C++ 进程，P3 仍需要一个**薄 Java Adapter/Ingress**，把 Bridge 事件转成 `UpstreamDecodedData`，并把 P3 下行委托给 Bridge；独立 C++ 进程不能被 Maven classpath 直接加载。新厂商/型号的资料与接入分流先读[多厂商设备接入边界](vendor-device-integration.md)。
 
-| 方案 | 适用条件 | 对智元 Bridge 的判断 |
+| 方案 | 适用条件 | 候选判断 |
 | --- | --- | --- |
 | HTTP/JSON + 事件回调 | 首次验证厂商 SDK，状态频率低，团队希望用现成 HTTP 工具排障。下行可为 HTTP 请求，上行必须配套 webhook/SSE/WebSocket，不能只靠轮询。 | **推荐为最小 PoC 选项。** 先证明一台设备的连接、状态、故障、命令受理与回调语义。 |
 | gRPC Unary `Command` + 服务端流 `SubscribeEvents` | Bridge 长期在线，P3 要持续接收状态/故障/控制权/命令结果，且 C++ 与 Java 均可管理 proto 生成与 TLS。 | **推荐为生产候选方案。** 比完整双向流更容易首期落地，并保留后续扩展空间。 |
 | gRPC 双向流 | 双方都需持续发送消息、需要一个逻辑会话承载下行命令和上行事件，团队已经掌握流控和重连。 | 不作为首期必选项；先完成 Unary + 服务端流的 PoC，再决定是否合并为双向流。 |
 | MQTT Bridge 直连平台 Broker | 设备边缘经常断网、需要本地缓存/多消费者，且已有可治理的 Broker、ACL、主题和幂等规范。 | 不应仅因平台已有 MQTT 就默认选择；当前 P3/P2 标准消息入口、Topic 与命令回执契约须先设计确认。 |
 
-**推荐决策：** 对智元 D1 Max，先完成 HTTP/JSON 或 gRPC Unary + 服务端流的同机 PoC；若目标是长期运行的多设备 Bridge，优先演进到 gRPC。不要在未验证厂商 SDK 生命周期和回调线程模型前，直接实施复杂双向流或 MQTT 生产主题。
+**PoC 建议：** 先完成 HTTP/JSON 或 gRPC Unary + 服务端流的同机 PoC；若目标是长期运行的多设备 Bridge，再评估演进到 gRPC。不要在未验证厂商 SDK 生命周期和回调线程模型前，直接实施复杂双向流或 MQTT 生产主题。具体型号是否适用，必须由其 SDK 能力、部署网络和安全约束核实。
 
 ## 建议的 gRPC 最小契约
 
 以下仅示意交互类别，不定义最终字段名、TSL identifier 或安全策略：
 
 ```proto
-service RobotBridge {
+service DeviceBridge {
   rpc Command(CommandRequest) returns (CommandAccepted);
   rpc SubscribeEvents(SubscribeRequest) returns (stream DeviceEvent);
 }
@@ -47,13 +47,13 @@ service RobotBridge {
 - `Command` 只表达“Bridge 已受理/拒绝命令”，并携带可关联的请求标识。
 - `SubscribeEvents` 传递设备状态、故障、控制权、SDK 连接生命周期和后续命令结果。
 - 动作完成必须由独立 `DeviceEvent` 或状态变化证明；不得把 `CommandAccepted` 当作动作完成。
-- 每个事件都需具备设备身份、事件时间、递增/幂等标识和契约版本；具体字段由 P1/P2/P3/P4-1 联合确认。
+- 每个事件都需具备设备身份、事件时间、递增/幂等标识和契约版本；具体字段由产品、P1/P2/P3 与厂商适配器联合确认。
 
 ```mermaid
 sequenceDiagram
     participant P3 as P3 Java 薄适配器
     participant B as C++ SDK Bridge
-    participant D as D1 Max SDK
+    participant D as 厂商 SDK
 
     P3->>B: Command(requestId, device, intent)
     B->>D: SDK 方法调用
@@ -68,7 +68,7 @@ sequenceDiagram
 ## PoC 与发布门槛
 
 1. 先编译并运行 C++ gRPC 官方 Quick Start，再以同一 `.proto` 运行 Java Client；验证开发机的 `protoc`、CMake、gRPC C++ 和 Java 代码生成链路。
-2. 把厂商 SDK 接入到 C++ Bridge，仅实现一台测试机的 `Command` 与 `SubscribeEvents`。回调线程只复制/入队，不在 SDK 回调中执行网络阻塞或业务逻辑。
+2. 把目标厂商 SDK 接入到 C++ Bridge，仅实现一台测试设备的 `Command` 与 `SubscribeEvents`。回调线程只复制/入队，不在 SDK 回调中执行网络阻塞或业务逻辑。
 3. P3 Java 薄适配器使用生成 Stub 调用 Bridge，将事件转换为当前 `CustomProtocolAdapter` 上行回调；P3 仍负责向 P2 查询设备并补齐平台上下文。
 4. 验证 SDK 连接断开、Bridge 重启、P3 重连、重复事件、超时与 deadline、慢消费者和 soft emergency stop。Bridge 健康检查、P3 到 Bridge 的连接 keepalive 与 P2 设备 ONLINE/OFFLINE 是三套不同语义。
 5. 只有完成上述闭环，才决定是否采用 gRPC 双向流、是否部署 mTLS、以及是否需要 MQTT 作为边缘离线消息面。
@@ -90,5 +90,5 @@ sequenceDiagram
 
 - P3 `c-iot-gateway/c-iot-gateway-core/.../protocol/CustomProtocolAdapter.java` 与 `.../protocol/custom/IoTCustomGatewayServer.java`：证明 P3 已支持第三方 SDK 自管连接的 Java Adapter 边界；没有证明已存在 gRPC transport。
 - P3 `.../core/manager/ProtocolCodecAdapterManager.java`：证明报文 Codec 选择机制；它不能证明 C++ SDK 可直接作为 Codec 加载。
-- gRPC 官方文档：证明 `.proto` 生成跨语言 Client/Server、四种 RPC 模式，以及 C++/Java Quick Start 的依赖和示例；不证明本平台或智元 SDK 已具备 gRPC 条件。
+- gRPC 官方文档：证明 `.proto` 生成跨语言 Client/Server、四种 RPC 模式，以及 C++/Java Quick Start 的依赖和示例；不证明本平台或任一厂商 SDK 已具备 gRPC 条件。
 - `pending_verification`：Bridge 部署网络、设备数量、SDK 许可证/运行环境、TLS 证书托管、断线后的事件补偿策略，以及 P3 使用 gRPC Java 依赖对现有 Java 8/Spring Boot 2.7 打包与发布的影响。
