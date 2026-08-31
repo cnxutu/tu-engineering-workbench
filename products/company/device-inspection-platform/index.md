@@ -72,5 +72,7 @@
 - v2.1.0 项目管理原型已完成本地 HTML 导出解析；阅读 PRD 的“原型核验补充”和“冲突日志”以区分已验证产品要求与待决技术语义。
 - DJI 无人机行业术语、HMS、OSD、DRC 与姿态角语义：读 [DJI 无人机领域知识](context/domain/index.md)。
 - 理解物模型 TSL、P2 导入、P3/P4 Adapter 加载和 P1 消费链路：读 [物联网物模型专题](context/domain/iot-thing-model-tsl.md)。
+- 评估智元酷拓 D1 Max 的 SDK 能力、状态/安全语义以及 P4-1 接入 P3 的候选边界：读 [智元 D1 Max SDK 能力与接入约束](context/domain/zhiyuan-d1-max-sdk.md)。
+- 选择 C++/原生 SDK Bridge 与 P3 之间的 gRPC、HTTP/JSON 或 MQTT 通信方式，或学习 gRPC：读 [P3 与原生 SDK Bridge 的通信选型](context/domain/grpc-edge-bridge-selection.md)。
 
 未命中这两类场景时，不因项目名称自动加载整个产品目录；先从受影响仓库的局部 `AGENTS.md`、代码、契约和测试核实。新增长期可复用的产品事实时，遵循 `docs/authoring-guide.md` 与 `docs/governance.md`。
