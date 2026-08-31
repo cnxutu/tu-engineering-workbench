@@ -63,7 +63,7 @@ flowchart TB
 1. **创建项目集**：P1 先在 P7 `c_tag` 的 `0003` 根下创建节点；随后登记名称、项目集创建者、成员角色池和空间池。后续 P1 写入失败时，当前代码会强制删除刚创建的 P7 空节点作为补偿。
 2. **创建项目并挂载资源**：P1 在项目集节点下创建 P7 子节点；再写名称登记、项目创建者、项目成员和项目空间绑定。成员只能来自该项目集人员池，空间只能来自该项目集空间池。
 3. **访问业务数据**：P1 根据 `project_set_user_role` 和 `project_member` 计算用户可访问项目，将选定项目编码作为 `X-Project-Id` / `project_id` 的数据隔离边界；业务表不回写项目管理关系。
-4. **变更或移除前校验**：P1 通过 `project_space_binding` 找空间，再由 P7 `c_tag_relation` 解析空间及子空间设备；以业务表 `project_id` 和任务状态检查运行任务。成员变更还会读取驾驶舱控制权缓存和 P6 用户资料。它们均不是项目管理表的写入目标。
+4. **变更或移除前校验**：P1 通过 `project_space_binding` 找空间，再由 P7 `c_tag_relation` 解析空间及子空间设备；项目与空间移除均按设备运行缓存统计任务，成员变更还会读取驾驶舱控制权缓存和 P6 用户资料。它们均不是项目管理表的写入目标。
 5. **移除**：P7 节点不物理删除，而是由 P1 将其 `config.status` 标记为 `REMOVED`；P1 逻辑删除名称、成员、角色池、空间池和空间绑定等活动关系，历史任务仍按原 `project_id` 保留。
 
 ### 逐表职责、收益与移除影响
@@ -88,7 +88,7 @@ flowchart TB
 | 某项目或项目集“不见了” | P7 `c_tag`：按 `tag_code`，检查父子结构与 `config.status` | P1 `project_node_identity`：按 `node_code` 查询是否仍有活动名称登记。 |
 | 用户看得到项目集却进不了项目 | `project_set_user_role`：`project_set_code + user_id` | 管理员应覆盖直属项目；普通成员再查 `project_member.project_code + user_id`。 |
 | 空间在编辑页不可选或被占用 | `project_set_space_pool.space_code` | 再查 `project_space_binding.space_code`，确认该空间是否已被同项目集项目挂载。 |
-| 项目不能移除 / 空间不能解绑 | `project_space_binding.project_code` | 由空间查 P7 `c_tag_relation` 的设备，再查 `wayline_task.project_id` 的执行中/暂停任务。 |
+| 项目不能移除 / 空间不能解绑 | `project_space_binding.project_code` | 由空间查 P7 `c_tag_relation` 的设备，再读取机场运行缓存与 CAMERA 固定点位运行 Set；具体 ID 与去重规则见 [P1 缓存设计](../repositories/c-drone-inspection/cache-design.md#43-项目项目集移除运行任务的专用缓存口径)。 |
 | 创建或改名提示重名 | `project_node_identity`：`node_type + parent_node_code + normalized_name + is_deleted=0` | 与 P7 `c_tag.tag_code/tag_name/parent_code` 对照，定位 P1 登记和树节点是否失配。 |
 | 创建人无法被移除或降级 | `project_set_identity` 或 `project_identity`：按相应节点编码 | 再查角色池/项目成员，确认保存请求是否保留该用户。 |
 
@@ -170,9 +170,9 @@ erDiagram
 
 项目集与项目创建均按“先在 P7 创建节点，再登记 P1 活动名称”执行。名称登记触发唯一键冲突时，P1 补偿删除刚创建的空 P7 节点。改名在 P1 本地事务中释放旧活动登记并写入新登记，只有成功后才更新 P7 名称；失败时事务回滚，旧名称及 P7 名称保持不变。
 
-项目删除采用“移除”语义，不物理删除 P7 项目节点及历史任务数据。删除入口执行前必须通过项目任务状态校验；存在 `task_biz_status in (2, 6)`（执行中或暂停）任务时拒绝移除。校验通过后，P1 逻辑删除项目成员、项目空间绑定及该项目的活动名称登记，P7 节点保留原名称、坐标、描述及未知扩展字段，并在 `config.status` 写入 `REMOVED`。
+项目删除采用“移除”语义，不物理删除 P7 项目节点及历史任务数据。删除入口执行前必须通过运行缓存校验；命中普通/手动飞行缓存或固定点位运行 Set 时拒绝移除。固定点位按 `taskId:projectId` 去重计数，普通/手动按每台设备一个当前缓存计数。校验通过后，P1 逻辑删除项目成员、项目空间绑定及该项目的活动名称登记，P7 节点保留原名称、坐标、描述及未知扩展字段，并在 `config.status` 写入 `REMOVED`。
 
-项目集移除先收集直属有效项目并完成全量任务状态校验，任何子项目存在执行中或暂停任务时整体失败，不产生部分移除。校验通过后，逐项释放项目成员、项目空间绑定、项目集角色池、空间池关系，以及项目集和全部直属项目的活动名称登记，并将所有子项目及项目集节点标记为 `REMOVED`。不提供恢复或重新开启接口。
+项目集移除先收集直属有效项目并完成全量运行缓存校验，任何子项目命中运行中任务时整体失败，不产生部分移除。校验通过后，逐项释放项目成员、项目空间绑定、项目集角色池、空间池关系，以及项目集和全部直属项目的活动名称登记，并将所有子项目及项目集节点标记为 `REMOVED`。不提供恢复或重新开启接口。
 
 P1 本地关系删除与 P7 生命周期更新不具备分布式事务。实施顺序为：完成全部本地校验 → 更新 P7 `config.status` → 删除 P1 关系；若后续本地操作失败，使用保存的原始 `config` 回写 P7 作为补偿，并记录失败上下文。P7 `deleteTag` 不用于项目移除。
 
@@ -194,7 +194,7 @@ Body: { "spaceCodes": ["SPACE-001", "SPACE-002"] }
 Response: { "blockedSpaceNames": ["园区 A", "园区 B"] }
 ```
 
-P1 先确认空间编码属于该项目的 `project_space_binding`，再通过 P7 资源关联查询按 `CASCADE` 获取空间及子空间下的设备 ID。以 `project_id = projectCode`、`dock_id in (deviceIds)`、`task_biz_status in (2, 6)` 查询 `wayline_task`，将命中设备反向映射到输入空间并批量读取空间名称，按输入顺序去重返回。父空间下子空间设备的任务必须计入父空间阻断结果。
+P1 先确认空间编码属于该项目的 `project_space_binding`，再通过 P7 资源关联查询按 `CASCADE` 获取空间及子空间下的设备 ID。普通/手动按设备 ID 读取 `wayline_task_running:{dockId}`；固定点位读取该空间 CAMERA 的 `fixed_point_device_running_tasks:{projectId}:{deviceId}` Set，并按 `taskId:projectId` 去重。任一来源命中运行中任务时，将该空间加入结果，按输入顺序去重返回。父空间下子空间设备的任务必须计入父空间阻断结果。
 
 ### 人员驾驶舱控制校验
 
@@ -258,8 +258,9 @@ sequenceDiagram
 ## 删除校验的责任边界与风险
 
 - `project_id` 与项目管理 `project_code` 是同一业务标识，P1 不做转换映射。
-- 任务阻断状态以 P1 `EnumTaskBizStatus.IN_PROGRESS(2)` 和 `SUSPEND(6)` 为准。
+- 移除阻断以运行缓存为准：普通/手动读取每台设备一个机场运行缓存；固定点位读取 CAMERA 运行 Set 并按 `taskId:projectId` 去重，不回查 `wayline_task` 的 `IN_PROGRESS` / `SUSPEND` 状态。
 - 项目空间设备归属通过 P7 空间资源关联解析；P1 不复制设备与空间的第二份关系真相。
+- `WaylineTaskEntity.dockId` 映射物理列 `device_id`，字段名不能证明其中保存机场 ID。手动一键起飞当前将 UAV ID 落库、以机场 ID 写运行缓存；因此缓存式移除校验依赖空间资源关联包含机场 ID。该项需通过集成数据验证，不在项目管理中自动做父子设备转换。
 - `RedisService#setAuthority` 当前使用无 TTL 的键值写入，异常断连可能留下陈旧控制权。前置接口的准确语义是“缓存仍显示该人员占有驾驶舱控制权”，不等价于实时在线证明。若后续需要严格在线判定，应独立增加显式删除、TTL 或心跳续约设计。
 - 空间或 Redis 查询异常不得降级为空结果，否则可能误放行项目移除；应沿既有异常链路失败并保留可排查上下文。
 
@@ -267,7 +268,7 @@ sequenceDiagram
 
 **已实现（本地代码变更，尚未发布）**：P1 四张业务关系表、项目管理门面及页面 Req/Resp；项目集和项目统一保存，项目列表包含中心点，项目详情包含项目集名称及空间选择状态；项目和项目集移除、`REMOVED` 读取隔离、任务状态拦截及失败补偿已在 P1 本地实现。P1 另已实现 `project_node_identity` 活动名称登记，以及 `project_set_identity`、`project_identity` 两类创建者识别，并在创建、改名、移除时执行名称登记与 P7 补偿。P7 当前仓库保留项目根迁移与 `PROJECT_ROOT_CODE`。
 
-**已实现（本地代码变更，尚未发布）**：删除前置空间任务校验和人员驾驶舱控制权校验接口已写入 P1，并复用空间子树设备解析、运行任务查询及驾驶舱控制权查询逻辑；项目集保存仍在服务端再次执行相同阻断校验，前端预检不能绕过提交校验。服务单元测试已覆盖前置校验结果、名称并发裁决相关补偿、名称释放和移除阻断。
+**已实现（本地代码变更，尚未发布）**：删除前置空间任务校验和人员驾驶舱控制权校验接口已写入 P1，并复用空间子树设备解析、运行任务缓存及驾驶舱控制权查询逻辑；项目集保存仍在服务端再次执行相同阻断校验，前端预检不能绕过提交校验。固定点位运行 Set 以 `taskId:projectId` 全局去重，普通/手动只按机场运行缓存判断；服务单元测试已覆盖前置校验结果、名称并发裁决相关补偿、名称释放和移除阻断。
 
 **2026-08-20 已提交的 P1 项目管理补充**：项目集详情补齐人员昵称、账号和部门，项目新增/编辑新增可选空间状态接口，项目集移除新增任务阻断前置检查；项目菜单权限接口与权限失效 WebSocket 的具体契约分别见 [P1 项目菜单权限](../repositories/c-drone-inspection/project-menu-permission.md) 和 [P1 项目权限失效 WebSocket 广播](../repositories/c-drone-inspection/project-permission-websocket.md)。当天提交范围和可复现 Git 证据见 [项目管理实现归档（2026-08-20）](../tasks/archive/p1-20260820-project-management-implementation.yaml)。
 
