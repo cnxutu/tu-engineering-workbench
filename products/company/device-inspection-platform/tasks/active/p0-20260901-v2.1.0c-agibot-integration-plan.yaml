@@ -1,0 +1,29 @@
+id: p0-20260901-v2.1.0c-agibot-integration-plan
+title: 巡检平台 2.1.0.c 智元机器人接入开发规划
+status: active
+repository: tu-devkit
+product: company/device-inspection-platform
+created_at: 2026-09-01T10:00:00+08:00
+evidence:
+  - source: tasks/active/p0-20260901-v2.1.0c-agibot-integration-plan.md
+    summary: 版本范围、M0-M3 里程碑、跨服务责任、工作量、人日估算、验收、发布回滚和每日留痕模板。
+  - source: context/domain/zhiyuan-d1-max-sdk.md
+    summary: 智元 D1 Max SDK 的已确认能力及 Java/原生 Bridge、身份、完成语义等待确认项。
+  - source: repositories/c-drone-inspection/key-entry-points.md
+    summary: P1 上行 Consumer/Router 与 InspectionIotCommandGateway 的当前业务边界。
+  - source: repositories/c-iot-server/message-bridge-and-data-rule.md
+    summary: P2 上行消息、Data Rule、RocketMQ 投递和独立消费者路径。
+  - source: repositories/c-iot-server/device-thing-model-tsl.md
+    summary: P2 设备、TSL、服务调用和下行路由责任。
+  - source: repositories/c-iot-gateway/protocol-instance-and-codec-selection.md
+    summary: P3 protocolCodecId 与唯一 Codec 选择机制。
+  - source: repositories/c-iot-gateway/gateway-upstream-downstream-bridge.md
+    summary: P3 上下行桥接与回复模式边界。
+  - source: repositories/ad-iot-codec-adapter-dji/dji-adapter-mapping.md
+    summary: 现有 DJI Adapter 的职责边界，用于避免将 DJI 实现误作智元默认方案。
+  - source: "c-drone-inspection branch develop/2.1.0: pom.xml, b-inspection-platform-common/core/bootstrap/iot, docs/巡检对接iot改造方案.md"
+    summary: 当前 P1 已切换到统一 IoT 四模块结构；没有可直接作为智元协议实现的旧版机器狗模块，业务侧应优先复用统一物模型与 Handler 基础设施。
+  - source: "c-drone-inspection branch develop/2.1.0: MonitorDeviceV2ListReq.java, DictMonitorDeviceCategoryEnum.java"
+    summary: 机器狗监控分类目前是预留/暂无列表数据，不能视为机器狗页面已完成。
+knowledge_update_assessment: updated
+sensitive_data_review: no secrets, credentials, or production payloads added
