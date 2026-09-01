@@ -25,5 +25,9 @@ evidence:
     summary: 当前 P1 已切换到统一 IoT 四模块结构；没有可直接作为智元协议实现的旧版机器狗模块，业务侧应优先复用统一物模型与 Handler 基础设施。
   - source: "c-drone-inspection branch develop/2.1.0: MonitorDeviceV2ListReq.java, DictMonitorDeviceCategoryEnum.java"
     summary: 机器狗监控分类目前是预留/暂无列表数据，不能视为机器狗页面已完成。
+  - source: tasks/active/p0-20260901-v2.1.0c-agibot-interface-ledger-and-p1-p2-chain.md
+    summary: 原型涉及接口的现有、需改、全新台账，以及 P1 消费 P2 上行和 P1 下行调用链路的机器狗兼容关注点。
+  - source: tasks/active/p0-20260901-v2.1.0c-agibot-frontend-interface-review.md
+    summary: 可独立维护的前端 REST/WebSocket 接口评审台账，供产品、前端、P1 与适配器逐项确认。
 knowledge_update_assessment: updated
 sensitive_data_review: no secrets, credentials, or production payloads added
