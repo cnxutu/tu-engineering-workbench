@@ -29,5 +29,7 @@ evidence:
     summary: 原型涉及接口的现有、需改、全新台账，以及 P1 消费 P2 上行和 P1 下行调用链路的机器狗兼容关注点。
   - source: tasks/active/p0-20260901-v2.1.0c-agibot-frontend-interface-review.md
     summary: 可独立维护的前端 REST/WebSocket 接口评审台账，供产品、前端、P1 与适配器逐项确认。
+  - source: tasks/active/p0-20260901-v2.1.0c-agibot-backend-adapter-alignment.md
+    summary: 基于已提供机器狗物模型的后端与协议适配对接方案，覆盖 identifier、设备识别、Data Rule、下行服务、联调顺序和未决项。
 knowledge_update_assessment: updated
 sensitive_data_review: no secrets, credentials, or production payloads added
