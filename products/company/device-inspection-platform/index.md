@@ -4,7 +4,7 @@
 
 ## 当前已登记服务
 
-无人机巡检平台的已登记服务职责如下。其中设备消息与指令主链路仅覆盖 P1–P4；P5 是系统统一网关，P6/P7 是平台公共服务，尚未在本知识包中登记为该主链路的跳点。
+无人机巡检平台的已登记服务职责如下。设备消息与指令主链路由 P1–P3 与按设备类型选择的协议适配器组成：P4 服务 DJI 设备，P4-1 服务智元机器狗；P5 是系统统一网关，P6/P7 是平台公共服务，尚未在本知识包中登记为该主链路的跳点。
 
 | 服务 | 当前链路中的职责 |
 | --- | --- |
@@ -12,6 +12,7 @@
 | P2 `c-iot-server` | IoT 消息处理、Data Rule 投递与下行服务调用。 |
 | P3 `c-iot-gateway` | 协议接入、设备连接与上/下行转发。 |
 | P4 `ad-iot-codec-adapter-dji` | P3 进程内 DJI 编解码与协议映射，不承担业务编排。 |
+| P4-1 `ad-iot-codec-adapter-robotDog-zhiyuan` | P3 Custom 协议的智元机器狗 WebSocket 会话、APDU 编解码与统一物模型消息映射，不承担业务编排。 |
 | P5 `c-gateway` | 巡检系统统一网关；具体路由、鉴权和下游服务契约待核实。 |
 | P6 `c-system` | RBAC、基础用户信息与系统管理能力。 |
 | P7 `c-tag` | 树模型、标签资源关联与标签维度的数据权限能力；不拥有接入业务系统的资源本体。 |
@@ -53,6 +54,10 @@
 #### P4 `ad-iot-codec-adapter-dji`
 
 - DJI Topic、字段、identifier、命令或回复映射：读 [P4 DJI 协议映射](repositories/ad-iot-codec-adapter-dji/dji-adapter-mapping.md)。
+
+#### P4-1 `ad-iot-codec-adapter-robotDog-zhiyuan`
+
+- 智元机器狗 WebSocket 会话、APDU 字段、物模型 identifier 或 service 映射：读 [智元机器狗协议映射](repositories/ad-iot-codec-adapter-robotDog-zhiyuan/zhiyuan-robot-dog-adapter-mapping.md)。
 
 #### P5 `c-gateway`
 

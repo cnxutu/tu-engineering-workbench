@@ -31,6 +31,11 @@ repositories:
     path: <set-local-p4-path>
     product: company/device-inspection-platform
     role: DJI 协议解析、物模型转换与设备能力映射
+  - code: P4-1
+    repository: ad-iot-codec-adapter-robotDog-zhiyuan
+    path: <set-local-p4-1-path>
+    product: company/device-inspection-platform
+    role: 智元机器狗 Custom 协议、WebSocket 会话与物模型消息映射
   - code: P5
     repository: c-gateway
     path: <set-local-p5-path>

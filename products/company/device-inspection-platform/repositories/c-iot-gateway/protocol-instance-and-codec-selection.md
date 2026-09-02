@@ -18,6 +18,7 @@
 
 - 通用的协议实例、连接和编解码器选择问题：优先从 P3 排查。
 - DJI Topic、字段、identifier 或命令报文映射问题：转入 P4 的 [DJI 协议映射](../ad-iot-codec-adapter-dji/dji-adapter-mapping.md)。
+- 智元机器狗的 WebSocket 会话、APDU 或统一物模型映射问题：转入 P4-1 的 [智元机器狗协议映射](../ad-iot-codec-adapter-robotDog-zhiyuan/zhiyuan-robot-dog-adapter-mapping.md)。该 Adapter 使用 P3 的 `CustomProtocolAdapter` 边界；P3 运行配置和制品装载仍须在联调环境另行核实。
 - 设备、产品或物模型服务定义问题：转入 P2 的 [设备、物模型与 TSL 边界](../c-iot-server/device-thing-model-tsl.md)。
 
 ## 待核实项

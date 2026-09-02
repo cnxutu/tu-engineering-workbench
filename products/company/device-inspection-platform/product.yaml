@@ -7,6 +7,7 @@ repositories:
   - repositories/c-iot-server.yaml
   - repositories/c-iot-gateway.yaml
   - repositories/ad-iot-codec-adapter-dji.yaml
+  - repositories/ad-iot-codec-adapter-robotDog-zhiyuan.yaml
   - repositories/c-gateway.yaml
   - repositories/c-system.yaml
   - repositories/c-tag.yaml
