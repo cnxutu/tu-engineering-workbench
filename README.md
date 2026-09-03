@@ -8,6 +8,7 @@
 
 - [运行时约束](AGENTS.md)：供 Codex 按范围、简写协议和条件读取执行任务的最小入口。
 - [工程师使用与维护指南](docs/usage-guide.md)：供工程师理解范围声明、目录与日常使用方式。
+- [Agent Skill 项目与安装清单](docs/agent-skill-landscape.md)：S1 开源参考模块、GitHub 模板来源与当前环境 Skill 快照。
 - [项目导航与维护地图](docs/project-guide.md)：供工程师理解 AI 运行时加载链路、工程师使用与维护路径、项目骨架与扩展入口。
 - [Core 入口](core/index.md)：角色、规则、Skill 与参考模板。
 - [无人机巡检产品入口](products/company/device-inspection-platform/index.md)：P1–P4、P3-1 的业务、架构和链路上下文。

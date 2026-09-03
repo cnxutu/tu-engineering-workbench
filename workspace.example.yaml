@@ -83,3 +83,8 @@ repositories:
     repository: tu-ai-lab
     path: <set-local-a1-path>
     role: 个人 AI 功能集合工程
+  - code: S1
+    repository: skills
+    path: <set-local-s1-path>
+    role: 外部开源 Agent Skill 项目参考模块
+    upstream: https://github.com/mattpocock/skills
