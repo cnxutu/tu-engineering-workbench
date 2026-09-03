@@ -36,6 +36,8 @@ P4 `ad-iot-codec-adapter-dji` 是当前 DJI Codec 模块的事实，不是新厂
 4. 分别联调连接/重连、状态、故障、命令受理、动作完成、人工接管或急停，以及高频传感器/媒体的数据面。
 5. 准备 TSL、P1 Handler/Data Rule、P3 协议实例或 Adapter 与厂商组件的联合回滚；不让未知 identifier 被业务侧确认消费。
 
+落实这些核对项及后续开发、联调、发布时，使用[设备接入核心上下行对接任务清单](device-integration-task-checklist.md)记录责任、产物和验收证据。
+
 ## 当前代码证据
 
 - [P3 协议实例与 Codec 选择](../../repositories/c-iot-gateway/protocol-instance-and-codec-selection.md)：`ProtocolCodecAdapter` 的唯一注册与实例选择。

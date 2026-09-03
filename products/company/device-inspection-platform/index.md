@@ -25,6 +25,7 @@
 
 - OSD、State 或 DRC 数据从设备进入平台：读 [DJI OSD 上行数据链路](flows/dji-osd-upstream-flow.md)。
 - 需要从产品需求、TSL 定义到设备上报、平台运行态和 P1 业务投影的一页全链路：读 [设备状态与物模型端到端链路](flows/device-state-thing-model-end-to-end.md)。
+- 理解智元机器狗从协议映射到驾驶舱状态回读、控制下行和验收边界：读 [智元机器狗上下行集成闭环](flows/zhiyuan-robot-dog-end-to-end-integration.md)。
 - 设备为何离线、P2 运行态到 P1 监控的链路，或以日志/MQ 形成排查闭环：读 [设备离线状态链路与排查 SOP](flows/device-offline-status-flow.md)。
 - 控制、任务或 DRC 指令从平台下发设备：读 [DJI 设备指令下行链路](flows/dji-osd-command-flow.md)。
 - 需要一个已核对的远程调试下行与进度回显样例：读 [DJI 机场强制关舱盖：端到端案例](flows/dji-cover-force-close-case.md)。
@@ -77,6 +78,7 @@
 - v2.1.0 项目管理原型已完成本地 HTML 导出解析；阅读 PRD 的“原型核验补充”和“冲突日志”以区分已验证产品要求与待决技术语义。
 - DJI 无人机行业术语、HMS、OSD、DRC 与姿态角语义，或定位智元等设备厂商资料：读 [设备厂商与领域知识](context/domain/index.md)。
 - 评估或接入新的无人机、机器狗或其他巡检设备厂商/型号：先读 [多厂商设备接入边界](context/domain/vendor-device-integration.md)。
+- 新增设备、协议能力或驾驶舱设计时：执行 [设备接入核心上下行对接任务清单](context/domain/device-integration-task-checklist.md)，确保至少一条核心能力完成对接与验收。
 - 理解物模型 TSL、P2 导入、P3/P4 Adapter 加载和 P1 消费链路：读 [物联网物模型专题](context/domain/iot-thing-model-tsl.md)。
 - 评估智元酷拓 D1 Max 的 SDK 能力、状态/安全语义以及接入 P3 的候选边界：读 [智元酷拓 D1 Max 型号能力与接入约束](context/domain/zhiyuan-d1-max-sdk.md)。
 - 选择 C++/原生 SDK Bridge 与 P3 之间的 gRPC、HTTP/JSON 或 MQTT 通信方式，或学习 gRPC：读 [原生 SDK Bridge 与 P3 的通信选型](context/domain/grpc-edge-bridge-selection.md)。
