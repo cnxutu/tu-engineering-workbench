@@ -26,6 +26,11 @@ repositories:
     path: <set-local-p3-path>
     product: company/device-inspection-platform
     role: 协议接入、连接管理与消息上下行入口
+  - code: P3-1
+    repository: c-wvp
+    path: <set-local-p3-1-path>
+    product: company/device-inspection-platform
+    role: 视频流管理平台网关：视频设备/通道、流媒体节点、播放、流生命周期与录像管理
   - code: P4
     repository: ad-iot-codec-adapter-dji
     path: <set-local-p4-path>

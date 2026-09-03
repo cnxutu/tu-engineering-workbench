@@ -1,0 +1,35 @@
+repository: c-wvp
+product: company/device-inspection-platform
+product_manifest: ../product.yaml
+product_index: ../index.md
+guidance_home:
+  resolution: AI_GUIDANCE_HOME-or-explicit-repository-config
+local_instructions:
+  - AGENTS.md
+central_context:
+  key_entry_points: c-wvp/key-entry-points.md
+knowledge_update:
+  assess_cross_service_facts: true
+role: 视频流管理平台网关
+verified_responsibilities:
+  - gb28181-sip-device-and-channel-management
+  - media-server-node-management
+  - pull-and-push-stream-resource-management
+  - playback-session-and-protocol-url-management
+  - recording-lifecycle-management
+  - media-status-and-recording-event-publication
+non_responsibilities:
+  - zlm-media-data-plane-and-transcoding-implementation
+  - inspection-business-orchestration
+  - iot-telemetry-and-command-protocol-conversion
+evidence_sources:
+  - README.md
+  - pom.xml
+  - src/main/java/com/genersoft/iot/vmp/xmkj/controller/VideoResourceRpcController.java
+  - src/main/java/com/genersoft/iot/vmp/xmkj/controller/VideoRpcController.java
+  - src/main/java/com/genersoft/iot/vmp/xmkj/service/VideoResourceRecordingService.java
+  - src/main/java/com/genersoft/iot/vmp/xmkj/mq/MediaEventMqProducer.java
+unknowns:
+  - production-deployment-topology
+  - consumer-service-and-version-of-video-api-contract
+  - media-server-cluster-routing-policy

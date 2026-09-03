@@ -1,6 +1,6 @@
 # 无人机巡检平台
 
-> **当前维护边界：设备数据上行、设备运行态与设备指令下行。** 本产品知识包不维护巡检任务、媒体的详细领域资料、部署拓扑、完整领域模型或全量协议资料；架构总览只标注这些能力的服务边界，具体事实必须以目标仓库代码、契约和运行配置核实。
+> **当前维护边界：设备数据上行、设备运行态、设备指令下行与视频控制面。** 本产品知识包不维护巡检任务、媒体协议/部署细节、完整领域模型或全量协议资料；架构总览只标注这些能力的服务边界，具体事实必须以目标仓库代码、契约和运行配置核实。
 
 ## 当前已登记服务
 
@@ -11,13 +11,14 @@
 | P1 `c-drone-inspection` | 设备业务的上行消费与控制、任务、DRC 指令发起。 |
 | P2 `c-iot-server` | IoT 消息处理、Data Rule 投递与下行服务调用。 |
 | P3 `c-iot-gateway` | 协议接入、设备连接与上/下行转发。 |
+| P3-1 `c-wvp` | 视频控制面网关：GB28181/SIP 视频设备与通道、ZLM 媒体节点、拉流/推流资源、播放、录像及媒体事件管理；不承载 ZLM 媒体数据面。 |
 | P4 `ad-iot-codec-adapter-dji` | P3 进程内 DJI 编解码与协议映射，不承担业务编排。 |
 | P4-1 `ad-iot-codec-adapter-robotDog-zhiyuan` | P3 Custom 协议的智元机器狗 WebSocket 会话、APDU 编解码与统一物模型消息映射，不承担业务编排。 |
 | P5 `c-gateway` | 巡检系统统一网关；具体路由、鉴权和下游服务契约待核实。 |
 | P6 `c-system` | RBAC、基础用户信息与系统管理能力。 |
 | P7 `c-tag` | 树模型、标签资源关联与标签维度的数据权限能力；不拥有接入业务系统的资源本体。 |
 
-当前核心证据覆盖设备消息上行和设备指令下行两条链路；架构页另外标注流媒体边界。当前代码、契约、配置和测试仍优先于本页。
+当前核心证据覆盖设备消息上行、设备指令下行和 `c-wvp` 视频控制面；架构页另外标注流媒体边界。当前代码、契约、配置和测试仍优先于本页。
 
 ## 按任务读取
 
@@ -32,7 +33,7 @@
 - P2 设备主数据变更、P1 `manage_device` 投影、空间展示隔离或日终修复：读 [P2 设备主数据到 P1 投影同步](flows/device-master-projection-sync.md)。
 - 评审 P1 项目集/项目、角色池、空间池与 P7 项目树边界：读 [项目集与项目管理设计（P1 + P7）](decisions/project-set-project-management.md)。
 - P1 按用户与项目返回菜单、项目角色与 P6 权限接口联调：读 [P1 项目菜单权限（P1 + P6）](repositories/c-drone-inspection/project-menu-permission.md)。
-- P1-P4 技术栈、中间件、职责边界、消息/指令/视频流媒体架构与问题定位范围：读 [P1-P4 技术栈与系统架构](architecture/p1-p4-technology-and-system-architecture.md)。
+- P1-P4、P3-1 技术栈、中间件、职责边界、消息/指令/视频流媒体架构与问题定位范围：读 [P1-P4、P3-1 技术栈与系统架构](architecture/p1-p4-technology-and-system-architecture.md)。
 
 ### 服务内入口
 
@@ -51,6 +52,10 @@
 
 - 协议实例、多协议接入、`protocolCodecId` 或 P4 集成：读 [P3 协议实例与 Codec 选择](repositories/c-iot-gateway/protocol-instance-and-codec-selection.md)。
 - 上行转发、下行订阅、连接、编码或回复模式：读 [P3 网关上/下行桥接](repositories/c-iot-gateway/gateway-upstream-downstream-bridge.md)。
+
+#### P3-1 `c-wvp`
+
+- 视频资源、设备/通道、实时播放、录像、ZLM 节点或媒体事件：读 [P3-1 视频流管理平台网关关键入口地图](repositories/c-wvp/key-entry-points.md)。
 
 #### P4 `ad-iot-codec-adapter-dji`
 

@@ -64,7 +64,7 @@ codex plugin add ai-guidance-workflows@tu-devkit
 | Skill | 适用场景 |
 | --- | --- |
 | `tu-diagnosing-spring-backend-incidents` | Spring Boot 异常、消息处理失败、数据不一致、性能退化或未知根因的线上事故。 |
-| `tu-loading-device-inspection-cross-service-context` | P1–P4 的 API、消息、数据归属、协议、MQTT、OSD、DJI 或上/下行链路变更前的全局理解。 |
+| `tu-loading-device-inspection-cross-service-context` | P1–P4、P3-1 的 API、消息、数据归属、协议、MQTT、OSD、DJI 或视频流媒体链路变更前的全局理解。 |
 | `tu-scaffolding-spring-feature-from-prototype` | 从多页原型、截图或 PDF 建立可追溯的视觉证据，识别冲突与待决语义，再按目标仓库约定设计或实现 Spring Boot 接口、数据模型、迁移 SQL 和 Swagger/OpenAPI 文档。 |
 
 ### 与 Compact Syntax 的关系
@@ -95,4 +95,4 @@ $ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
 
 也可以只调用 Skill 并附上原型图。目标项目、分层与数据约定、设计预览、确认门禁、实现范围和验证方式由 Skill 从当前工程上下文与代码中核实；只有无法可靠推断且会改变接口或数据语义的事项才需要补充确认。
 
-安装后，Codex 也可根据任务描述和运行时约束自动选择 Skill；显式写 `$插件名:Skill名` 更确定。仅出现多个项目标记但未说明服务交互时，不自动加载 P1–P4 的全局上下文。
+安装后，Codex 也可根据任务描述和运行时约束自动选择 Skill；显式写 `$插件名:Skill名` 更确定。仅出现多个项目标记但未说明服务交互时，不自动加载 P1–P4、P3-1 的全局上下文。

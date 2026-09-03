@@ -1,6 +1,6 @@
 # AI 工程上下文平台
 
-`ai-guidance` 是 P0 中面向 P1–P4 的统一系统知识库与 AI 工作方法库，不是单纯的 Prompt 集合或业务代码副本。
+`ai-guidance` 是 P0 中面向 P1–P4、P3-1 的统一系统知识库与 AI 工作方法库，不是单纯的 Prompt 集合或业务代码副本。
 
 它只维护高价值、可长期复用的上下文：关键入口、跨服务链路、服务/数据边界与重要设计决策。实现细节、全量配置和临时排查过程应留在代码、契约、配置或任务记录中。
 
@@ -10,7 +10,7 @@
 - [工程师使用与维护指南](docs/usage-guide.md)：供工程师理解范围声明、目录与日常使用方式。
 - [项目导航与维护地图](docs/project-guide.md)：供工程师理解 AI 运行时加载链路、工程师使用与维护路径、项目骨架与扩展入口。
 - [Core 入口](core/index.md)：角色、规则、Skill 与参考模板。
-- [无人机巡检产品入口](products/company/device-inspection-platform/index.md)：P1–P4 的业务、架构和链路上下文。
+- [无人机巡检产品入口](products/company/device-inspection-platform/index.md)：P1–P4、P3-1 的业务、架构和链路上下文。
 - [接入指南](docs/integration-guide.md)：如何让一个代码仓库绑定产品上下文。
 
 ## 目录职责
