@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: Robot Dog Fill Light Demo API
+  version: 0.0.0-demo
+  description: DEMO ONLY. This is not an approved production contract.
+paths:
+  /drone/robot-dog/{deviceId}/fill-light/action:
+    post:
+      tags: [Robot Dog Demo]
+      summary: Submit a fill-light action
+      description: Acceptance does not mean that the device has completed the action.
+      operationId: submitRobotDogFillLightActionDemo
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FillLightActionRequest'
+      responses:
+        '200':
+          description: The platform accepted the command.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FillLightActionEnvelope'
+        '400':
+          description: Invalid request.
+        '403':
+          description: Permission denied or external controller occupied the device.
+        '404':
+          description: Device not found in the current project scope.
+        '409':
+          description: The command could not be accepted in the current state.
+components:
+  schemas:
+    FillLightActionRequest:
+      type: object
+      required: [requestId, light, enabled]
+      properties:
+        requestId:
+          type: string
+          minLength: 1
+          maxLength: 64
+          example: 01JDEMO123456
+        light:
+          type: string
+          enum: [FRONT, REAR, AUTO]
+        enabled:
+          type: boolean
+    FillLightActionResult:
+      type: object
+      required: [requestId, acceptance, acceptedAt]
+      properties:
+        requestId:
+          type: string
+        acceptance:
+          type: string
+          enum: [ACCEPTED]
+        acceptedAt:
+          type: string
+          format: date-time
+    FillLightActionEnvelope:
+      type: object
+      required: [code, data, msg]
+      properties:
+        code:
+          type: integer
+          example: 0
+        data:
+          $ref: '#/components/schemas/FillLightActionResult'
+        msg:
+          type: string
+          example: success

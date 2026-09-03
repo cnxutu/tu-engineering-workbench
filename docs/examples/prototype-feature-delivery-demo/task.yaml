@@ -1,0 +1,36 @@
+# DEMO ONLY: all values and decisions are simulated workflow examples.
+id: robot-dog-fill-light-demo
+title: 机器狗驾驶舱补光控制与状态回显（模拟）
+demo: true
+status: active
+phase: integration
+repositories:
+  - c-drone-inspection
+product: company/device-inspection-platform
+prototype_sources:
+  - source: simulated-prototype/frame-cockpit-light-panel
+    status: simulated
+gates:
+  G1_scope_confirmed: verified
+  G2_contract_confirmed: verified
+  G3_tasks_ready: verified
+  G4_test_ready: pending
+artifacts:
+  walkthrough: walkthrough.md
+  impact_review: 01-impact-review.md
+  api_contract: 02-api-contract.md
+  openapi: 02-openapi.yaml
+  execution_backlog: 03-execution-backlog.md
+  integration_log: 04-integration-log.md
+decisions:
+  - id: D-01
+    summary: 复用完整状态快照 REST/WS，不新增补光查询或推送。
+  - id: D-02
+    summary: 新增单个补光动作接口，HTTP 成功只表示平台受理。
+  - id: D-03
+    summary: 设备最终结果由后续状态快照回读确认。
+evidence:
+  - source: simulated-review/2026-09-03
+    summary: 演示用产品、前端和上游确认记录，不是实际业务证据。
+knowledge_update_assessment: deferred
+sensitive_data_review: no secrets or production payloads in this demo
