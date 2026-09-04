@@ -19,6 +19,7 @@
 
 - [运行时约束](AGENTS.md)：供 Codex 按范围、简写协议和条件读取执行任务的最小入口。
 - [工程师使用与维护指南](docs/usage-guide.md)：供工程师理解范围声明、目录与日常使用方式。
+- [Feature Delivery Workflow V1](docs/feature-delivery-workflow.md)：一个 Delivery ID 串起影响分析、契约、实施、联调与 Bug 回归的正式说明。
 - [Agent Skill 项目与安装清单](docs/agent-skill-landscape.md)：S1 开源参考模块、GitHub 模板来源与当前环境 Skill 快照。
 - [项目导航与维护地图](docs/project-guide.md)：供工程师理解 AI 运行时加载链路、工程师使用与维护路径、项目骨架与扩展入口。
 - [Core 入口](core/index.md)：角色、规则、Playbook、契约与参考模板。

@@ -1,7 +1,8 @@
-id: p1-20260821-project-set-member-delete-check
+delivery_id: p1-20260821-project-set-member-delete-check
 title: 项目集成员移除预检返回阻断项目（2026-08-21）
 status: completed
-repository: c-drone-inspection
+repositories:
+  - c-drone-inspection
 product: company/device-inspection-platform
 created_at: 2026-08-21T18:15:00+08:00
 archived_at: 2026-08-21T18:25:00+08:00

@@ -1,18 +1,19 @@
 # Documentation contract for active and archived task records. This is intentionally not a JSON Schema validator.
 contract:
   name: task-metadata
-  version: v1
-  purpose: Captures a task's scope, evidence, decisions, and knowledge-maintenance outcome.
+  version: v2
+  purpose: Captures a delivery's lifecycle navigation, scope, evidence, decisions, and knowledge-maintenance outcome.
 required_fields:
-  id:
+  delivery_id:
     type: string
   title:
     type: string
   status:
     type: string
     allowed_values: [active, completed, blocked, superseded]
-  repository:
-    type: string
+  repositories:
+    type: list
+    item_type: string
   product:
     type: string
   created_at:
@@ -24,6 +25,19 @@ required_fields:
     type: string
     allowed_values: [updated, not-needed, deferred]
 optional_fields:
+  phase:
+    type: string
+    allowed_values: [impact, contract, execution, stabilization]
+  gates:
+    type: map
+  artifacts:
+    type: map
+  current_focus:
+    type: map
+  last_verified:
+    type: list
+  next_actions:
+    type: list
   adr:
     type: path
   archived_at:
@@ -31,6 +45,10 @@ optional_fields:
   sensitive_data_review:
     type: string
 rules:
+  - Feature Delivery task packages use delivery_id as the stable lifecycle identifier; child tasks may use CAP-xx, DEV-xx, EXT-xx, INT-xx, or BUG-xx identifiers inside their authoritative artifact.
+  - repositories lists every repository in the confirmed delivery scope; do not infer a repository merely from product knowledge or an example.
+  - task.yaml is lifecycle state and artifact navigation, not a copy of requirements or contracts.
+  - feature delivery task packages include resume.md as a non-authoritative resume cache; code, approved contracts, task artifacts, and reproducible evidence remain authoritative.
   - completed, blocked, and superseded tasks belong in the work task archive and require archived_at.
   - active tasks may omit archived_at.
   - evidence must be reproducible references, never copied secrets or sensitive payloads.

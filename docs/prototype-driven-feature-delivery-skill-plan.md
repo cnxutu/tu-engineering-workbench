@@ -1,9 +1,11 @@
 # 原型驱动功能交付 Skill 流程化方案
 
-> 状态：proposal，待评审后实施  
+> 状态：superseded（保留为实施前审计与设计演进记录）
 > 日期：2026-09-03  
 > 范围：P0 `ai-guidance-workflows` 的流程与 Skill 规划；本文件不授权修改业务代码或对外发布接口。
 > 经验来源：智元机器狗接入的 active task、端到端链路、设备接入清单，以及现有 `tu-scaffolding-spring-feature-from-prototype`。
+
+本页不再是流程规范。Feature Delivery Workflow V1 的当前权威说明、Delivery ID、阶段契约和 Skill 路由见 [Feature Delivery Workflow](feature-delivery-workflow.md)。最终实施采用 `tu-deliver-feature` 作为入口、`tu-analyzing-feature-impact` 作为 Phase 1 能力，旧 prototype Skill 仅保留兼容路由。
 
 完整模拟案例见 [机器狗补光控制：四阶段操作剧本](examples/prototype-feature-delivery-demo/walkthrough.md)。案例包含可直接查看的 `task.yaml`、四阶段产物和 OpenAPI 草案；其中接口和业务决定均为流程演示，不代表真实需求已确认。
 
@@ -65,7 +67,7 @@ work/<domain>/<product>/tasks/active/<feature-id>/
 ### 3.1 `task.yaml` 建议字段
 
 ```yaml
-id: <feature-id>
+delivery_id: <delivery-id>
 title: <feature-title>
 status: active
 phase: impact_review

@@ -12,7 +12,7 @@
 你在新会话中可以这样调用：
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 impact
 范围：P0 + P1
 原型：<原型 URL、截图或 PDF>
@@ -61,7 +61,7 @@ Q-05：上游确认复用 inspection_device_control，命令值为模拟值 SET_
 然后调用：
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 contract
 任务：robot-dog-fill-light-demo
 确认结果：见上面的 Q-01～Q-05；请更新任务包并形成接口契约，不修改业务代码
@@ -98,7 +98,7 @@ AI 生成 `02-api-contract.md` 和可选的 `02-openapi.yaml`。本例最终形�
 继续调用：
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 contract
 任务：robot-dog-fill-light-demo
 按本轮接口评审结论修订并检查 G2；仍然不写业务代码
@@ -107,7 +107,7 @@ contract
 当 `G2_contract_confirmed=verified` 后，如果你确实想先让 IDEA/Apifox 从 Java 代码识别接口，可以另行授权：
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 controller-contract
 任务：robot-dog-fill-light-demo
 范围：P1
@@ -123,7 +123,7 @@ controller-contract
 你要求生成任务清单：
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 plan
 任务：robot-dog-fill-light-demo
 根据已确认的影响范围和接口契约，生成可逐项执行的任务清单
@@ -145,7 +145,7 @@ AI 输出 `03-execution-backlog.md`。本例拆成：
 你可以逐项执行：
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 execute DEV-01
 任务：robot-dog-fill-light-demo
 范围：P1
@@ -154,7 +154,7 @@ execute DEV-01
 也可以按功能块执行：
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 execute block=backend-control
 任务：robot-dog-fill-light-demo
 范围：P1
@@ -166,7 +166,7 @@ AI 每完成一项就回填同一个 backlog，包括实际文件、测试命令
 当外部样本拿到后，你这样解锁任务：
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 plan
 任务：robot-dog-fill-light-demo
 EXT-01 已完成，脱敏样本位置：<受控文件或评审记录>
@@ -180,7 +180,7 @@ EXT-01 已完成，脱敏样本位置：<受控文件或评审记录>
 开始联调时调用：
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 integrate
 任务：robot-dog-fill-light-demo
 本轮场景：前端首屏、前灯开启、外部占用、WS 断线重连
@@ -200,7 +200,7 @@ AI 按 `04-integration-log.md` 记录期望和实际，并把问题回流到正�
 你负责提供可访问的联调环境、协作方时间和脱敏证据，确认延期或非目标项，最后要求生成提测摘要：
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 status
 任务：robot-dog-fill-light-demo
 请判断是否达到 G4，并输出提测范围、已验证场景、未完成项、风险、发布顺序和回滚边界
@@ -222,7 +222,7 @@ AI 只能根据已有证据关闭 `G4_test_ready`。缺少实机回读时，可�
 任务状态写在 `task.yaml`，所以不需要复制历史对话：
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 status
 任务包：<P0 中的任务包路径>
 告诉我当前阶段、阻塞、下一项，以及我需要对外确认什么
@@ -230,7 +230,18 @@ status
 
 AI 应先读 `task.yaml` 指向的权威产物，再只读取当前任务需要的代码和证据。它不应重新从原型开始生成另一套编号或接口文档。
 
-## 7. 最终留下什么
+## 7. V1 静态演练
+
+此模拟包验证了四个可恢复入口：
+
+1. **New Delivery**：第一段调用创建 `DF-DEMO-20260903-01-robotdog-fill-light`，从 Impact 开始并只建立必要产物。
+2. **Phase Transition**：`task.yaml` 的 Gates 与 `artifacts` 指向 Step 1–4 的唯一权威文件；每次确认都由当前 Artifact 驱动下一阶段。
+3. **Resume**：新会话先读 `task.yaml`、[resume.md](resume.md) 和 `04-integration-log.md`，可定位 `INT-02`，无需重放原型和历史聊天。
+4. **Bug Resume**：若设备状态偶尔不刷新，继续同一 Delivery 并新增 `BUG-01`；实现问题留在 Stabilization，Contract 或 Requirement 问题才分别重开 Phase 2 或 Phase 1。
+
+它是静态模拟，不证明真实设备、接口或环境已验证。
+
+## 8. 最终留下什么
 
 功能结束时，任务包本身就是完整交付记录：
 
@@ -239,5 +250,6 @@ AI 应先读 `task.yaml` 指向的权威产物，再只读取当前任务需要�
 - `03-execution-backlog.md`：谁做了什么、代码和自动验证结果是什么。
 - `04-integration-log.md`：哪些真实场景已通过、哪些延期、是否达到提测门禁。
 - `task.yaml`：当前状态、门禁、证据和归档导航。
+- `resume.md`：新 Session 的短小恢复缓存，不替代上述权威产物。
 
 这组产物既能让 AI 断点续跑，也能让你在评审、联调和提测时直接拿同一份事实沟通。

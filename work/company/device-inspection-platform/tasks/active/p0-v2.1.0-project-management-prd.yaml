@@ -1,7 +1,8 @@
-id: p0-v2.1.0-project-management-prd
+delivery_id: p0-v2.1.0-project-management-prd
 title: 沉淀 v2.1.0 项目管理模块 PRD
 status: active
-repository: tu-devkit
+repositories:
+  - tu-devkit
 product: company/device-inspection-platform
 created_at: 2026-08-19T13:16:00+08:00
 evidence:

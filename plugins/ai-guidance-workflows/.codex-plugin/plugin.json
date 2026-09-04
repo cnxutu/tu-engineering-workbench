@@ -1,22 +1,23 @@
 {
   "name": "ai-guidance-workflows",
   "version": "0.1.0+codex.20260904090000",
-  "description": "Evidence-led Spring backend workflows for incidents, cross-service context, and prototype-driven feature scaffolding.",
+  "description": "Evidence-led feature delivery, impact analysis, Spring incident, and cross-service workflows.",
   "author": {
     "name": "tu-engineering-workbench"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "AI Guidance Workflows",
-    "shortDescription": "Evidence-led Spring backend delivery workflows.",
-    "longDescription": "Shared Codex Skills for diagnosing Spring backend incidents, loading minimum verified P1\u2013P4 cross-service context, and turning product prototypes into repository-conformant API and data implementations.",
+    "shortDescription": "Evidence-led feature delivery workflows.",
+    "longDescription": "Shared Codex Skills for durable feature delivery, prototype impact analysis, Spring incident diagnosis, and minimum verified cross-service context.",
     "developerName": "tu-engineering-workbench",
     "category": "Productivity",
     "capabilities": [],
     "defaultPrompt": [
       "Diagnose a P2 backend message-processing incident with evidence.",
       "Load P1\u2013P4 context before designing a cross-service change.",
-      "Use the prototype URL or attachment to produce a verified Spring API and database implementation."
+      "Start or resume a Delivery ID from a prototype, contract, implementation task, or integration bug.",
+      "Analyze prototype or PRD evidence into a repository-backed impact review."
     ]
   }
 }

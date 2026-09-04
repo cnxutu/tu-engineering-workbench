@@ -1,0 +1,6 @@
+interface:
+  display_name: "TU · Deliver Feature"
+  short_description: "Start or resume durable feature delivery"
+  default_prompt: "Use $tu-deliver-feature to start a feature from this requirement or resume Delivery ID DF-YYYYMMDD-NN."
+policy:
+  allow_implicit_invocation: false

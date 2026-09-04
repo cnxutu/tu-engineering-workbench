@@ -1,7 +1,8 @@
-id: p0-20260901-v2.1.0c-agibot-integration-plan
+delivery_id: p0-20260901-v2.1.0c-agibot-integration-plan
 title: 巡检平台 2.1.0.c 智元机器人接入开发规划
 status: active
-repository: tu-devkit
+repositories:
+  - tu-devkit
 product: company/device-inspection-platform
 created_at: 2026-09-01T10:00:00+08:00
 evidence:

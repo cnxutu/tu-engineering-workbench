@@ -1,4 +1,6 @@
 interface:
   display_name: "TU - Scaffold Spring Feature from Prototype"
-  short_description: "Extract and implement verified Spring backend contracts"
-  default_prompt: "Use $tu-scaffolding-spring-feature-from-prototype to analyze this prototype and deliver the verified Spring backend design or implementation: [URL or attachment]."
+  short_description: "Legacy route for prototype feature delivery"
+  default_prompt: "Use $tu-scaffolding-spring-feature-from-prototype to route this legacy prototype request into $tu-deliver-feature: [URL or attachment]."
+policy:
+  allow_implicit_invocation: false

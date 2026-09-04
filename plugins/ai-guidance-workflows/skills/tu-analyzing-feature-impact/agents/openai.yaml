@@ -1,0 +1,4 @@
+interface:
+  display_name: "TU · Analyze Feature Impact"
+  short_description: "Turn requirement evidence into impact review"
+  default_prompt: "Use $tu-analyzing-feature-impact to create an evidence-backed impact review from this prototype or PRD."

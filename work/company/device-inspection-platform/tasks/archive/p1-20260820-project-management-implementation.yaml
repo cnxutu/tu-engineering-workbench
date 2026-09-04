@@ -1,7 +1,8 @@
-id: p1-20260820-project-management-implementation
+delivery_id: p1-20260820-project-management-implementation
 title: P1 项目管理实现补充归档（2026-08-20）
 status: completed
-repository: c-drone-inspection
+repositories:
+  - c-drone-inspection
 product: company/device-inspection-platform
 created_at: 2026-08-20T09:27:14+08:00
 archived_at: 2026-08-20T18:12:05+08:00

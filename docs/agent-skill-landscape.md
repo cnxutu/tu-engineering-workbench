@@ -33,13 +33,13 @@ P0 新建或改造 Skill 时采用以下最小基线：
 
 ## 当前环境可用 Skill 快照
 
-本节的“可用”指本任务启动时 Codex 明确暴露、可按触发规则加载的 42 个 Skill；这是回答“现在装了哪些”的首选口径。
+本节的“可用”指下次安装或更新 `ai-guidance-workflows` 后由 Codex 暴露、可按触发规则加载的 44 个 Skill；这是回答“现在装了哪些”的首选口径。
 
 | 来源 | 数量 | Skill |
 | --- | ---: | --- |
 | Codex 系统 | 5 | `imagegen`、`openai-docs`、`plugin-creator`、`skill-creator`、`skill-installer` |
 | 个人目录 | 1 | `find-skills` |
-| `ai-guidance-workflows` | 3 | `tu-diagnosing-spring-backend-incidents`、`tu-loading-device-inspection-cross-service-context`、`tu-scaffolding-spring-feature-from-prototype` |
+| `ai-guidance-workflows` | 5 | `tu-deliver-feature`、`tu-analyzing-feature-impact`、`tu-diagnosing-spring-backend-incidents`、`tu-loading-device-inspection-cross-service-context`、`tu-scaffolding-spring-feature-from-prototype`（legacy compatibility） |
 | Adobe | 6 | `adobe-batch-edit-photos`、`adobe-create-mockups`、`adobe-create-social-variations`、`adobe-design-from-template`、`adobe-edit-quick-cut`、`adobe-retouch-portraits` |
 | Data Analytics | 14 | `analyze-data-quality`、`build-dashboard`、`build-report`、`design-kpis`、`gather-business-context`、`index`、`jupyter-notebooks`、`kpi-reporting`、`market-sizing`、`metric-diagnostics`、`product-business-analysis`、`publish-artifact-to-sites`、`validate-data`、`visualize-data` |
 | Google Drive | 5 | `google-drive`、`google-docs`、`google-drive-comments`、`google-sheets`、`google-slides` |

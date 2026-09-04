@@ -67,8 +67,10 @@ codex plugin add ai-guidance-workflows@tu-engineering-workbench
 | Skill | 适用场景 |
 | --- | --- |
 | `tu-diagnosing-spring-backend-incidents` | Spring Boot 异常、消息处理失败、数据不一致、性能退化或未知根因的线上事故。 |
+| `tu-deliver-feature` | 显式创建、恢复、查询或稳定一个 Delivery ID；从原型、契约、DEV 任务或 Bug 统一路由四阶段交付。 |
+| `tu-analyzing-feature-impact` | 在 API 设计或实现前，将原型、PRD、截图或 PDF 归纳为有代码/契约证据的 Impact Review。 |
 | `tu-loading-device-inspection-cross-service-context` | P1–P4、P3-1 的 API、消息、数据归属、协议、MQTT、OSD、DJI 或视频流媒体链路变更前的全局理解。 |
-| `tu-scaffolding-spring-feature-from-prototype` | 从多页原型、截图或 PDF 建立可追溯的视觉证据，识别冲突与待决语义，再按目标仓库约定设计或实现 Spring Boot 接口、数据模型、迁移 SQL 和 Swagger/OpenAPI 文档。 |
+| `tu-scaffolding-spring-feature-from-prototype` | 兼容旧的显式原型调用；它路由到 `tu-deliver-feature` 与 Phase 1 Impact，不再维护独立生命周期。 |
 
 ### 与 Compact Syntax 的关系
 
@@ -91,11 +93,11 @@ p: 先核实上下行链路、契约与发布依赖，再给出方案
 ```
 
 ```text
-$ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
+$ai-guidance-workflows:tu-deliver-feature
 原型：https://prototype.example/device-group
-目标：实现设备分组管理后端
+目标：开始设备分组管理 Delivery
 ```
 
-也可以只调用 Skill 并附上原型图。目标项目、分层与数据约定、设计预览、确认门禁、实现范围和验证方式由 Skill 从当前工程上下文与代码中核实；只有无法可靠推断且会改变接口或数据语义的事项才需要补充确认。
+继续、查询和 Bug 都只需要 Delivery ID：`继续 DF-20260904-01`、`DF-20260904-01 当前进展` 或 `DF-20260904-01 设备状态偶尔不刷新`。Skill 先读取 `task.yaml`、`resume.md` 和当前阶段权威产物，再加载最小必要代码上下文。也可以只调用 Impact Skill 并附上原型图；目标项目、分层与数据约定、确认门禁、实现范围和验证方式仍须从当前工程上下文与代码核实。
 
 安装后，Codex 也可根据任务描述和运行时约束自动选择 Skill；显式写 `$插件名:Skill名` 更确定。仅出现多个项目标记但未说明服务交互时，不自动加载 P1–P4、P3-1 的全局上下文。

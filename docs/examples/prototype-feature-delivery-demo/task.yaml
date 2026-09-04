@@ -1,9 +1,9 @@
 # DEMO ONLY: all values and decisions are simulated workflow examples.
-id: robot-dog-fill-light-demo
+delivery_id: DF-DEMO-20260903-01-robotdog-fill-light
 title: 机器狗驾驶舱补光控制与状态回显（模拟）
 demo: true
 status: active
-phase: integration
+phase: stabilization
 repositories:
   - c-drone-inspection
 product: company/device-inspection-platform
@@ -17,11 +17,22 @@ gates:
   G4_test_ready: pending
 artifacts:
   walkthrough: walkthrough.md
-  impact_review: 01-impact-review.md
-  api_contract: 02-api-contract.md
+  impact: 01-impact-review.md
+  contract: 02-api-contract.md
   openapi: 02-openapi.yaml
-  execution_backlog: 03-execution-backlog.md
-  integration_log: 04-integration-log.md
+  backlog: 03-execution-backlog.md
+  integration: 04-integration-log.md
+  resume: resume.md
+current_focus:
+  type: integration
+  id: INT-02
+  summary: Verify device state convergence after accepted fill-light command.
+last_verified:
+  - G1_scope_confirmed
+  - G2_contract_confirmed
+  - G3_tasks_ready
+next_actions:
+  - Run INT-02 with the simulated device and record state convergence evidence.
 decisions:
   - id: D-01
     summary: 复用完整状态快照 REST/WS，不新增补光查询或推送。
