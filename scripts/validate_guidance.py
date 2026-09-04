@@ -52,14 +52,28 @@ def values_for_keys(path: Path, allowed: set[str]) -> list[tuple[str, str]]:
     return values
 
 
-def registered_repositories(repo_root: Path, errors: list[str]) -> dict[str, str]:
+def workspace_codes(text: str) -> list[str]:
+    return re.findall(r"^\s*-\s+code:\s*(\S.*?)\s*$", text, re.MULTILINE)
+
+
+def platform_product_ids(repo_root: Path) -> set[str]:
+    platform = repo_root / "platform.yaml"
+    if not platform.is_file():
+        return set()
+    return set(re.findall(r"^  - id:\s*(\S.*?)\s*$", platform.read_text(encoding="utf-8"), re.MULTILINE))
+
+
+def registered_repositories(
+    repo_root: Path, platform_products: set[str], errors: list[str]
+) -> dict[str, str]:
     registry = repo_root / REPOSITORY_REGISTRY
     error_if_missing(registry, "repository registry", errors)
     if not registry.is_file():
         return {}
+    registry_text = registry.read_text(encoding="utf-8")
     entries = re.findall(
         r"^  - code:\s*(?P<code>\S+)\s*$\n^    repository:\s*(?P<repository>\S.*?)\s*$",
-        registry.read_text(encoding="utf-8"),
+        registry_text,
         re.MULTILINE,
     )
     codes = [code for code, _ in entries]
@@ -74,11 +88,16 @@ def registered_repositories(repo_root: Path, errors: list[str]) -> dict[str, str
                 "repository registry has invalid primary binding: "
                 f"{code} -> {actual_repository or '<missing>'}; expected {expected_repository}"
             )
+    unknown_products = sorted(
+        set(re.findall(r"^    product:\s*(\S.*?)\s*$", registry_text, re.MULTILINE))
+        - platform_products
+    )
+    if unknown_products:
+        errors.append(
+            "repository registry has unregistered product bindings: "
+            f"{', '.join(unknown_products)}"
+        )
     return bindings
-
-
-def repository_code_pattern(codes: set[str]) -> str:
-    return "(?:" + "|".join(re.escape(code) for code in sorted(codes, key=len, reverse=True)) + ")"
 
 
 def validate_product_bindings(repo_root: Path, errors: list[str]) -> None:
@@ -112,7 +131,10 @@ def validate_workspace_configuration(repo_root: Path, registered_codes: set[str]
     if not local.is_file():
         return
     text = local.read_text(encoding="utf-8")
-    codes = re.findall(rf"^\s*-\s+code:\s*({repository_code_pattern(registered_codes)})\s*$", text, re.MULTILINE)
+    codes = workspace_codes(text)
+    unknown_codes = sorted(set(codes) - registered_codes)
+    if unknown_codes:
+        errors.append(f"workspace.local.yaml has unknown repository codes: {', '.join(unknown_codes)}")
     duplicate_codes = sorted({code for code in codes if codes.count(code) > 1})
     if duplicate_codes:
         errors.append(f"workspace.local.yaml has duplicate repository codes: {', '.join(duplicate_codes)}")
@@ -129,13 +151,16 @@ def validate_workspace_template(repo_root: Path, registered_codes: set[str], err
     if not template.is_file():
         return
     text = template.read_text(encoding="utf-8")
-    codes = re.findall(rf"^\s*-\s+code:\s*({repository_code_pattern(registered_codes)})\s*$", text, re.MULTILINE)
+    codes = workspace_codes(text)
     missing_codes = sorted(registered_codes - set(codes))
     if missing_codes:
         errors.append(f"workspace.example.yaml is missing repository codes: {', '.join(missing_codes)}")
     duplicate_codes = sorted({code for code in codes if codes.count(code) > 1})
     if duplicate_codes:
         errors.append(f"workspace.example.yaml has duplicate repository codes: {', '.join(duplicate_codes)}")
+    unknown_codes = sorted(set(codes) - registered_codes)
+    if unknown_codes:
+        errors.append(f"workspace.example.yaml has unknown repository codes: {', '.join(unknown_codes)}")
     for raw_path in re.findall(r"^\s+path:\s*(\S.*)\s*$", text, re.MULTILINE):
         value = raw_path.strip().strip("\\\"'")
         if not PLACEHOLDER_PATTERN.match(value):
@@ -162,7 +187,7 @@ def main() -> int:
 
     error_if_missing(repo_root / "AGENTS.md", "repository AGENTS.md", errors)
     error_if_missing(repo_root / "platform.yaml", "platform manifest", errors)
-    registered_codes = set(registered_repositories(repo_root, errors))
+    registered_codes = set(registered_repositories(repo_root, platform_product_ids(repo_root), errors))
     validate_markdown_links(repo_root, errors)
     validate_product_bindings(repo_root, errors)
     validate_workspace_configuration(repo_root, registered_codes, errors)

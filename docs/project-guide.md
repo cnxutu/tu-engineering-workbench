@@ -88,7 +88,7 @@ flowchart TD
 | `docs/` | 仅供工程师按需查阅的使用、接入、编写、治理和项目导航 | 调整工程师使用方式、维护入口或知识治理规则时。 |
 | `bootstrap/` | 目标仓库接入 P0 的 `AGENTS.md` 与清单模板 | 接入新仓库或修订接入模板时。 |
 | `scripts/`、`tests/` | 文档结构、链接、路径和契约的校验实现 | 调整校验能力或修复校验问题时。 |
-| `core/registry/repositories.yaml` | 已登记项目标记、仓库身份、职责与产品绑定的唯一来源 | 新增或调整工程注册时；同步校验本机路径模板。 |
+| `core/registry/repositories.yaml` | 已登记项目标记、仓库身份与产品绑定的唯一来源 | 新增或调整工程注册时；同步校验本机路径模板。 |
 | `workspace.example.yaml` / `workspace.local.yaml` | 可提交的路径模板 / 不提交的本机绝对路径映射 | 接入或移动本机工作区时；不得把本机路径写入可提交模板。 |
 | `.agents/plugins/marketplace.json` | 团队 Plugin 市场清单；仓库根目录是市场根目录 | 新增 Plugin、调整市场元数据或重新配置本地市场时。 |
 | `plugins/ai-guidance-workflows/` | 团队原生 Codex Skill 与 Plugin 测试 | 新增、修改或重命名团队 Skill 时。 |

@@ -10,4 +10,4 @@ K1 `knowledge-hub` 是个人 Knowledge Hub 的后端项目导航入口。本页�
 
 ## 证据
 
-项目标识、名称和后端职责来自 [`core/registry/repositories.yaml`](../../../../core/registry/repositories.yaml)。除该注册信息外，本页不声明当前实现或运行事实。
+项目标识和名称来自 [`core/registry/repositories.yaml`](../../../../core/registry/repositories.yaml)；后端职责由本产品 repository manifest 维护。除该注册信息外，本页不声明当前实现或运行事实。

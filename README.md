@@ -22,7 +22,7 @@
 - [Agent Skill 项目与安装清单](docs/agent-skill-landscape.md)：S1 开源参考模块、GitHub 模板来源与当前环境 Skill 快照。
 - [项目导航与维护地图](docs/project-guide.md)：供工程师理解 AI 运行时加载链路、工程师使用与维护路径、项目骨架与扩展入口。
 - [Core 入口](core/index.md)：角色、规则、Playbook、契约与参考模板。
-- [仓库注册表](core/registry/repositories.yaml)：项目标记、工程身份、职责与产品绑定的唯一来源。
+- [仓库注册表](core/registry/repositories.yaml)：项目标记、工程身份与产品绑定的唯一来源；仓库在产品中的职责由 `products/**/repositories/*.yaml` 维护。
 - [交付状态](work/README.md)：任务过程和归档的边界。
 - [无人机巡检产品入口](products/company/device-inspection-platform/index.md)：P1–P4、P3-1 的业务、架构和链路上下文。
 - [接入指南](docs/integration-guide.md)：如何让一个代码仓库绑定产品上下文。

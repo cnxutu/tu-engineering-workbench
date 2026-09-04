@@ -104,6 +104,52 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("workspace.example.yaml has duplicate repository codes: P1", result.stderr)
 
+    def test_rejects_local_workspace_with_unknown_code(self) -> None:
+        repository = self.copied_repository()
+        (repository / "workspace.local.yaml").write_text(
+            "repositories:\n  - code: P999\n    path: " + str(repository) + "\n",
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("workspace.local.yaml has unknown repository codes: P999", result.stderr)
+
+    def test_rejects_workspace_template_with_unknown_code(self) -> None:
+        repository = self.copied_repository()
+        template = repository / "workspace.example.yaml"
+        template.write_text(
+            template.read_text(encoding="utf-8")
+            + "  - code: P999\n    path: <set-local-p999-path>\n",
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("workspace.example.yaml has unknown repository codes: P999", result.stderr)
+
+    def test_rejects_registry_product_binding_not_in_platform(self) -> None:
+        repository = self.copied_repository()
+        registry = repository / "core" / "registry" / "repositories.yaml"
+        registry.write_text(
+            registry.read_text(encoding="utf-8").replace(
+                "product: company/device-inspection-platform",
+                "product: unknown/product",
+                1,
+            ),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "repository registry has unregistered product bindings: unknown/product",
+            result.stderr,
+        )
+
     def test_rejects_template_with_concrete_repository_path(self) -> None:
         repository = self.copied_repository()
         template = repository / "workspace.example.yaml"

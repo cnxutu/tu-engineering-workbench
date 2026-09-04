@@ -4,4 +4,4 @@ role: frontend
 status: pending_verification
 repository_path: unknown
 entry_document: repositories/knowledge-web.md
-evidence: "项目标识、名称与前端职责来自 core/registry/repositories.yaml；其余事实待仓库路径登记后核实。"
+evidence: "项目标识与名称来自 core/registry/repositories.yaml；前端职责由本 manifest 维护，其余事实待仓库路径登记后核实。"
