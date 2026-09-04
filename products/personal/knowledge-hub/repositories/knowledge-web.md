@@ -10,4 +10,4 @@ K2 `knowledge-web` 是个人 Knowledge Hub 的前端项目导航入口。本页�
 
 ## 证据
 
-项目标识、名称和前端职责来自根 `AGENTS.md` 的项目注册。除该注册信息外，本页不声明当前实现或运行事实。
+项目标识、名称和前端职责来自 [`core/registry/repositories.yaml`](../../../../core/registry/repositories.yaml)。除该注册信息外，本页不声明当前实现或运行事实。

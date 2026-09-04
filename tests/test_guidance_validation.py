@@ -55,11 +55,11 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
     def test_rejects_template_missing_devkit_repository_code(self) -> None:
         self.assert_template_rejects_missing_code("P0-1")
 
-    def test_rejects_template_with_swapped_primary_repository_bindings(self) -> None:
+    def test_rejects_registry_with_swapped_primary_repository_bindings(self) -> None:
         repository = self.copied_repository()
-        template = repository / "workspace.example.yaml"
-        template.write_text(
-            template.read_text(encoding="utf-8").replace(
+        registry = repository / "core" / "registry" / "repositories.yaml"
+        registry.write_text(
+            registry.read_text(encoding="utf-8").replace(
                 "repository: tu-engineering-workbench",
                 "repository: tu-devkit",
                 1,
@@ -71,7 +71,7 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn(
-            "workspace.example.yaml has invalid repository binding: "
+            "repository registry has invalid primary binding: "
             "P0 -> tu-devkit; expected tu-engineering-workbench",
             result.stderr,
         )

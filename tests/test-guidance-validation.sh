@@ -11,7 +11,7 @@ copy_repository() {
   local destination="$1"
   mkdir -p "${destination}"
   cp "${ROOT}/AGENTS.md" "${ROOT}/.gitignore" "${ROOT}/platform.yaml" "${destination}/"
-  cp -R "${ROOT}/.agents" "${ROOT}/bootstrap" "${ROOT}/core" "${ROOT}/docs" "${ROOT}/plugins" "${ROOT}/products" "${ROOT}/scripts" "${ROOT}/tests" "${destination}/"
+  cp -R "${ROOT}/.agents" "${ROOT}/bootstrap" "${ROOT}/core" "${ROOT}/docs" "${ROOT}/plugins" "${ROOT}/products" "${ROOT}/scripts" "${ROOT}/tests" "${ROOT}/work" "${destination}/"
 }
 
 TEMP_ROOT="$(mktemp -d)"

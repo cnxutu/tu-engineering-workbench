@@ -31,7 +31,7 @@ optional_fields:
   sensitive_data_review:
     type: string
 rules:
-  - completed, blocked, and superseded tasks belong in the product task archive and require archived_at.
+  - completed, blocked, and superseded tasks belong in the work task archive and require archived_at.
   - active tasks may omit archived_at.
   - evidence must be reproducible references, never copied secrets or sensitive payloads.
   - an ADR reference is required when the task records a durable architectural decision.

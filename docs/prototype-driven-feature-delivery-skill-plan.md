@@ -36,7 +36,7 @@
 
 ### 2.2 当前文档形态的主要成本
 
-机器狗 `tasks/active` 当前有 7 份 Markdown 任务文档，共约 1363 行，分别承载总体规划、接口台账、链路分析、复用评审、执行 backlog 和按日进度。它们能保留推演过程，但也出现了以下维护成本：
+机器狗交付记录当前位于 `work/company/device-inspection-platform/tasks/active`，包含总体规划、接口台账、链路分析、复用评审、执行 backlog 和按日进度。它们能保留推演过程，但也出现了以下维护成本：
 
 - 多份文件同时标为 active，旧文件的顶部状态与后续实际进度不一致。
 - 一份文件声明自己是“接口评审唯一台账”，但部分最终口径又需要跳到复用评审、每日计划或长期契约文档确认。
@@ -48,10 +48,10 @@
 
 ## 3. 推荐的任务包
 
-每个功能在对应产品的 `tasks/active/` 下建立一个目录；评审通过并实施 Skill 后，再由治理校验决定是否正式采用该目录结构。
+每个功能在对应 `work/<domain>/<product>/tasks/active/` 下建立一个目录；评审通过并实施 Skill 后，再由治理校验决定是否正式采用该目录结构。
 
 ```text
-tasks/active/<feature-id>/
+work/<domain>/<product>/tasks/active/<feature-id>/
 |-- task.yaml                 机器可读状态、阶段、门禁、产物索引
 |-- 01-impact-review.md       Step 1：范围与前后端对齐台账
 |-- 02-api-contract.md        Step 2：人可读的接口/消息契约与决策
@@ -88,7 +88,7 @@ knowledge_update_assessment: deferred
 sensitive_data_review: pending
 ```
 
-`task.yaml` 只保存状态和导航，不复制四份文档的正文。任务归档时整体移动到 `tasks/archive/<feature-id>/`，并遵循现有 task metadata 契约补齐最终状态和 `archived_at`。
+`task.yaml` 只保存状态和导航，不复制四份文档的正文。任务归档时整体移动到 `work/<domain>/<product>/tasks/archive/<feature-id>/`，并遵循现有 task metadata 契约补齐最终状态和 `archived_at`。
 
 ## 4. 四阶段工作流
 
@@ -305,6 +305,6 @@ Skill 流程化完成后，应能满足以下场景：
 
 1. 是否接受“升级现有 `tu-scaffolding-spring-feature-from-prototype`，不新增四个 Skill”的总体方向。
 2. 是否接受“独立契约为 Step 2 必需产物；Controller/DTO 骨架仅在契约已确认、仓库已有合适模式且明确授权时生成”。
-3. 是否接受每个新功能使用目录式任务包；若希望保持 `tasks/active` 平铺，可保留相同逻辑，但文件名统一为 `<feature-id>-01-impact-review.md` 等。
+3. 是否接受每个新功能使用目录式任务包；若希望保持 `work/<domain>/<product>/tasks/active` 平铺，可保留相同逻辑，但文件名统一为 `<feature-id>-01-impact-review.md` 等。
 
 以上三项确认后，再进入 P0-SKILL-01 的契约设计与实际 Skill 改造。

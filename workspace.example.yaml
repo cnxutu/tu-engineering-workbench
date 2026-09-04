@@ -1,95 +1,40 @@
-# 本机工作区映射模板。复制为 workspace.local.yaml 后填写本机绝对路径。
+# 本机工作区路径映射模板。仓库身份、职责和产品绑定以
+# core/registry/repositories.yaml 为准；复制为 workspace.local.yaml 后填写绝对路径。
 # workspace.local.yaml 已被 Git 忽略，禁止提交个人目录、凭据或其他敏感信息。
-workspace:
-  id: local-workspace
-  roots:
-    p0: <set-local-p0-path>
-    p0_1: <set-local-p0-1-path>
-    company: <set-local-company-root>
-    personal: <set-local-personal-root>
 repositories:
   - code: P0
-    repository: tu-engineering-workbench
     path: <set-local-p0-path>
-    role: AI 编排、共享上下文与团队工作流主库
   - code: P0-1
-    repository: tu-devkit
     path: <set-local-p0-1-path>
-    role: 开发环境、CLI、VPS 与工程工具
   - code: P1
-    repository: c-drone-inspection
     path: <set-local-p1-path>
-    product: company/device-inspection-platform
-    role: 巡检业务、设备、任务、媒体、视频与巡检 IoT 业务
   - code: P2
-    repository: c-iot-server
     path: <set-local-p2-path>
-    product: company/device-inspection-platform
-    role: IoT 业务、设备状态、Data Rule 与消息处理
   - code: P3
-    repository: c-iot-gateway
     path: <set-local-p3-path>
-    product: company/device-inspection-platform
-    role: 协议接入、连接管理与消息上下行入口
   - code: P3-1
-    repository: c-wvp
     path: <set-local-p3-1-path>
-    product: company/device-inspection-platform
-    role: 视频流管理平台网关：视频设备/通道、流媒体节点、播放、流生命周期与录像管理
   - code: P4
-    repository: ad-iot-codec-adapter-dji
     path: <set-local-p4-path>
-    product: company/device-inspection-platform
-    role: DJI 协议解析、物模型转换与设备能力映射
   - code: P4-1
-    repository: ad-iot-codec-adapter-robotDog-zhiyuan
     path: <set-local-p4-1-path>
-    product: company/device-inspection-platform
-    role: 智元机器狗 Custom 协议、WebSocket 会话与物模型消息映射
   - code: P5
-    repository: c-gateway
     path: <set-local-p5-path>
-    product: company/device-inspection-platform
-    role: 巡检系统统一网关
   - code: P6
-    repository: c-system
     path: <set-local-p6-path>
-    product: company/device-inspection-platform
-    role: RBAC、基础用户与系统管理服务
   - code: P7
-    repository: c-tag
     path: <set-local-p7-path>
-    product: company/device-inspection-platform
-    role: 树模型、标签资源关联与标签数据权限服务
   - code: P10
-    repository: tu-device-platform-kernel-lab
     path: <set-local-p10-path>
-    role: 复杂设备场景微内核与可运行实验
   - code: K1
-    repository: knowledge-hub
     path: <set-local-k1-path>
-    product: personal/knowledge-hub
-    role: Knowledge Hub 后端
   - code: K2
-    repository: knowledge-web
     path: <set-local-k2-path>
-    product: personal/knowledge-hub
-    role: Knowledge Hub 前端
   - code: K5
-    repository: tu-language-lab
     path: <set-local-k5-path>
-    role: 语言学习与快速 Demo 运行
   - code: L1
-    repository: tu-arch-learning
     path: <set-local-l1-path>
-    product: personal/architecture-learning
-    role: 个人软考高级系统架构师学习沉淀汇总
   - code: A1
-    repository: tu-ai-lab
     path: <set-local-a1-path>
-    role: 个人 AI 功能集合工程
   - code: S1
-    repository: skills
     path: <set-local-s1-path>
-    role: 外部开源 Agent Skill 项目参考模块
-    upstream: https://github.com/mattpocock/skills

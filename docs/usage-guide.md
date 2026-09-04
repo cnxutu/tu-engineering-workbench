@@ -17,7 +17,7 @@ p: 先核实现有缓存与接口，再提出最小实现方案并完成代码�
 v: 单元测试与接口回归
 ```
 
-`P0–P7` 覆盖 P0 协作根与无人机巡检系统的已登记范围；P0-1 是独立的开发工具、CLI 与 VPS 标记，不包含在该范围中。`K1` 和 `K2` 分别预留给 Knowledge Hub 后端与前端；`K5` 是语言学习与快速 Demo 运行项目 `tu-language-lab`；`L1` 是个人软考高级系统架构师学习沉淀汇总项目 `tu-arch-learning`；`A1` 是个人 AI 功能集合工程 `tu-ai-lab`；`S1` 是外部开源 Agent Skill 项目参考模块 `skills`，上游地址为 `https://github.com/mattpocock/skills`。本机绝对路径维护在未提交的 `workspace.local.yaml`；首次接入时从 [`../workspace.example.yaml`](../workspace.example.yaml) 复制创建。缺少映射时不得猜测源码位置。除 P0 文档外，项目文件不得把这些标记当作项目或服务名称，应改用实际工程名；优先级、阶段、变量名和协议/型号值等非项目语义不受此限制。
+项目标记、实际仓库名、职责与产品绑定以 [仓库注册表](../core/registry/repositories.yaml) 为准。`P0–P7` 只展开连续主序列；P0-1、P3-1、P4-1 是独立标记。`workspace.local.yaml` 只维护本机绝对路径；首次接入时从 [`../workspace.example.yaml`](../workspace.example.yaml) 复制创建。缺少映射时不得猜测源码位置。除 P0 文档外，项目文件不得把这些标记当作项目或服务名称，应改用实际工程名；优先级、阶段、变量名和协议/型号值等非项目语义不受此限制。
 
 项目标记不依赖固定分隔符，因此 `P1 + P2`、`P1,P2`、`P1，P2`、`P1、P2`、`P1 P2`，或正文中分别出现 P1、P2，均表示本次涉及两者；`-` 或 `–` 表示连续范围，例如 `P0–P7`，但不拆分 P0-1、P3-1、P4-1。`范围：` 是可选前缀。
 
@@ -26,15 +26,16 @@ v: 单元测试与接口回归
 仅当任务改变了长期可复用的关键入口、跨服务链路、服务/数据边界、公开契约或持久架构决策时，才更新 `products/`。修改时阅读：
 
 - [编写指南](authoring-guide.md)：收录标准和文档结构。
-- [治理规范](governance.md)：证据、过期性、敏感信息、ADR 与任务归档。
+- [治理规范](governance.md)：证据、过期性、敏感信息、ADR 与 Delivery State 归档。
 
 单个业务代码改动、临时排查过程、完整配置清单和未经证实的运行猜测不应进入产品知识。
 
 ## 3. 目录导航
 
-- `core/`：通用角色、规则、工作流和参考模板。
-- `products/`：产品架构、流程、仓库入口、缓存与任务历史。
-- `workspace.example.yaml`：可提交的本机路径地图模板；实际路径写入被忽略的 `workspace.local.yaml`。
+- `core/`：通用角色、规则、Playbook、契约、注册表和参考模板。
+- `products/`：已验证的产品架构、流程、仓库入口与长期决策。
+- `work/`：当前与归档的 Delivery State；不作为产品知识默认入口。
+- `workspace.example.yaml`：可提交的本机路径映射模板；实际路径写入被忽略的 `workspace.local.yaml`。
 - `bootstrap/`：其他仓库接入时复制的模板。
 - `docs/`：面向维护者的使用、接入、编写与治理资料。
 
@@ -46,11 +47,13 @@ v: 单元测试与接口回归
 
 接入或迁移仓库时阅读 [接入指南](integration-guide.md)，并同步更新 `workspace.example.yaml`、本机的 `workspace.local.yaml`、产品清单与目标仓库的局部 `AGENTS.md`。
 
-## 5. 使用团队 Workflow Plugin
+## 5. 使用团队 Skill Plugin
 
 `ai-guidance-workflows` 是可选的团队 Codex Plugin，为高价值且重复的场景提供原生 Skill；它补充 `AGENTS.md` 和 Core 规则，不替代任务类型、局部约束或代码核实。
 
 团队自定义 Skill 统一以 `tu-` 开头，便于在列表中筛选和在任务中显式调用；该前缀不属于 Compact Syntax，因此不改变 `B`、`X` 等任务类型的含义。
+
+Skill 采用少量优先的策略：成熟通用能力优先 **Adopt**；需要叠加本仓工程语义时 **Adapt**；只有 Workbench 独有、且已被真实交付反复验证的模式才 **Own**。不要把每个技术主题或一次性流程变成新 Skill。
 
 首次使用时，在 P0 仓库根目录执行：
 

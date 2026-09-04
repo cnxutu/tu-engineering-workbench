@@ -270,7 +270,7 @@ sequenceDiagram
 
 **已实现（本地代码变更，尚未发布）**：删除前置空间任务校验和人员驾驶舱控制权校验接口已写入 P1，并复用空间子树设备解析、运行任务缓存及驾驶舱控制权查询逻辑；项目集保存仍在服务端再次执行相同阻断校验，前端预检不能绕过提交校验。固定点位运行 Set 以 `taskId:projectId` 全局去重，普通/手动只按机场运行缓存判断；服务单元测试已覆盖前置校验结果、名称并发裁决相关补偿、名称释放和移除阻断。
 
-**2026-08-20 已提交的 P1 项目管理补充**：项目集详情补齐人员昵称、账号和部门，项目新增/编辑新增可选空间状态接口，项目集移除新增任务阻断前置检查；项目菜单权限接口与权限失效 WebSocket 的具体契约分别见 [P1 项目菜单权限](../repositories/c-drone-inspection/project-menu-permission.md) 和 [P1 项目权限失效 WebSocket 广播](../repositories/c-drone-inspection/project-permission-websocket.md)。当天提交范围和可复现 Git 证据见 [项目管理实现归档（2026-08-20）](../tasks/archive/p1-20260820-project-management-implementation.yaml)。
+**2026-08-20 已提交的 P1 项目管理补充**：项目集详情补齐人员昵称、账号和部门，项目新增/编辑新增可选空间状态接口，项目集移除新增任务阻断前置检查；项目菜单权限接口与权限失效 WebSocket 的具体契约分别见 [P1 项目菜单权限](../repositories/c-drone-inspection/project-menu-permission.md) 和 [P1 项目权限失效 WebSocket 广播](../repositories/c-drone-inspection/project-permission-websocket.md)。当天提交范围和可复现 Git 证据见 [项目管理实现归档（2026-08-20）](../../../../work/company/device-inspection-platform/tasks/archive/p1-20260820-project-management-implementation.yaml)。
 
 **待发布 / 待确认**：
 

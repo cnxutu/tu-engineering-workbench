@@ -17,7 +17,7 @@ Require only a prototype source: an accessible URL, attached image or PDF, or lo
 4. Infer operations, non-goals, acceptance behavior, project conventions, and verification commands from the prototype and current repository evidence. Do not ask the user to repeat `c/r/p/v` fields or rules already encoded here.
 5. Default to the full workflow: analyze, inspect the repository, present the decision preview, implement after the decision gate, then verify. Stop after the preview only when the user explicitly requests design-only output.
 6. If a dynamic or authenticated prototype cannot expose its frames, request the smallest usable export, such as the affected screenshots or PDF. State the exact access or legibility problem instead of guessing from surrounding metadata.
-7. Read the target repository and nearest `AGENTS.md`. When P0 is primary, also read its root `AGENTS.md`, `core/rules/development.md`, `core/skills/feature-development.md`, and the Java, architecture, and database rules it references.
+7. Read the target repository and nearest `AGENTS.md`. When P0 is primary, also read its root `AGENTS.md`, `core/rules/development.md`, `core/playbooks/feature-development.md`, and the Java, architecture, and database rules it references.
 
 ## Extract prototype evidence
 

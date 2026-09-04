@@ -1,0 +1,71 @@
+# Engineering Kernel repository registry. This is the authority for scope codes,
+# repository identities, long-lived responsibilities, and product bindings.
+version: v1
+repositories:
+  - code: P0
+    repository: tu-engineering-workbench
+    role: AI 编程与 Agent 工程的上下文、工作流编排与工程知识中枢
+  - code: P0-1
+    repository: tu-devkit
+    role: 开发环境、CLI、VPS 与工程工具
+  - code: P1
+    repository: c-drone-inspection
+    product: company/device-inspection-platform
+    role: 巡检业务、设备、任务、媒体、视频与巡检 IoT 业务
+  - code: P2
+    repository: c-iot-server
+    product: company/device-inspection-platform
+    role: IoT 业务、设备状态、Data Rule 与消息处理
+  - code: P3
+    repository: c-iot-gateway
+    product: company/device-inspection-platform
+    role: 协议接入、连接管理与消息上下行入口
+  - code: P3-1
+    repository: c-wvp
+    product: company/device-inspection-platform
+    role: 视频流管理平台网关
+  - code: P4
+    repository: ad-iot-codec-adapter-dji
+    product: company/device-inspection-platform
+    role: DJI 编解码与协议适配
+  - code: P4-1
+    repository: ad-iot-codec-adapter-robotDog-zhiyuan
+    product: company/device-inspection-platform
+    role: 智元机器狗编解码适配
+  - code: P5
+    repository: c-gateway
+    product: company/device-inspection-platform
+    role: 巡检系统统一网关
+  - code: P6
+    repository: c-system
+    product: company/device-inspection-platform
+    role: RBAC 与基础用户信息服务
+  - code: P7
+    repository: c-tag
+    product: company/device-inspection-platform
+    role: 树模型与标签资源服务
+  - code: P10
+    repository: tu-device-platform-kernel-lab
+    role: 复杂设备场景微内核实验
+  - code: K1
+    repository: knowledge-hub
+    product: personal/knowledge-hub
+    role: Knowledge Hub 后端
+  - code: K2
+    repository: knowledge-web
+    product: personal/knowledge-hub
+    role: Knowledge Hub 前端
+  - code: K5
+    repository: tu-language-lab
+    role: 语言学习与快速 Demo 运行
+  - code: L1
+    repository: tu-arch-learning
+    product: personal/architecture-learning
+    role: 个人软考高级系统架构师学习沉淀汇总
+  - code: A1
+    repository: tu-ai-lab
+    role: 个人 AI 功能集合工程
+  - code: S1
+    repository: skills
+    role: 外部开源 Agent Skill 项目参考模块
+    upstream: https://github.com/mattpocock/skills

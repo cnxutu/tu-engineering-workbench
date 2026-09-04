@@ -2,6 +2,7 @@ platform:
   name: ai-engineering-context-platform
   version: 1.0.0
   knowledge_contract_version: v1
+  repository_registry: core/registry/repositories.yaml
 products:
   - id: company/device-inspection-platform
     manifest: products/company/device-inspection-platform/product.yaml

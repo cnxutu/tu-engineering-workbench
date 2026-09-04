@@ -14,5 +14,5 @@ evidence_sources:
   - docs/
 knowledge_update:
   assess_cross_service_facts: true
-  task_archive: products/company/example-product/tasks/archive/
+  task_archive: work/company/example-product/tasks/archive/
 

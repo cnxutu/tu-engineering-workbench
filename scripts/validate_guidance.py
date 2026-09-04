@@ -11,7 +11,7 @@ from pathlib import Path
 
 LINK_PATTERN = re.compile(r"\[[^\]]+\]\(([^)#]+)(?:#[^)]*)?\)")
 PATH_PATTERN = re.compile(
-    r"^\s*(?:-\s+)?(?P<key>manifest|index|entry|product_manifest|product_index):\s*(?P<value>\S.*)\s*$",
+    r"^\s*(?:-\s+)?(?P<key>manifest|index|entry|product_manifest|product_index|repository_registry):\s*(?P<value>\S.*)\s*$",
     re.MULTILINE,
 )
 SENSITIVE_KEY_PATTERN = re.compile(
@@ -19,19 +19,11 @@ SENSITIVE_KEY_PATTERN = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 PLACEHOLDER_PATTERN = re.compile(r"^(?:<[^>]+>|\$\{[^}]+\}|redacted)$", re.IGNORECASE)
-REGISTERED_REPOSITORY_CODES = {
-    "P0", "P0-1", "P1", "P2", "P3", "P3-1", "P4", "P4-1", "P5", "P6", "P7", "P10",
-    "K1", "K2", "K5", "L1", "A1", "S1",
-}
+REPOSITORY_REGISTRY = Path("core/registry/repositories.yaml")
 PRIMARY_REPOSITORY_BINDINGS = {
     "P0": "tu-engineering-workbench",
     "P0-1": "tu-devkit",
 }
-REPOSITORY_CODE_PATTERN = "(?:" + "|".join(
-    re.escape(code) for code in sorted(REGISTERED_REPOSITORY_CODES, key=len, reverse=True)
-) + ")"
-
-
 def error_if_missing(path: Path, label: str, errors: list[str]) -> None:
     if not path.is_file():
         errors.append(f"missing {label}: {path}")
@@ -60,9 +52,38 @@ def values_for_keys(path: Path, allowed: set[str]) -> list[tuple[str, str]]:
     return values
 
 
+def registered_repositories(repo_root: Path, errors: list[str]) -> dict[str, str]:
+    registry = repo_root / REPOSITORY_REGISTRY
+    error_if_missing(registry, "repository registry", errors)
+    if not registry.is_file():
+        return {}
+    entries = re.findall(
+        r"^  - code:\s*(?P<code>\S+)\s*$\n^    repository:\s*(?P<repository>\S.*?)\s*$",
+        registry.read_text(encoding="utf-8"),
+        re.MULTILINE,
+    )
+    codes = [code for code, _ in entries]
+    duplicate_codes = sorted({code for code in codes if codes.count(code) > 1})
+    if duplicate_codes:
+        errors.append(f"repository registry has duplicate codes: {', '.join(duplicate_codes)}")
+    bindings = dict(entries)
+    for code, expected_repository in PRIMARY_REPOSITORY_BINDINGS.items():
+        actual_repository = bindings.get(code)
+        if actual_repository != expected_repository:
+            errors.append(
+                "repository registry has invalid primary binding: "
+                f"{code} -> {actual_repository or '<missing>'}; expected {expected_repository}"
+            )
+    return bindings
+
+
+def repository_code_pattern(codes: set[str]) -> str:
+    return "(?:" + "|".join(re.escape(code) for code in sorted(codes, key=len, reverse=True)) + ")"
+
+
 def validate_product_bindings(repo_root: Path, errors: list[str]) -> None:
     platform = repo_root / "platform.yaml"
-    for key, value in values_for_keys(platform, {"manifest", "index"}):
+    for key, value in values_for_keys(platform, {"manifest", "index", "repository_registry"}):
         error_if_missing(repo_root / value, f"platform {key}", errors)
 
     for manifest in repo_root.glob("products/**/product.yaml"):
@@ -81,7 +102,7 @@ def validate_product_bindings(repo_root: Path, errors: list[str]) -> None:
             error_if_missing(manifest.parent / value, f"repository {key}", errors)
 
 
-def validate_workspace_configuration(repo_root: Path, errors: list[str]) -> None:
+def validate_workspace_configuration(repo_root: Path, registered_codes: set[str], errors: list[str]) -> None:
     error_if_missing(repo_root / "workspace.example.yaml", "workspace template", errors)
     ignore_file = repo_root / ".gitignore"
     if "workspace.local.yaml" not in ignore_file.read_text(encoding="utf-8"):
@@ -91,7 +112,7 @@ def validate_workspace_configuration(repo_root: Path, errors: list[str]) -> None
     if not local.is_file():
         return
     text = local.read_text(encoding="utf-8")
-    codes = re.findall(rf"^\s*-\s+code:\s*({REPOSITORY_CODE_PATTERN})\s*$", text, re.MULTILINE)
+    codes = re.findall(rf"^\s*-\s+code:\s*({repository_code_pattern(registered_codes)})\s*$", text, re.MULTILINE)
     duplicate_codes = sorted({code for code in codes if codes.count(code) > 1})
     if duplicate_codes:
         errors.append(f"workspace.local.yaml has duplicate repository codes: {', '.join(duplicate_codes)}")
@@ -103,32 +124,18 @@ def validate_workspace_configuration(repo_root: Path, errors: list[str]) -> None
             errors.append(f"workspace.local.yaml path does not exist: {value}")
 
 
-def validate_workspace_template(repo_root: Path, errors: list[str]) -> None:
+def validate_workspace_template(repo_root: Path, registered_codes: set[str], errors: list[str]) -> None:
     template = repo_root / "workspace.example.yaml"
     if not template.is_file():
         return
     text = template.read_text(encoding="utf-8")
-    codes = re.findall(rf"^\s*-\s+code:\s*({REPOSITORY_CODE_PATTERN})\s*$", text, re.MULTILINE)
-    missing_codes = sorted(REGISTERED_REPOSITORY_CODES - set(codes))
+    codes = re.findall(rf"^\s*-\s+code:\s*({repository_code_pattern(registered_codes)})\s*$", text, re.MULTILINE)
+    missing_codes = sorted(registered_codes - set(codes))
     if missing_codes:
         errors.append(f"workspace.example.yaml is missing repository codes: {', '.join(missing_codes)}")
     duplicate_codes = sorted({code for code in codes if codes.count(code) > 1})
     if duplicate_codes:
         errors.append(f"workspace.example.yaml has duplicate repository codes: {', '.join(duplicate_codes)}")
-    repository_bindings = dict(
-        re.findall(
-            rf"^\s*-\s+code:\s*({REPOSITORY_CODE_PATTERN})\s*$\n^\s+repository:\s*(\S.*?)\s*$",
-            text,
-            re.MULTILINE,
-        )
-    )
-    for code, expected_repository in PRIMARY_REPOSITORY_BINDINGS.items():
-        actual_repository = repository_bindings.get(code)
-        if actual_repository != expected_repository:
-            errors.append(
-                "workspace.example.yaml has invalid repository binding: "
-                f"{code} -> {actual_repository or '<missing>'}; expected {expected_repository}"
-            )
     for raw_path in re.findall(r"^\s+path:\s*(\S.*)\s*$", text, re.MULTILINE):
         value = raw_path.strip().strip("\\\"'")
         if not PLACEHOLDER_PATTERN.match(value):
@@ -155,10 +162,11 @@ def main() -> int:
 
     error_if_missing(repo_root / "AGENTS.md", "repository AGENTS.md", errors)
     error_if_missing(repo_root / "platform.yaml", "platform manifest", errors)
+    registered_codes = set(registered_repositories(repo_root, errors))
     validate_markdown_links(repo_root, errors)
     validate_product_bindings(repo_root, errors)
-    validate_workspace_configuration(repo_root, errors)
-    validate_workspace_template(repo_root, errors)
+    validate_workspace_configuration(repo_root, registered_codes, errors)
+    validate_workspace_template(repo_root, registered_codes, errors)
     validate_sensitive_values(repo_root, errors)
 
     if errors:
