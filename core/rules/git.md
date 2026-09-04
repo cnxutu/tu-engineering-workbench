@@ -9,7 +9,7 @@
 ## 提交
 
 - 提交应小而完整，并保持构建和关键测试可用。
-- 推荐 Conventional Commits：`feat:`、`fix:`、`refactor:`、`docs:`、`test:`、`chore:`。
+- 推荐 Conventional Commits：`<type>(<scope>): <summary>`。`type` 使用 `feat`、`fix`、`refactor`、`docs`、`test` 或 `chore`；`scope` 可选，用模块、主题或受影响范围标识改动，例如 `feat(registry): add repository binding validation`、`fix(guidance): reject mismatched product bindings`。
 - 提交信息说明“为何改变”，必要时在正文描述影响和迁移要求。
 
 ## 合并与评审
