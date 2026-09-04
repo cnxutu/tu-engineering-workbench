@@ -20,7 +20,7 @@ SENSITIVE_KEY_PATTERN = re.compile(
 )
 PLACEHOLDER_PATTERN = re.compile(r"^(?:<[^>]+>|\$\{[^}]+\}|redacted)$", re.IGNORECASE)
 REGISTERED_REPOSITORY_CODES = {
-    "P0", "P1", "P2", "P3", "P3-1", "P4", "P4-1", "P5", "P6", "P7", "P10",
+    "P0", "P0-1", "P1", "P2", "P3", "P3-1", "P4", "P4-1", "P5", "P6", "P7", "P10",
     "K1", "K2", "K5", "L1", "A1", "S1",
 }
 REPOSITORY_CODE_PATTERN = "(?:" + "|".join(
@@ -35,7 +35,7 @@ def error_if_missing(path: Path, label: str, errors: list[str]) -> None:
 
 def validate_markdown_links(repo_root: Path, errors: list[str]) -> None:
     files = [repo_root / "AGENTS.md"]
-    files.extend((repo_root / "ai-guidance").rglob("*.md"))
+    files.extend(path for path in repo_root.rglob("*.md") if ".git" not in path.parts)
     for source in files:
         if not source.is_file():
             continue
@@ -56,12 +56,12 @@ def values_for_keys(path: Path, allowed: set[str]) -> list[tuple[str, str]]:
     return values
 
 
-def validate_product_bindings(guidance_root: Path, errors: list[str]) -> None:
-    platform = guidance_root / "platform.yaml"
+def validate_product_bindings(repo_root: Path, errors: list[str]) -> None:
+    platform = repo_root / "platform.yaml"
     for key, value in values_for_keys(platform, {"manifest", "index"}):
-        error_if_missing(guidance_root / value, f"platform {key}", errors)
+        error_if_missing(repo_root / value, f"platform {key}", errors)
 
-    for manifest in guidance_root.glob("products/**/product.yaml"):
+    for manifest in repo_root.glob("products/**/product.yaml"):
         for key, value in values_for_keys(manifest, {"entry"}):
             error_if_missing(manifest.parent / value, f"product {key}", errors)
         repository_values = re.findall(
@@ -72,19 +72,18 @@ def validate_product_bindings(guidance_root: Path, errors: list[str]) -> None:
         for value in repository_values:
             error_if_missing(manifest.parent / value, "repository manifest", errors)
 
-    for manifest in guidance_root.glob("products/**/repositories/*.yaml"):
+    for manifest in repo_root.glob("products/**/repositories/*.yaml"):
         for key, value in values_for_keys(manifest, {"product_manifest", "product_index"}):
             error_if_missing(manifest.parent / value, f"repository {key}", errors)
 
 
 def validate_workspace_configuration(repo_root: Path, errors: list[str]) -> None:
-    guidance_root = repo_root / "ai-guidance"
-    error_if_missing(guidance_root / "workspace.example.yaml", "workspace template", errors)
+    error_if_missing(repo_root / "workspace.example.yaml", "workspace template", errors)
     ignore_file = repo_root / ".gitignore"
-    if "ai-guidance/workspace.local.yaml" not in ignore_file.read_text(encoding="utf-8"):
+    if "workspace.local.yaml" not in ignore_file.read_text(encoding="utf-8"):
         errors.append("workspace.local.yaml is not ignored")
 
-    local = guidance_root / "workspace.local.yaml"
+    local = repo_root / "workspace.local.yaml"
     if not local.is_file():
         return
     text = local.read_text(encoding="utf-8")
@@ -101,7 +100,7 @@ def validate_workspace_configuration(repo_root: Path, errors: list[str]) -> None
 
 
 def validate_workspace_template(repo_root: Path, errors: list[str]) -> None:
-    template = repo_root / "ai-guidance" / "workspace.example.yaml"
+    template = repo_root / "workspace.example.yaml"
     if not template.is_file():
         return
     text = template.read_text(encoding="utf-8")
@@ -118,31 +117,31 @@ def validate_workspace_template(repo_root: Path, errors: list[str]) -> None:
             errors.append(f"workspace.example.yaml has concrete repository path: {value}")
 
 
-def validate_sensitive_values(guidance_root: Path, errors: list[str]) -> None:
-    for path in guidance_root.rglob("*.yaml"):
+def validate_sensitive_values(repo_root: Path, errors: list[str]) -> None:
+    for path in repo_root.rglob("*.yaml"):
+        if ".git" in path.parts:
+            continue
         if path.name.endswith("schema.yaml"):
             continue
         for match in SENSITIVE_KEY_PATTERN.finditer(path.read_text(encoding="utf-8")):
             value = match.group("value").strip().strip("\\\"'")
             if value and not PLACEHOLDER_PATTERN.match(value):
-                errors.append(f"possible sensitive value in {path.relative_to(guidance_root)}")
+                errors.append(f"possible sensitive value in {path.relative_to(repo_root)}")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
     repo_root = parser.parse_args().repo_root.resolve()
-    guidance_root = repo_root / "ai-guidance"
     errors: list[str] = []
 
     error_if_missing(repo_root / "AGENTS.md", "repository AGENTS.md", errors)
-    error_if_missing(guidance_root / "AGENTS.md", "guidance AGENTS.md", errors)
-    error_if_missing(guidance_root / "platform.yaml", "platform manifest", errors)
+    error_if_missing(repo_root / "platform.yaml", "platform manifest", errors)
     validate_markdown_links(repo_root, errors)
-    validate_product_bindings(guidance_root, errors)
+    validate_product_bindings(repo_root, errors)
     validate_workspace_configuration(repo_root, errors)
     validate_workspace_template(repo_root, errors)
-    validate_sensitive_values(guidance_root, errors)
+    validate_sensitive_values(repo_root, errors)
 
     if errors:
         print("AI guidance validation failed:", file=sys.stderr)

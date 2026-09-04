@@ -4,13 +4,18 @@ workspace:
   id: local-workspace
   roots:
     p0: <set-local-p0-path>
+    p0_1: <set-local-p0-1-path>
     company: <set-local-company-root>
     personal: <set-local-personal-root>
 repositories:
   - code: P0
     repository: tu-devkit
     path: <set-local-p0-path>
-    role: AI 工程上下文与开发工具主库
+    role: 开发环境、CLI、VPS 与工程工具
+  - code: P0-1
+    repository: tu-engineering-workbench
+    path: <set-local-p0-1-path>
+    role: AI 编排、共享上下文与团队工作流主库
   - code: P1
     repository: c-drone-inspection
     path: <set-local-p1-path>

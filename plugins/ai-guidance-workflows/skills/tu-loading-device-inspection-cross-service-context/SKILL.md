@@ -15,7 +15,7 @@ When the user names P1 and P2 but does not describe an interaction, do not autom
 
 ## Context loading workflow
 
-1. Read `ai-guidance/AGENTS.md`, identify the explicit project scope, and resolve paths through `workspace.local.yaml`. P0 supplies guidance and product knowledge; it is not automatically a code-change participant.
+1. Read the P0-1 root `AGENTS.md`, identify the explicit project scope, and resolve paths through `workspace.local.yaml`. P0-1 supplies guidance and product knowledge; it is not automatically a code-change participant.
 2. Read the device-inspection product `index.md`, then load only the maintained Flow or repository entry page that matches the requested boundary. If the product knowledge package does not cover that boundary, use target-repository code, contracts, configuration, and tests instead of inferring product facts.
 3. Select flow documents by task signal:
    - DJI OSD, State, or DRC data upstream: `flows/dji-osd-upstream-flow.md`

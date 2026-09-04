@@ -5,7 +5,7 @@ product_manifest: products/company/example-product/product.yaml
 product_index: products/company/example-product/index.md
 guidance_home:
   resolution: AI_GUIDANCE_HOME-or-explicit-config
-  explicit_config: .ai-guidance.yaml
+  explicit_config: .tu-engineering-workbench.yaml
 local_instructions:
   - AGENTS.md
   - README.md

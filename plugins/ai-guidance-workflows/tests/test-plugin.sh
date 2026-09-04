@@ -18,7 +18,7 @@ fi
 "${PYTHON_CMD}" -m json.tool "${MARKETPLACE}" >/dev/null
 
 grep -Fq '"name": "ai-guidance-workflows"' "${PLUGIN_ROOT}/.codex-plugin/plugin.json"
-grep -Fq '"name": "tu-devkit"' "${MARKETPLACE}"
+grep -Fq '"name": "tu-engineering-workbench"' "${MARKETPLACE}"
 grep -Fq '"path": "./plugins/ai-guidance-workflows"' "${MARKETPLACE}"
 
 "${PYTHON_CMD}" "${PLUGIN_ROOT}/tests/validate-skills.py" "${PLUGIN_ROOT}"

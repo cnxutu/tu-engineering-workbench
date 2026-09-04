@@ -1,7 +1,7 @@
 {
-  "name": "tu-devkit",
+  "name": "tu-engineering-workbench",
   "interface": {
-    "displayName": "tu-devkit"
+    "displayName": "tu-engineering-workbench"
   },
   "plugins": [
     {

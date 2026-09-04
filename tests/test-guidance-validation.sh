@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-VALIDATOR="${ROOT}/ai-guidance/scripts/validate_guidance.py"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+VALIDATOR="${ROOT}/scripts/validate_guidance.py"
 
 python3 "${VALIDATOR}" --repo-root "${ROOT}"
-python3 -m unittest "${ROOT}/ai-guidance/tests/test_guidance_validation.py" -v
+python3 -m unittest "${ROOT}/tests/test_guidance_validation.py" -v
+
+copy_repository() {
+  local destination="$1"
+  mkdir -p "${destination}"
+  cp "${ROOT}/AGENTS.md" "${ROOT}/.gitignore" "${ROOT}/platform.yaml" "${destination}/"
+  cp -R "${ROOT}/.agents" "${ROOT}/bootstrap" "${ROOT}/core" "${ROOT}/docs" "${ROOT}/plugins" "${ROOT}/products" "${ROOT}/scripts" "${ROOT}/tests" "${destination}/"
+}
 
 TEMP_ROOT="$(mktemp -d)"
 trap 'rm -rf "${TEMP_ROOT}"' EXIT
-mkdir -p "${TEMP_ROOT}/repo"
-cp "${ROOT}/AGENTS.md" "${TEMP_ROOT}/repo/AGENTS.md"
-cp "${ROOT}/.gitignore" "${TEMP_ROOT}/repo/.gitignore"
-cp -R "${ROOT}/ai-guidance" "${TEMP_ROOT}/repo/ai-guidance"
-printf '\n[broken](missing-file.md)\n' >> "${TEMP_ROOT}/repo/ai-guidance/core/index.md"
+copy_repository "${TEMP_ROOT}/repo"
+printf '\n[broken](missing-file.md)\n' >> "${TEMP_ROOT}/repo/core/index.md"
 
 if OUTPUT="$(python3 "${VALIDATOR}" --repo-root "${TEMP_ROOT}/repo" 2>&1)"; then
   printf 'validator accepted a broken local Markdown link\n' >&2
@@ -23,11 +27,8 @@ grep -Fq 'broken Markdown link' <<<"${OUTPUT}"
 
 CONFIG_ROOT="$(mktemp -d)"
 trap 'rm -rf "${TEMP_ROOT}" "${CONFIG_ROOT}"' EXIT
-mkdir -p "${CONFIG_ROOT}/repo"
-cp "${ROOT}/AGENTS.md" "${CONFIG_ROOT}/repo/AGENTS.md"
-cp "${ROOT}/.gitignore" "${CONFIG_ROOT}/repo/.gitignore"
-cp -R "${ROOT}/ai-guidance" "${CONFIG_ROOT}/repo/ai-guidance"
-printf '\n  path: <unset>\n' >> "${CONFIG_ROOT}/repo/ai-guidance/workspace.local.yaml"
+copy_repository "${CONFIG_ROOT}/repo"
+printf '\n  path: <unset>\n' >> "${CONFIG_ROOT}/repo/workspace.local.yaml"
 
 if OUTPUT="$(python3 "${VALIDATOR}" --repo-root "${CONFIG_ROOT}/repo" 2>&1)"; then
   printf 'validator accepted an unresolved local workspace path\n' >&2

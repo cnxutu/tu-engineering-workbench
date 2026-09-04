@@ -10,8 +10,8 @@ import unittest
 from pathlib import Path
 
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-VALIDATOR = REPOSITORY_ROOT / "ai-guidance" / "scripts" / "validate_guidance.py"
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+VALIDATOR = REPOSITORY_ROOT / "scripts" / "validate_guidance.py"
 
 
 class WorkspaceTemplateValidationTest(unittest.TestCase):
@@ -21,13 +21,10 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
         temporary_directory = tempfile.TemporaryDirectory()
         self.addCleanup(temporary_directory.cleanup)
         repository = Path(temporary_directory.name) / "repo"
-        repository.mkdir()
-        shutil.copy2(REPOSITORY_ROOT / "AGENTS.md", repository / "AGENTS.md")
-        shutil.copy2(REPOSITORY_ROOT / ".gitignore", repository / ".gitignore")
         shutil.copytree(
-            REPOSITORY_ROOT / "ai-guidance",
-            repository / "ai-guidance",
-            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+            REPOSITORY_ROOT,
+            repository,
+            ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc", "workspace.local.yaml"),
         )
         return repository
 
@@ -39,87 +36,43 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def test_rejects_template_missing_registered_repository_code(self) -> None:
+    def assert_template_rejects_missing_code(self, code: str) -> None:
         repository = self.copied_repository()
-        template = repository / "ai-guidance" / "workspace.example.yaml"
+        template = repository / "workspace.example.yaml"
         template.write_text(
-            template.read_text(encoding="utf-8").replace("  - code: P4\n", "  # P4 mapping omitted\n"),
+            template.read_text(encoding="utf-8").replace(f"  - code: {code}\n", f"  # {code} mapping omitted\n"),
             encoding="utf-8",
         )
 
         result = self.validate(repository)
 
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("workspace.example.yaml is missing repository codes: P4", result.stderr)
+        self.assertIn(f"workspace.example.yaml is missing repository codes: {code}", result.stderr)
+
+    def test_rejects_template_missing_registered_repository_code(self) -> None:
+        self.assert_template_rejects_missing_code("P4")
+
+    def test_rejects_template_missing_p0_1_repository_code(self) -> None:
+        self.assert_template_rejects_missing_code("P0-1")
 
     def test_rejects_template_missing_registered_knowledge_repository_code(self) -> None:
-        repository = self.copied_repository()
-        template = repository / "ai-guidance" / "workspace.example.yaml"
-        template.write_text(
-            template.read_text(encoding="utf-8").replace("  - code: K2\n", "  # K2 mapping omitted\n"),
-            encoding="utf-8",
-        )
-
-        result = self.validate(repository)
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("workspace.example.yaml is missing repository codes: K2", result.stderr)
+        self.assert_template_rejects_missing_code("K2")
 
     def test_rejects_template_missing_registered_language_learning_repository_code(self) -> None:
-        repository = self.copied_repository()
-        template = repository / "ai-guidance" / "workspace.example.yaml"
-        template.write_text(
-            template.read_text(encoding="utf-8").replace("  - code: K5\n", "  # K5 mapping omitted\n"),
-            encoding="utf-8",
-        )
-
-        result = self.validate(repository)
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("workspace.example.yaml is missing repository codes: K5", result.stderr)
+        self.assert_template_rejects_missing_code("K5")
 
     def test_rejects_template_missing_registered_ai_repository_code(self) -> None:
-        repository = self.copied_repository()
-        template = repository / "ai-guidance" / "workspace.example.yaml"
-        template.write_text(
-            template.read_text(encoding="utf-8").replace("  - code: A1\n", "  # A1 mapping omitted\n"),
-            encoding="utf-8",
-        )
-
-        result = self.validate(repository)
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("workspace.example.yaml is missing repository codes: A1", result.stderr)
+        self.assert_template_rejects_missing_code("A1")
 
     def test_rejects_template_missing_registered_architecture_learning_repository_code(self) -> None:
-        repository = self.copied_repository()
-        template = repository / "ai-guidance" / "workspace.example.yaml"
-        template.write_text(
-            template.read_text(encoding="utf-8").replace("  - code: L1\n", "  # L1 mapping omitted\n"),
-            encoding="utf-8",
-        )
-
-        result = self.validate(repository)
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("workspace.example.yaml is missing repository codes: L1", result.stderr)
+        self.assert_template_rejects_missing_code("L1")
 
     def test_rejects_template_missing_registered_open_source_skill_repository_code(self) -> None:
-        repository = self.copied_repository()
-        template = repository / "ai-guidance" / "workspace.example.yaml"
-        template.write_text(
-            template.read_text(encoding="utf-8").replace("  - code: S1\n", "  # S1 mapping omitted\n"),
-            encoding="utf-8",
-        )
-
-        result = self.validate(repository)
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("workspace.example.yaml is missing repository codes: S1", result.stderr)
+        self.assert_template_rejects_missing_code("S1")
 
     def test_rejects_template_with_duplicate_repository_code(self) -> None:
         repository = self.copied_repository()
-        template = repository / "ai-guidance" / "workspace.example.yaml"
+        template = repository / "workspace.example.yaml"
         template.write_text(
             template.read_text(encoding="utf-8").replace("  - code: P4\n", "  - code: P1\n"),
             encoding="utf-8",
@@ -132,7 +85,7 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
 
     def test_rejects_template_with_concrete_repository_path(self) -> None:
         repository = self.copied_repository()
-        template = repository / "ai-guidance" / "workspace.example.yaml"
+        template = repository / "workspace.example.yaml"
         template.write_text(
             template.read_text(encoding="utf-8").replace("<set-local-p1-path>", "D:/local/p1"),
             encoding="utf-8",
@@ -145,11 +98,13 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
 
     def test_accepts_local_workspace_with_only_available_repositories(self) -> None:
         repository = self.copied_repository()
-        local = repository / "ai-guidance" / "workspace.local.yaml"
+        local = repository / "workspace.local.yaml"
         local.write_text(
             "\n".join(
                 [
                     "repositories:",
+                    "  - code: P0-1",
+                    f"    path: {repository}",
                     "  - code: P0",
                     f"    path: {repository}",
                     "  - code: K1",
@@ -165,6 +120,38 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
         result = self.validate(repository)
 
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_accepts_fresh_checkout_without_local_workspace(self) -> None:
+        repository = self.copied_repository()
+
+        result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_rejects_broken_root_markdown_link(self) -> None:
+        repository = self.copied_repository()
+        (repository / "core" / "index.md").write_text(
+            (repository / "core" / "index.md").read_text(encoding="utf-8")
+            + "\n[broken](missing-file.md)\n",
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("broken Markdown link", result.stderr)
+
+    def test_rejects_unresolved_local_workspace_path(self) -> None:
+        repository = self.copied_repository()
+        (repository / "workspace.local.yaml").write_text(
+            "repositories:\n  - code: P0-1\n    path: <unset>\n",
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("workspace.local.yaml has unresolved path", result.stderr)
 
 
 if __name__ == "__main__":

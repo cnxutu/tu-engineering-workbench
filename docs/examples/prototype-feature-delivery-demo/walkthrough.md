@@ -14,7 +14,7 @@
 ```text
 $ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
 impact
-范围：P0 + P1
+范围：P0-1 + P1
 原型：<原型 URL、截图或 PDF>
 目标：梳理机器狗驾驶舱补光控制的前后端和上下游影响，先不要写代码
 ```
@@ -224,7 +224,7 @@ AI 只能根据已有证据关闭 `G4_test_ready`。缺少实机回读时，可�
 ```text
 $ai-guidance-workflows:tu-scaffolding-spring-feature-from-prototype
 status
-任务包：<P0 中的任务包路径>
+任务包：<P0-1 中的任务包路径>
 告诉我当前阶段、阻塞、下一项，以及我需要对外确认什么
 ```
 

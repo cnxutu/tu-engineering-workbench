@@ -161,15 +161,15 @@ P1 的缓存不是单纯的性能优化，而是“异步设备消息 → 可直
 
 代码入口：
 
-- [`WaylineRedisServiceImpl`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/wayline/impl/WaylineRedisServiceImpl.java)
+- `c-drone-inspection:b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/wayline/impl/WaylineRedisServiceImpl.java`
 - `b-inspection-platform-common/.../EnumTaskType.java`
-- [`TaskCommandExecStart`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/controller/admin/waylineTask/taskHandler/command/TaskCommandExecStart.java)
-- [`InspectionIotCommandGatewayImpl`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/iot/impl/InspectionIotCommandGatewayImpl.java)（一键起飞创建手动飞行任务）
-- [`ProjectManagementServiceImpl`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/project/impl/ProjectManagementServiceImpl.java)（项目移除缓存统计与空间移除复核）
+- `c-drone-inspection:b-inspection-platform-core/src/main/java/com/xmkj/business/core/controller/admin/waylineTask/taskHandler/command/TaskCommandExecStart.java`
+- `c-drone-inspection:b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/iot/impl/InspectionIotCommandGatewayImpl.java`（一键起飞创建手动飞行任务）
+- `c-drone-inspection:b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/project/impl/ProjectManagementServiceImpl.java`（项目移除缓存统计与空间移除复核）
 - `b-inspection-platform-core/.../waylineTask/impl/FixedPointInspectionServiceImpl.java`（CAMERA 固定点位任务集合、自动结束队列）
 - `b-inspection-platform-core/.../monitor/CameraTaskStatusNotifier.java`、`.../monitor/impl/MonitorDeviceServiceImpl.java`（CAMERA `/drone/monitor/v2/list` 任务快照）
-- [`InspectionTaskProgressBusinessServiceImpl`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/iot/impl/InspectionTaskProgressBusinessServiceImpl.java)
-- [`DroneTaskStatusReconciliationTask`](../../../../../../../../xm-new/c-drone-inspection/b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/monitor/DroneTaskStatusReconciliationTask.java)
+- `c-drone-inspection:b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/iot/impl/InspectionTaskProgressBusinessServiceImpl.java`
+- `c-drone-inspection:b-inspection-platform-core/src/main/java/com/xmkj/business/core/service/monitor/DroneTaskStatusReconciliationTask.java`
 
 ## 5. DRC 会话与命令序列：控制面临时状态
 

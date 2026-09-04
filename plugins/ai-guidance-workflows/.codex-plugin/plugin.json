@@ -1,16 +1,16 @@
 {
   "name": "ai-guidance-workflows",
-  "version": "0.1.0+codex.20260819030734",
+  "version": "0.1.0+codex.20260904051624",
   "description": "Evidence-led Spring backend workflows for incidents, cross-service context, and prototype-driven feature scaffolding.",
   "author": {
-    "name": "tu-devkit"
+    "name": "tu-engineering-workbench"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "AI Guidance Workflows",
     "shortDescription": "Evidence-led Spring backend delivery workflows.",
     "longDescription": "Shared Codex Skills for diagnosing Spring backend incidents, loading minimum verified P1\u2013P4 cross-service context, and turning product prototypes into repository-conformant API and data implementations.",
-    "developerName": "tu-devkit",
+    "developerName": "tu-engineering-workbench",
     "category": "Productivity",
     "capabilities": [],
     "defaultPrompt": [

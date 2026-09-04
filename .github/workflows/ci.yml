@@ -1,0 +1,26 @@
+name: tu-engineering-workbench CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate AI guidance
+        shell: bash
+        run: bash tests/test-guidance-validation.sh
+
+      - name: Validate shared Codex plugin
+        shell: bash
+        run: bash plugins/ai-guidance-workflows/tests/test-plugin.sh
