@@ -11,7 +11,7 @@ from pathlib import Path
 
 LINK_PATTERN = re.compile(r"\[[^\]]+\]\(([^)#]+)(?:#[^)]*)?\)")
 PATH_PATTERN = re.compile(
-    r"^\s*(?:-\s+)?(?P<key>manifest|index|entry|product_manifest|product_index|repository_registry):\s*(?P<value>\S.*)\s*$",
+    r"^\s*(?:-\s+)?(?P<key>manifest|index|entry|product_manifest|product_index|repository_registry|repository|product):\s*(?P<value>\S.*)\s*$",
     re.MULTILINE,
 )
 SENSITIVE_KEY_PATTERN = re.compile(
@@ -65,22 +65,23 @@ def platform_product_ids(repo_root: Path) -> set[str]:
 
 def registered_repositories(
     repo_root: Path, platform_products: set[str], errors: list[str]
-) -> dict[str, str]:
+) -> tuple[dict[str, str], dict[str, str | None]]:
     registry = repo_root / REPOSITORY_REGISTRY
     error_if_missing(registry, "repository registry", errors)
     if not registry.is_file():
-        return {}
+        return {}, {}
     registry_text = registry.read_text(encoding="utf-8")
     entries = re.findall(
-        r"^  - code:\s*(?P<code>\S+)\s*$\n^    repository:\s*(?P<repository>\S.*?)\s*$",
+        r"^  - code:\s*(?P<code>\S+)\s*$\n^    repository:\s*(?P<repository>\S.*?)\s*$(?:\n^    product:\s*(?P<product>\S.*?)\s*$)?",
         registry_text,
         re.MULTILINE,
     )
-    codes = [code for code, _ in entries]
+    codes = [code for code, _, _ in entries]
     duplicate_codes = sorted({code for code in codes if codes.count(code) > 1})
     if duplicate_codes:
         errors.append(f"repository registry has duplicate codes: {', '.join(duplicate_codes)}")
-    bindings = dict(entries)
+    bindings = {code: repository for code, repository, _ in entries}
+    repository_products = {repository: product or None for _, repository, product in entries}
     for code, expected_repository in PRIMARY_REPOSITORY_BINDINGS.items():
         actual_repository = bindings.get(code)
         if actual_repository != expected_repository:
@@ -97,7 +98,7 @@ def registered_repositories(
             "repository registry has unregistered product bindings: "
             f"{', '.join(unknown_products)}"
         )
-    return bindings
+    return bindings, repository_products
 
 
 def validate_product_bindings(repo_root: Path, errors: list[str]) -> None:
@@ -119,6 +120,29 @@ def validate_product_bindings(repo_root: Path, errors: list[str]) -> None:
     for manifest in repo_root.glob("products/**/repositories/*.yaml"):
         for key, value in values_for_keys(manifest, {"product_manifest", "product_index"}):
             error_if_missing(manifest.parent / value, f"repository {key}", errors)
+
+
+def validate_repository_manifest_bindings(
+    repo_root: Path, repository_products: dict[str, str | None], errors: list[str]
+) -> None:
+    for manifest in repo_root.glob("products/**/repositories/*.yaml"):
+        declared = dict(values_for_keys(manifest, {"repository", "product"}))
+        repository = declared.get("repository")
+        if repository is None:
+            continue
+        registry_product = repository_products.get(repository)
+        if repository not in repository_products:
+            errors.append(
+                "repository manifest has unknown repository: "
+                f"{manifest.relative_to(repo_root)} -> {repository}"
+            )
+            continue
+        product = declared.get("product")
+        if product is not None and product != registry_product:
+            errors.append(
+                "repository manifest has mismatched product binding: "
+                f"{manifest.relative_to(repo_root)} -> {product}; registry has {registry_product or '<none>'}"
+            )
 
 
 def validate_workspace_configuration(repo_root: Path, registered_codes: set[str], errors: list[str]) -> None:
@@ -187,9 +211,13 @@ def main() -> int:
 
     error_if_missing(repo_root / "AGENTS.md", "repository AGENTS.md", errors)
     error_if_missing(repo_root / "platform.yaml", "platform manifest", errors)
-    registered_codes = set(registered_repositories(repo_root, platform_product_ids(repo_root), errors))
+    registry_codes, repository_products = registered_repositories(
+        repo_root, platform_product_ids(repo_root), errors
+    )
+    registered_codes = set(registry_codes)
     validate_markdown_links(repo_root, errors)
     validate_product_bindings(repo_root, errors)
+    validate_repository_manifest_bindings(repo_root, repository_products, errors)
     validate_workspace_configuration(repo_root, registered_codes, errors)
     validate_workspace_template(repo_root, registered_codes, errors)
     validate_sensitive_values(repo_root, errors)

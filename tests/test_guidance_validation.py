@@ -150,6 +150,42 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
             result.stderr,
         )
 
+    def test_rejects_repository_manifest_with_unknown_repository(self) -> None:
+        repository = self.copied_repository()
+        manifest = repository / "products" / "company" / "device-inspection-platform" / "repositories" / "c-drone-inspection.yaml"
+        manifest.write_text(
+            manifest.read_text(encoding="utf-8").replace(
+                "repository: c-drone-inspection",
+                "repository: unknown-repository",
+                1,
+            ),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("repository manifest has unknown repository", result.stderr)
+        self.assertIn("unknown-repository", result.stderr)
+
+    def test_rejects_repository_manifest_with_mismatched_product_binding(self) -> None:
+        repository = self.copied_repository()
+        manifest = repository / "products" / "company" / "device-inspection-platform" / "repositories" / "c-drone-inspection.yaml"
+        manifest.write_text(
+            manifest.read_text(encoding="utf-8").replace(
+                "product: company/device-inspection-platform",
+                "product: personal/knowledge-hub",
+                1,
+            ),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("repository manifest has mismatched product binding", result.stderr)
+        self.assertIn("personal/knowledge-hub", result.stderr)
+
     def test_rejects_template_with_concrete_repository_path(self) -> None:
         repository = self.copied_repository()
         template = repository / "workspace.example.yaml"
