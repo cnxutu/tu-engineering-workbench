@@ -49,11 +49,32 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn(f"workspace.example.yaml is missing repository codes: {code}", result.stderr)
 
-    def test_rejects_template_missing_registered_repository_code(self) -> None:
-        self.assert_template_rejects_missing_code("P4")
+    def test_rejects_template_missing_primary_repository_code(self) -> None:
+        self.assert_template_rejects_missing_code("P0")
 
-    def test_rejects_template_missing_p0_1_repository_code(self) -> None:
+    def test_rejects_template_missing_devkit_repository_code(self) -> None:
         self.assert_template_rejects_missing_code("P0-1")
+
+    def test_rejects_template_with_swapped_primary_repository_bindings(self) -> None:
+        repository = self.copied_repository()
+        template = repository / "workspace.example.yaml"
+        template.write_text(
+            template.read_text(encoding="utf-8").replace(
+                "repository: tu-engineering-workbench",
+                "repository: tu-devkit",
+                1,
+            ),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "workspace.example.yaml has invalid repository binding: "
+            "P0 -> tu-devkit; expected tu-engineering-workbench",
+            result.stderr,
+        )
 
     def test_rejects_template_missing_registered_knowledge_repository_code(self) -> None:
         self.assert_template_rejects_missing_code("K2")

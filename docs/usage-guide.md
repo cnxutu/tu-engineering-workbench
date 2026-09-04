@@ -1,6 +1,6 @@
 # 工程师使用与维护指南
 
-本页面面向使用或维护本仓库的工程师，帮助理解 P0-1 的目录、会话范围和知识维护方式；Codex 执行任务时不默认读取本页。运行时规则以 [`../AGENTS.md`](../AGENTS.md) 为准。
+本页面面向使用或维护本仓库的工程师，帮助理解 P0 的目录、会话范围和知识维护方式；Codex 执行任务时不默认读取本页。运行时规则以 [`../AGENTS.md`](../AGENTS.md) 为准。
 
 需要理解 AI 运行时加载、工程师使用与维护路径、项目骨架与扩展入口时，阅读[项目导航与维护地图](project-guide.md)。
 
@@ -9,7 +9,7 @@
 会话首次任务中出现 `P0`、`P0-1`、`P1`–`P7`、`P3-1`、`P4-1`、`P10`、`K1`、`K2`、`K5`、`L1`、`A1`、`S1` 等项目标记时，Codex 应直接识别本次范围；以下 `范围：` 只是便于工程师阅读的写法：
 
 ```text
-范围：P0-1 + P1
+范围：P0 + P1
 F
 g: 增加巡检任务的状态查询能力
 i: P1
@@ -17,11 +17,11 @@ p: 先核实现有缓存与接口，再提出最小实现方案并完成代码�
 v: 单元测试与接口回归
 ```
 
-`P0–P7` 是当前无人机巡检系统的全量范围；P0-1 是独立的 AI 编排工作台标记，不包含在该范围中。`K1` 和 `K2` 分别预留给 Knowledge Hub 后端与前端；`K5` 是语言学习与快速 Demo 运行项目 `tu-language-lab`；`L1` 是个人软考高级系统架构师学习沉淀汇总项目 `tu-arch-learning`；`A1` 是个人 AI 功能集合工程 `tu-ai-lab`；`S1` 是外部开源 Agent Skill 项目参考模块 `skills`，上游地址为 `https://github.com/mattpocock/skills`。本机绝对路径维护在未提交的 `workspace.local.yaml`；首次接入时从 [`../workspace.example.yaml`](../workspace.example.yaml) 复制创建。缺少映射时不得猜测源码位置。P0-1 之外的项目文件不得把这些标记当作项目或服务名称，应改用实际工程名；优先级、阶段、变量名和协议/型号值等非项目语义不受此限制。
+`P0–P7` 覆盖 P0 协作根与无人机巡检系统的已登记范围；P0-1 是独立的开发工具、CLI 与 VPS 标记，不包含在该范围中。`K1` 和 `K2` 分别预留给 Knowledge Hub 后端与前端；`K5` 是语言学习与快速 Demo 运行项目 `tu-language-lab`；`L1` 是个人软考高级系统架构师学习沉淀汇总项目 `tu-arch-learning`；`A1` 是个人 AI 功能集合工程 `tu-ai-lab`；`S1` 是外部开源 Agent Skill 项目参考模块 `skills`，上游地址为 `https://github.com/mattpocock/skills`。本机绝对路径维护在未提交的 `workspace.local.yaml`；首次接入时从 [`../workspace.example.yaml`](../workspace.example.yaml) 复制创建。缺少映射时不得猜测源码位置。除 P0 文档外，项目文件不得把这些标记当作项目或服务名称，应改用实际工程名；优先级、阶段、变量名和协议/型号值等非项目语义不受此限制。
 
 项目标记不依赖固定分隔符，因此 `P1 + P2`、`P1,P2`、`P1，P2`、`P1、P2`、`P1 P2`，或正文中分别出现 P1、P2，均表示本次涉及两者；`-` 或 `–` 表示连续范围，例如 `P0–P7`，但不拆分 P0-1、P3-1、P4-1。`范围：` 是可选前缀。
 
-## 2. 何时维护 P0-1 知识
+## 2. 何时维护 P0 知识
 
 仅当任务改变了长期可复用的关键入口、跨服务链路、服务/数据边界、公开契约或持久架构决策时，才更新 `products/`。修改时阅读：
 
@@ -38,7 +38,7 @@ v: 单元测试与接口回归
 - `bootstrap/`：其他仓库接入时复制的模板。
 - `docs/`：面向维护者的使用、接入、编写与治理资料。
 
-个人级 Codex 指令、团队级工程规则与其他配置入口的边界，分别见 [全局 `AGENTS.md` 指南](global-agents-guidance.md) 和 [Codex 可配置入口地图](codex-customization-map.md)。这两页用于工程师理解和维护，不应复制进 P0-1 根 `AGENTS.md`。
+个人级 Codex 指令、团队级工程规则与其他配置入口的边界，分别见 [全局 `AGENTS.md` 指南](global-agents-guidance.md) 和 [Codex 可配置入口地图](codex-customization-map.md)。这两页用于工程师理解和维护，不应复制进 P0 根 `AGENTS.md`。
 
 日常 Prompt 使用 [Compact Syntax](../core/prompt-compact-syntax.md)。`core/templates/` 是防遗漏的完整参考表单，不是自动渲染器，也不是默认输入。
 
@@ -52,7 +52,7 @@ v: 单元测试与接口回归
 
 团队自定义 Skill 统一以 `tu-` 开头，便于在列表中筛选和在任务中显式调用；该前缀不属于 Compact Syntax，因此不改变 `B`、`X` 等任务类型的含义。
 
-首次使用时，在 P0-1 仓库根目录执行：
+首次使用时，在 P0 仓库根目录执行：
 
 ```powershell
 codex plugin marketplace add .

@@ -9,13 +9,13 @@ workspace:
     personal: <set-local-personal-root>
 repositories:
   - code: P0
-    repository: tu-devkit
-    path: <set-local-p0-path>
-    role: 开发环境、CLI、VPS 与工程工具
-  - code: P0-1
     repository: tu-engineering-workbench
-    path: <set-local-p0-1-path>
+    path: <set-local-p0-path>
     role: AI 编排、共享上下文与团队工作流主库
+  - code: P0-1
+    repository: tu-devkit
+    path: <set-local-p0-1-path>
+    role: 开发环境、CLI、VPS 与工程工具
   - code: P1
     repository: c-drone-inspection
     path: <set-local-p1-path>

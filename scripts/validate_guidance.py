@@ -23,6 +23,10 @@ REGISTERED_REPOSITORY_CODES = {
     "P0", "P0-1", "P1", "P2", "P3", "P3-1", "P4", "P4-1", "P5", "P6", "P7", "P10",
     "K1", "K2", "K5", "L1", "A1", "S1",
 }
+PRIMARY_REPOSITORY_BINDINGS = {
+    "P0": "tu-engineering-workbench",
+    "P0-1": "tu-devkit",
+}
 REPOSITORY_CODE_PATTERN = "(?:" + "|".join(
     re.escape(code) for code in sorted(REGISTERED_REPOSITORY_CODES, key=len, reverse=True)
 ) + ")"
@@ -111,6 +115,20 @@ def validate_workspace_template(repo_root: Path, errors: list[str]) -> None:
     duplicate_codes = sorted({code for code in codes if codes.count(code) > 1})
     if duplicate_codes:
         errors.append(f"workspace.example.yaml has duplicate repository codes: {', '.join(duplicate_codes)}")
+    repository_bindings = dict(
+        re.findall(
+            rf"^\s*-\s+code:\s*({REPOSITORY_CODE_PATTERN})\s*$\n^\s+repository:\s*(\S.*?)\s*$",
+            text,
+            re.MULTILINE,
+        )
+    )
+    for code, expected_repository in PRIMARY_REPOSITORY_BINDINGS.items():
+        actual_repository = repository_bindings.get(code)
+        if actual_repository != expected_repository:
+            errors.append(
+                "workspace.example.yaml has invalid repository binding: "
+                f"{code} -> {actual_repository or '<missing>'}; expected {expected_repository}"
+            )
     for raw_path in re.findall(r"^\s+path:\s*(\S.*)\s*$", text, re.MULTILINE):
         value = raw_path.strip().strip("\\\"'")
         if not PLACEHOLDER_PATTERN.match(value):

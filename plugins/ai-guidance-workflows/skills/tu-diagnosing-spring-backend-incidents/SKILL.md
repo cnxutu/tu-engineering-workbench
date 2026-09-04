@@ -9,7 +9,7 @@ Establish the first broken boundary with evidence before proposing a root cause 
 
 ## Scope and evidence
 
-1. Read the target repository and nearest `AGENTS.md`; when P0-1 is the primary context, also read its root `AGENTS.md`, `core/rules/development.md`, and `core/skills/bug-analysis.md`.
+1. Read the target repository and nearest `AGENTS.md`; when P0 is the primary context, also read its root `AGENTS.md`, `core/rules/development.md`, and `core/skills/bug-analysis.md`.
 2. Keep the initial scope to the service named by the user. Expand to an upstream or downstream repository only after boundary evidence requires it.
 3. Request or obtain one or more anomalous samples: a desensitized business/device/request identifier, time window, expected result, actual result, impact, version, and environment.
 4. Separate observations, hypotheses, and unknowns. Do not name a root cause, class, Topic, table, configuration key, or runtime behavior until it has been read or observed.

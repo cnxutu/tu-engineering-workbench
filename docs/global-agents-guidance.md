@@ -1,6 +1,6 @@
 # 全局 `AGENTS.md` 指南
 
-本页说明个人级 Codex 指令应放在哪里、应写什么，以及如何与仓库规则配合。它面向工程师维护，不是 Codex 的默认任务上下文；P0-1 的运行时规则仍以 [`../AGENTS.md`](../AGENTS.md) 为准。
+本页说明个人级 Codex 指令应放在哪里、应写什么，以及如何与仓库规则配合。它面向工程师维护，不是 Codex 的默认任务上下文；P0 的运行时规则仍以 [`../AGENTS.md`](../AGENTS.md) 为准。
 
 ## 范围与边界
 
@@ -25,7 +25,7 @@ Codex 在用户目录先读取 `AGENTS.override.md`；该文件不存在时读�
 
 ## 推荐的全局内容
 
-以下模板从 P0-1 [`core/rules/development.md`](../core/rules/development.md) 提取了可跨项目复用的部分，特别用于避免把用户给出的排查方向当成结论。复制时只保留确实希望在每个项目生效的条目。
+以下模板从 P0 [`core/rules/development.md`](../core/rules/development.md) 提取了可跨项目复用的部分，特别用于避免把用户给出的排查方向当成结论。复制时只保留确实希望在每个项目生效的条目。
 
 ```md
 # Global Coding Guidance
