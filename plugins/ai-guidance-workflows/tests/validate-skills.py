@@ -14,7 +14,6 @@ REQUIRED_SKILLS = {
     "tu-deliver-feature",
     "tu-analyzing-feature-impact",
     "tu-loading-device-inspection-cross-service-context",
-    "tu-scaffolding-spring-feature-from-prototype",
 }
 SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 FRONTMATTER_PATTERN = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.DOTALL)

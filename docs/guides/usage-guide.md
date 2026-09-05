@@ -69,7 +69,6 @@ codex plugin add ai-guidance-workflows@tu-engineering-workbench
 | `tu-deliver-feature` | 显式创建、恢复、查询或稳定一个 Delivery ID；从原型、契约、DEV 任务或 Bug 统一路由四阶段交付。 |
 | `tu-analyzing-feature-impact` | 在 API 设计或实现前，将原型、PRD、截图或 PDF 归纳为有代码/契约证据的 Impact Review。 |
 | `tu-loading-device-inspection-cross-service-context` | P1–P4、P3-1 的 API、消息、数据归属、协议、MQTT、OSD、DJI 或视频流媒体链路变更前的全局理解。 |
-| `tu-scaffolding-spring-feature-from-prototype` | 兼容旧的显式原型调用；它路由到 `tu-deliver-feature` 与 Phase 1 Impact，不再维护独立生命周期。 |
 
 ### 与 Stage Shortcuts 的关系
 

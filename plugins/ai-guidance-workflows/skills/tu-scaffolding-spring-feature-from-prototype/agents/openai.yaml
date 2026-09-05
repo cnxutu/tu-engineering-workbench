@@ -1,6 +1,0 @@
-interface:
-  display_name: "TU - Scaffold Spring Feature from Prototype"
-  short_description: "Legacy route for prototype feature delivery"
-  default_prompt: "Use $tu-scaffolding-spring-feature-from-prototype to route this legacy prototype request into $tu-deliver-feature: [URL or attachment]."
-policy:
-  allow_implicit_invocation: false

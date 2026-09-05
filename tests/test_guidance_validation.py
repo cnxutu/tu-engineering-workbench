@@ -331,5 +331,158 @@ class FeatureDeliveryTaskPackageContractTest(unittest.TestCase):
         self.assertRegex(delivery_id.group(1), r"^DF-\d{8}-\d{2}$")
 
 
+class FeatureDeliveryPackageGuardrailTest(unittest.TestCase):
+    """Verify lightweight on-disk Feature Delivery package guardrails."""
+
+    def copied_repository(self) -> Path:
+        temporary_directory = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary_directory.cleanup)
+        repository = Path(temporary_directory.name) / "repo"
+        shutil.copytree(
+            REPOSITORY_ROOT,
+            repository,
+            ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc", "workspace.local.yaml"),
+        )
+        return repository
+
+    def validate(self, repository: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(VALIDATOR), "--repo-root", str(repository)],
+            capture_output=True,
+            check=False,
+            encoding="utf-8",
+        )
+
+    def create_package(
+        self,
+        repository: Path,
+        state: str,
+        directory_name: str,
+        delivery_id: str,
+        status: str,
+        archived_at: str | None = None,
+        create_artifact: bool = True,
+    ) -> None:
+        package = (
+            repository
+            / "work"
+            / "company"
+            / "device-inspection-platform"
+            / "tasks"
+            / state
+            / directory_name
+        )
+        package.mkdir(parents=True)
+        archived_line = f"archived_at: {archived_at}\n" if archived_at is not None else ""
+        package.joinpath("task.yaml").write_text(
+            "\n".join(
+                [
+                    f"delivery_id: {delivery_id}",
+                    "title: Guardrail fixture",
+                    f"status: {status}",
+                    "artifacts:",
+                    "  impact: 01-impact-review.md",
+                    archived_line.rstrip(),
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        if create_artifact:
+            package.joinpath("01-impact-review.md").write_text("fixture\n", encoding="utf-8")
+
+    def test_accepts_valid_active_and_archived_packages(self) -> None:
+        repository = self.copied_repository()
+        self.create_package(
+            repository, "active", "DF-20260905-01-fill-light", "DF-20260905-01", "active"
+        )
+        self.create_package(
+            repository,
+            "archive",
+            "DF-20260904-01-fill-light",
+            "DF-20260904-01",
+            "completed",
+            "2026-09-05T12:00:00+08:00",
+        )
+
+        result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_rejects_invalid_delivery_id(self) -> None:
+        repository = self.copied_repository()
+        self.create_package(
+            repository, "active", "DF-20260905-01-fill-light", "DF-20260905-1", "active"
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Feature Delivery task.yaml has invalid delivery_id", result.stderr)
+
+    def test_rejects_active_package_with_archived_at(self) -> None:
+        repository = self.copied_repository()
+        self.create_package(
+            repository,
+            "active",
+            "DF-20260905-01-fill-light",
+            "DF-20260905-01",
+            "active",
+            "2026-09-05T12:00:00+08:00",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("active Feature Delivery package must not declare archived_at", result.stderr)
+
+    def test_rejects_archived_package_without_archived_at(self) -> None:
+        repository = self.copied_repository()
+        self.create_package(
+            repository, "archive", "DF-20260905-01-fill-light", "DF-20260905-01", "completed"
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("archived Feature Delivery package must declare archived_at", result.stderr)
+
+    def test_rejects_missing_declared_artifact(self) -> None:
+        repository = self.copied_repository()
+        self.create_package(
+            repository,
+            "active",
+            "DF-20260905-01-fill-light",
+            "DF-20260905-01",
+            "active",
+            create_artifact=False,
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Feature Delivery artifact is missing", result.stderr)
+
+    def test_rejects_flat_active_delivery_state(self) -> None:
+        repository = self.copied_repository()
+        active = (
+            repository
+            / "work"
+            / "company"
+            / "device-inspection-platform"
+            / "tasks"
+            / "active"
+        )
+        active.mkdir(parents=True)
+        active.joinpath("DF-20260905-01.yaml").write_text(
+            "delivery_id: DF-20260905-01\nstatus: active\n", encoding="utf-8"
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Feature Delivery state must be stored in a package", result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

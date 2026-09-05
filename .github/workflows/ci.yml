@@ -5,6 +5,28 @@ on:
   pull_request:
 
 jobs:
+  windows:
+    name: Validate (windows-latest)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Validate AI guidance
+        run: python scripts/validate_guidance.py --repo-root .
+
+      - name: Run guidance validation tests
+        run: python -m unittest tests.test_guidance_validation
+
+      - name: Validate shared Codex plugin
+        run: python plugins/ai-guidance-workflows/tests/validate-skills.py plugins/ai-guidance-workflows
+
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}

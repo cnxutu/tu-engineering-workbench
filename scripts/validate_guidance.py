@@ -24,6 +24,8 @@ PRIMARY_REPOSITORY_BINDINGS = {
     "P0": "tu-engineering-workbench",
     "P0-1": "tu-devkit",
 }
+DELIVERY_ID_PATTERN = re.compile(r"^DF-\d{8}-\d{2}$")
+DELIVERY_DIRECTORY_PATTERN = re.compile(r"^(DF-\d{8}-\d{2})(?:-.+)?$")
 def error_if_missing(path: Path, label: str, errors: list[str]) -> None:
     if not path.is_file():
         errors.append(f"missing {label}: {path}")
@@ -203,6 +205,112 @@ def validate_sensitive_values(repo_root: Path, errors: list[str]) -> None:
                 errors.append(f"possible sensitive value in {path.relative_to(repo_root)}")
 
 
+def yaml_scalar(text: str, key: str) -> str | None:
+    match = re.search(rf"^{re.escape(key)}:\s*(\S.*?)\s*$", text, re.MULTILINE)
+    if match is None:
+        return None
+    return match.group(1).strip().strip("\\\"'")
+
+
+def yaml_map_values(text: str, key: str) -> list[str]:
+    lines = text.splitlines()
+    values: list[str] = []
+    for index, line in enumerate(lines):
+        if re.fullmatch(rf"{re.escape(key)}:\s*", line) is None:
+            continue
+        for child in lines[index + 1 :]:
+            if not child.strip():
+                continue
+            if not child.startswith((" ", "\t")):
+                break
+            match = re.match(r"^\s+[^:#][^:]*:\s*(\S.*?)\s*$", child)
+            if match is not None:
+                values.append(match.group(1).strip().strip("\\\"'"))
+        break
+    return values
+
+
+def validate_feature_delivery_packages(repo_root: Path, errors: list[str]) -> None:
+    for state in ("active", "archive"):
+        for task_root in repo_root.glob(f"work/**/tasks/{state}"):
+            for candidate in task_root.glob("DF-*"):
+                if not candidate.is_dir():
+                    errors.append(
+                        "Feature Delivery package must be a directory: "
+                        f"{candidate.relative_to(repo_root)}"
+                    )
+                    continue
+                directory_match = DELIVERY_DIRECTORY_PATTERN.fullmatch(candidate.name)
+                if directory_match is None:
+                    errors.append(
+                        "Feature Delivery package directory has invalid canonical ID: "
+                        f"{candidate.relative_to(repo_root)}"
+                    )
+                    continue
+                task_file = candidate / "task.yaml"
+                if not task_file.is_file():
+                    errors.append(
+                        "Feature Delivery package is missing task.yaml: "
+                        f"{candidate.relative_to(repo_root)}"
+                    )
+                    continue
+                task_text = task_file.read_text(encoding="utf-8")
+                delivery_id = yaml_scalar(task_text, "delivery_id")
+                if delivery_id is None or DELIVERY_ID_PATTERN.fullmatch(delivery_id) is None:
+                    errors.append(
+                        "Feature Delivery task.yaml has invalid delivery_id: "
+                        f"{task_file.relative_to(repo_root)}"
+                    )
+                elif delivery_id != directory_match.group(1):
+                    errors.append(
+                        "Feature Delivery delivery_id does not match package directory: "
+                        f"{task_file.relative_to(repo_root)}"
+                    )
+                status = yaml_scalar(task_text, "status")
+                archived_at = yaml_scalar(task_text, "archived_at")
+                if state == "active":
+                    if status != "active":
+                        errors.append(
+                            "active Feature Delivery package must have status: active: "
+                            f"{task_file.relative_to(repo_root)}"
+                        )
+                    if archived_at is not None:
+                        errors.append(
+                            "active Feature Delivery package must not declare archived_at: "
+                            f"{task_file.relative_to(repo_root)}"
+                        )
+                else:
+                    if status == "active":
+                        errors.append(
+                            "archived Feature Delivery package must not have status: active: "
+                            f"{task_file.relative_to(repo_root)}"
+                        )
+                    if archived_at is None:
+                        errors.append(
+                            "archived Feature Delivery package must declare archived_at: "
+                            f"{task_file.relative_to(repo_root)}"
+                        )
+                for artifact in yaml_map_values(task_text, "artifacts"):
+                    if not (candidate / artifact).exists():
+                        errors.append(
+                            "Feature Delivery artifact is missing: "
+                            f"{task_file.relative_to(repo_root)} -> {artifact}"
+                        )
+
+            if state == "active":
+                for candidate in task_root.iterdir():
+                    if not candidate.is_file() or candidate.name == ".gitkeep":
+                        continue
+                    text = candidate.read_text(encoding="utf-8")
+                    if candidate.name.startswith("DF-") or re.search(
+                        r"^delivery_id:\s*DF-", text, re.MULTILINE
+                    ):
+                        errors.append(
+                            "Feature Delivery state must be stored in a package, not a flat active file: "
+                            f"{candidate.relative_to(repo_root)}"
+                        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -221,6 +329,7 @@ def main() -> int:
     validate_workspace_configuration(repo_root, registered_codes, errors)
     validate_workspace_template(repo_root, registered_codes, errors)
     validate_sensitive_values(repo_root, errors)
+    validate_feature_delivery_packages(repo_root, errors)
 
     if errors:
         print("AI guidance validation failed:", file=sys.stderr)
