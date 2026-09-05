@@ -22,4 +22,4 @@ P0 `tu-engineering-workbench` 是共享工程知识库。只有读者能区分�
 
 当任务发现候选事实时，先记录在 `work/`；只有通过代码、正式契约、测试、真实设备或批准记录验证后，才将精炼结论提炼至 `products/` 的唯一权威页面或 ADR。链接到该结论的交付记录保留证据链，但不复制其正文。
 
-参见 [编写指南](authoring-guide.md)、[接入指南](integration-guide.md) 和 [任务元数据契约](../core/contracts/task-metadata.schema.yaml)。
+参见 [编写指南](authoring-guide.md)、[接入指南](../guides/integration-guide.md) 和 [任务元数据契约](../../core/contracts/task-metadata.schema.yaml)。

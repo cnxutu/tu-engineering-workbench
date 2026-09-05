@@ -1,6 +1,6 @@
 # 工程师使用与维护指南
 
-本页面面向使用或维护本仓库的工程师，帮助理解 P0 的目录、会话范围和知识维护方式；Codex 执行任务时不默认读取本页。运行时规则以 [`../AGENTS.md`](../AGENTS.md) 为准。
+本页面面向使用或维护本仓库的工程师，帮助理解 P0 的目录、会话范围和知识维护方式；Codex 执行任务时不默认读取本页。运行时规则以 [`../../AGENTS.md`](../../AGENTS.md) 为准。
 
 需要理解 AI 运行时加载、工程师使用与维护路径、项目骨架与扩展入口时，阅读[项目导航与维护地图](project-guide.md)。
 
@@ -17,7 +17,7 @@ p: 先核实现有缓存与接口，再提出最小实现方案并完成代码�
 v: 单元测试与接口回归
 ```
 
-项目标记、实际仓库名与产品绑定以 [仓库注册表](../core/registry/repositories.yaml) 为准；仓库在产品中的职责由产品 repository manifest 维护。`P0–P7` 只展开连续主序列；P0-1、P3-1、P4-1 是独立标记。`workspace.local.yaml` 只维护本机绝对路径；首次接入时从 [`../workspace.example.yaml`](../workspace.example.yaml) 复制创建。缺少映射时不得猜测源码位置。除 P0 文档外，项目文件不得把这些标记当作项目或服务名称，应改用实际工程名；优先级、阶段、变量名和协议/型号值等非项目语义不受此限制。
+项目标记、实际仓库名与产品绑定以 [仓库注册表](../../core/registry/repositories.yaml) 为准；仓库在产品中的职责由产品 repository manifest 维护。`P0–P7` 只展开连续主序列；P0-1、P3-1、P4-1 是独立标记。`workspace.local.yaml` 只维护本机绝对路径；首次接入时从 [`../../workspace.example.yaml`](../../workspace.example.yaml) 复制创建。缺少映射时不得猜测源码位置。除 P0 文档外，项目文件不得把这些标记当作项目或服务名称，应改用实际工程名；优先级、阶段、变量名和协议/型号值等非项目语义不受此限制。
 
 项目标记不依赖固定分隔符，因此 `P1 + P2`、`P1,P2`、`P1，P2`、`P1、P2`、`P1 P2`，或正文中分别出现 P1、P2，均表示本次涉及两者；`-` 或 `–` 表示连续范围，例如 `P0–P7`，但不拆分 P0-1、P3-1、P4-1。`范围：` 是可选前缀。
 
@@ -25,8 +25,8 @@ v: 单元测试与接口回归
 
 仅当任务改变了长期可复用的关键入口、跨服务链路、服务/数据边界、公开契约或持久架构决策时，才更新 `products/`。修改时阅读：
 
-- [编写指南](authoring-guide.md)：收录标准和文档结构。
-- [治理规范](governance.md)：证据、过期性、敏感信息、ADR 与 Delivery State 归档。
+- [编写指南](../governance/authoring-guide.md)：收录标准和文档结构。
+- [治理规范](../governance/governance.md)：证据、过期性、敏感信息、ADR 与 Delivery State 归档。
 
 单个业务代码改动、临时排查过程、完整配置清单和未经证实的运行猜测不应进入产品知识。
 
@@ -39,9 +39,9 @@ v: 单元测试与接口回归
 - `bootstrap/`：其他仓库接入时复制的模板。
 - `docs/`：面向维护者的使用、接入、编写与治理资料。
 
-个人级 Codex 指令、团队级工程规则与其他配置入口的边界，分别见 [全局 `AGENTS.md` 指南](global-agents-guidance.md) 和 [Codex 可配置入口地图](codex-customization-map.md)。这两页用于工程师理解和维护，不应复制进 P0 根 `AGENTS.md`。
+个人级 Codex 指令、团队级工程规则与其他配置入口的边界，分别见 [全局 `AGENTS.md` 指南](../codex/global-agents-guidance.md) 和 [Codex 可配置入口地图](../codex/codex-customization-map.md)。这两页用于工程师理解和维护，不应复制进 P0 根 `AGENTS.md`。
 
-日常 Prompt 使用 [Compact Syntax](../core/prompt-compact-syntax.md)。`core/templates/` 是防遗漏的完整参考表单，不是自动渲染器，也不是默认输入。
+日常 Prompt 使用 [Compact Syntax](../../core/prompt-compact-syntax.md)。`core/templates/` 是防遗漏的完整参考表单，不是自动渲染器，也不是默认输入。
 
 ## 4. 接入新仓库
 

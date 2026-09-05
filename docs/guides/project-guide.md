@@ -1,6 +1,6 @@
 # 项目导航与维护地图
 
-本页面面向使用或维护 `tu-engineering-workbench` 的工程师，用于理解项目骨架、两条协作链路和扩展入口。它不是 Codex 的默认上下文；AI 的运行时入口始终是根 [`AGENTS.md`](../AGENTS.md)。
+本页面面向使用或维护 `tu-engineering-workbench` 的工程师，用于理解项目骨架、两条协作链路和扩展入口。它不是 Codex 的默认上下文；AI 的运行时入口始终是根 [`AGENTS.md`](../../AGENTS.md)。
 
 ## 两条链路
 
@@ -22,8 +22,8 @@ flowchart TD
     B -->|任务类型匹配| CR[最小必要的 Core 角色或 Playbook]
     B -->|跨服务、协议或链路| PK[最小必要的产品知识]
     B -->|Plugin Skill 触发条件匹配| SK[适用的 Codex Skill]
-    B -->|维护 P0 运行时规则或 Core| RG[docs/authoring-guide.md\n与受影响文件]
-    B -->|维护 P0 产品知识、架构或流程| MG[docs/governance.md\n与 docs/authoring-guide.md]
+    B -->|维护 P0 运行时规则或 Core| RG[docs/governance/authoring-guide.md\n与受影响文件]
+    B -->|维护 P0 产品知识、架构或流程| MG[docs/governance/governance.md\n与 docs/governance/authoring-guide.md]
     B --> C[工程基准与所有命中上下文\n均已加载]
     CR --> C
     PK --> C
@@ -51,8 +51,8 @@ flowchart TD
 | 显式调用 `tu-` Skill，或任务语义命中其描述 | 该 Skill 的 `SKILL.md` 及其要求的最小上下文 | 其他 `tu-` Skill | “`$ai-guidance-workflows:tu-diagnosing-spring-backend-incidents`”只加载该诊断 Skill。 |
 | 明确涉及 P1–P4、P3-1 的 API、消息、数据归属、协议、MQTT、OSD、视频流媒体链路或跨服务发布 | 产品 `index.md`，再沿链接读取当前已维护的最小 Flow 或仓库入口资料；未覆盖场景以受影响仓库的局部约束、代码、契约和配置核实 | 整个产品目录、未受影响服务的源码 | “P1 通过 P3-1 管理视频资源并获取播放地址。” |
 | 仅写了多个项目标记，但未说明交互边界 | 已明确范围内项目各自的局部约束；服务关系不明时先确认 | 不自动加载 P1–P4、P3-1 全局上下文 | “P1、P2 帮我看看这个问题。” |
-| 维护 P0 运行时入口、`core/` 规则、角色、工作流、契约或模板 | `docs/authoring-guide.md` 的“公共规则维护”及受影响文件 | 产品知识、治理规范、使用教程 | “调整 `development.md` 的验证规则。” |
-| 维护 P0 产品知识、架构、流程、服务边界或 Delivery State | `docs/authoring-guide.md`、`docs/governance.md` 与受影响的权威页面 | 其他产品目录和所有使用教程 | “拆分 DJI OSD 上行与指令下行流程文档。” |
+| 维护 P0 运行时入口、`core/` 规则、角色、工作流、契约或模板 | `docs/governance/authoring-guide.md` 的“公共规则维护”及受影响文件 | 产品知识、治理规范、使用教程 | “调整 `development.md` 的验证规则。” |
+| 维护 P0 产品知识、架构、流程、服务边界或 Delivery State | `docs/governance/authoring-guide.md`、`docs/governance/governance.md` 与受影响的权威页面 | 其他产品目录和所有使用教程 | “拆分 DJI OSD 上行与指令下行流程文档。” |
 | 修改 P0 工具、脚本、校验或团队 Plugin | 工程基准、目标目录 README、实现和测试；Plugin 还读取 manifest、相关 `SKILL.md` 和 `tests/test-plugin.sh` | 产品知识、知识编写规范、无关 Plugin | “调整 guidance 校验脚本以检查一个新字段。” |
 
 因此，“是否会读取某份信息”不是靠图本身决定，而是靠用户任务中可辨认的范围和语义条件决定。例如，单写“P1 修复接口”不会让 AI 读取 DJI 产品链路；补充“该接口向 P2 下发 DJI 指令”后，跨服务条件命中，才会读取对应产品入口、下行 Flow 及受影响服务的最小代码上下文。
@@ -99,8 +99,8 @@ flowchart TD
 | --- | --- | --- | --- |
 | 使用自然语言、Compact Syntax 或团队 Skill | [工程师使用与维护指南](usage-guide.md) | 通常无需修改 | Compact Syntax 是快捷协议；安装 Plugin 后新建 Codex 任务以重新发现 Skill。 |
 | 接入新服务仓库 | [接入指南](integration-guide.md) | `bootstrap/`、仓库清单、目标仓库局部 `AGENTS.md`、本机映射 | 不猜测路径或产品绑定；运行 guidance 校验。 |
-| 补充产品链路、边界或决策 | [编写指南](authoring-guide.md)、[治理规范](governance.md) | `products/` 中最小必要的权威页面 | 记录证据和可信度；不以文档替代代码核实。 |
-| 修改跨仓库公共规则 | [编写指南](authoring-guide.md) 的“公共规则维护” | `AGENTS.md` 或 `core/` | 保持条件、动作、例外清晰；避免加入产品事实。 |
+| 补充产品链路、边界或决策 | [编写指南](../governance/authoring-guide.md)、[治理规范](../governance/governance.md) | `products/` 中最小必要的权威页面 | 记录证据和可信度；不以文档替代代码核实。 |
+| 修改跨仓库公共规则 | [编写指南](../governance/authoring-guide.md) 的“公共规则维护” | `AGENTS.md` 或 `core/` | 保持条件、动作、例外清晰；避免加入产品事实。 |
 | 新增或更新团队 Skill | [工程师使用与维护指南](usage-guide.md) 的 Plugin 章节 | `plugins/ai-guidance-workflows/skills/` | 更新引用和测试；更新 cachebuster、重装 Plugin，并在新任务验证发现结果。 |
 | 修改校验脚本或结构规则 | 受影响脚本与测试 | `scripts/`、`tests/` 或 Plugin 测试 | 运行对应校验；不把校验器当作产品事实来源。 |
 

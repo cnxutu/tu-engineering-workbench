@@ -35,6 +35,6 @@ knowledge_update_assessment: deferred
 
 New Deliveries create only `task.yaml`, `resume.md`, and the current phase Artifact; Artifact keys point only to files that already exist. Add Contract, OpenAPI, Backlog, and Integration keys as their files are created. Archive the whole directory after completing, blocking, or superseding it, adding `archived_at` as required by task metadata.
 
-When a later Bug belongs to an archived Delivery, move the whole directory back to `active/`, preserve `delivery_id`, set `status: active`, remove `archived_at`, and record Reopened At, Reason, related BUG/CAP, previous completion context, and current classification in `04-integration-log.md`. Refresh the resume cache before continuing.
+When a later Bug belongs to an archived Delivery, move the whole directory back to `active/`, preserve `delivery_id`, set `status: active`, remove `archived_at`, and record Reopened At, Reason, related BUG/CAP, previous completion context, and current classification in `04-integration-log.md`. If the integration log is absent, create it for the stabilization/reopen round and register `integration: 04-integration-log.md` under `task.yaml.artifacts` before recording the evidence. Refresh the resume cache before continuing.
 
 `resume.md` has only: Delivery ID, Current Phase, Goal, Confirmed Decisions, Current Implementation, Open Items, Relevant Commits, Read Next, and Next Action. Link rather than copy Contracts, source, logs, or requirements. It is never the authority when it conflicts with current evidence.

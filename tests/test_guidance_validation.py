@@ -285,7 +285,13 @@ class FeatureDeliveryTaskPackageContractTest(unittest.TestCase):
             / "task-package.md"
         ).read_text(encoding="utf-8")
         demo = (
-            REPOSITORY_ROOT / "docs" / "examples" / "prototype-feature-delivery-demo" / "task.yaml"
+            REPOSITORY_ROOT
+            / "docs"
+            / "workflows"
+            / "feature-delivery"
+            / "examples"
+            / "robotdog-fill-light"
+            / "task.yaml"
         ).read_text(encoding="utf-8")
 
         for field in required_fields:
@@ -304,7 +310,13 @@ class FeatureDeliveryTaskPackageContractTest(unittest.TestCase):
             / "task-package.md"
         ).read_text(encoding="utf-8")
         demo = (
-            REPOSITORY_ROOT / "docs" / "examples" / "prototype-feature-delivery-demo" / "task.yaml"
+            REPOSITORY_ROOT
+            / "docs"
+            / "workflows"
+            / "feature-delivery"
+            / "examples"
+            / "robotdog-fill-light"
+            / "task.yaml"
         ).read_text(encoding="utf-8")
         template_yaml = re.search(r"```yaml\n(.*?)\n```", template, re.DOTALL)
         self.assertIsNotNone(template_yaml)

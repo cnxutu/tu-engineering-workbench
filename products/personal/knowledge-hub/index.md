@@ -17,4 +17,4 @@
 
 ## 证据状态
 
-`pending_verification`：K1/K2 的本地路径、仓库级说明、代码入口、架构边界、跨端契约及运行事实，均须在仓库登记后以代码、契约、测试或已批准文档核实。新增长期知识时遵循共享的 [编写指南](../../../docs/authoring-guide.md) 与 [治理规范](../../../docs/governance.md)。
+`pending_verification`：K1/K2 的本地路径、仓库级说明、代码入口、架构边界、跨端契约及运行事实，均须在仓库登记后以代码、契约、测试或已批准文档核实。新增长期知识时遵循共享的 [编写指南](../../../docs/governance/authoring-guide.md) 与 [治理规范](../../../docs/governance/governance.md)。

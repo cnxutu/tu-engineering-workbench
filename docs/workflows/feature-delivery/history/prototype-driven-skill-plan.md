@@ -5,9 +5,9 @@
 > 范围：P0 `ai-guidance-workflows` 的流程与 Skill 规划；本文件不授权修改业务代码或对外发布接口。
 > 经验来源：智元机器狗接入的 active task、端到端链路、设备接入清单，以及现有 `tu-scaffolding-spring-feature-from-prototype`。
 
-本页不再是流程规范。Feature Delivery Workflow V1 的当前权威说明、Delivery ID、阶段契约和 Skill 路由见 [Feature Delivery Workflow](feature-delivery-workflow.md)。最终实施采用 `tu-deliver-feature` 作为入口、`tu-analyzing-feature-impact` 作为 Phase 1 能力，旧 prototype Skill 仅保留兼容路由。
+本页不再是流程规范。Feature Delivery Workflow V1 的当前权威说明、Delivery ID、阶段契约和 Skill 路由见 [Feature Delivery Workflow](../README.md)。最终实施采用 `tu-deliver-feature` 作为入口、`tu-analyzing-feature-impact` 作为 Phase 1 能力，旧 prototype Skill 仅保留兼容路由。
 
-完整模拟案例见 [机器狗补光控制：四阶段操作剧本](examples/prototype-feature-delivery-demo/walkthrough.md)。案例包含可直接查看的 `task.yaml`、四阶段产物和 OpenAPI 草案；其中接口和业务决定均为流程演示，不代表真实需求已确认。
+完整模拟案例见 [机器狗补光控制：四阶段操作剧本](../examples/robotdog-fill-light/walkthrough.md)。案例包含可直接查看的 `task.yaml`、四阶段产物和 OpenAPI 草案；其中接口和业务决定均为流程演示，不代表真实需求已确认。
 
 ## 1. 结论
 

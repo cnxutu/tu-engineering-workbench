@@ -88,4 +88,4 @@
 - 评估智元酷拓 D1 Max 的 SDK 能力、状态/安全语义以及接入 P3 的候选边界：读 [智元酷拓 D1 Max 型号能力与接入约束](context/domain/zhiyuan-d1-max-sdk.md)。
 - 选择 C++/原生 SDK Bridge 与 P3 之间的 gRPC、HTTP/JSON 或 MQTT 通信方式，或学习 gRPC：读 [原生 SDK Bridge 与 P3 的通信选型](context/domain/grpc-edge-bridge-selection.md)。
 
-未命中这两类场景时，不因项目名称自动加载整个产品目录；先从受影响仓库的局部 `AGENTS.md`、代码、契约和测试核实。新增长期可复用的产品事实时，遵循 `docs/authoring-guide.md` 与 `docs/governance.md`。
+未命中这两类场景时，不因项目名称自动加载整个产品目录；先从受影响仓库的局部 `AGENTS.md`、代码、契约和测试核实。新增长期可复用的产品事实时，遵循 `docs/governance/authoring-guide.md` 与 `docs/governance/governance.md`。

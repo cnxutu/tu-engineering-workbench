@@ -16,4 +16,4 @@
 
 ## 证据状态
 
-`pending_verification`：项目用途和本地路径已登记；学习资料的目录、内容、来源与维护规则仍须在 L1 仓库中核实。新增长期知识时遵循共享的 [编写指南](../../../docs/authoring-guide.md) 与 [治理规范](../../../docs/governance.md)。
+`pending_verification`：项目用途和本地路径已登记；学习资料的目录、内容、来源与维护规则仍须在 L1 仓库中核实。新增长期知识时遵循共享的 [编写指南](../../../docs/governance/authoring-guide.md) 与 [治理规范](../../../docs/governance/governance.md)。

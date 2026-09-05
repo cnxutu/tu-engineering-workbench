@@ -1,11 +1,11 @@
 # 接入指南
 
-本指南描述仓库接入模型；它不实现解析器、知识图谱、MCP Server 或 `tu-engineering-workbench init` 命令。运行时读取规则见 [`../AGENTS.md`](../AGENTS.md)，工程师使用方式见 [工程师使用与维护指南](usage-guide.md)。
+本指南描述仓库接入模型；它不实现解析器、知识图谱、MCP Server 或 `tu-engineering-workbench init` 命令。运行时读取规则见 [`../../AGENTS.md`](../../AGENTS.md)，工程师使用方式见 [工程师使用与维护指南](usage-guide.md)。
 
 ## 绑定一个仓库
 
-1. 将 [AGENTS.md.template](../bootstrap/AGENTS.md.template) 复制到目标仓库为 `AGENTS.md`，再补充本仓库局部说明路径。
-2. 复制 [repository-manifest.template.yaml](../bootstrap/repository-manifest.template.yaml)，绑定一个产品，并保证其中产品清单与入口路径一致。
+1. 将 [AGENTS.md.template](../../bootstrap/AGENTS.md.template) 复制到目标仓库为 `AGENTS.md`，再补充本仓库局部说明路径。
+2. 复制 [repository-manifest.template.yaml](../../bootstrap/repository-manifest.template.yaml)，绑定一个产品，并保证其中产品清单与入口路径一致。
 3. 通过 `AI_GUIDANCE_HOME` 或显式仓库配置（例如 `.tu-engineering-workbench.yaml`）配置 P0 的知识根目录；显式配置可以选择非默认清单路径。
 4. 目标仓库的 `AGENTS.md` 应先定位 P0，再读取当前仓库和目标目录的局部约束；随后按 P0 根 `AGENTS.md` 的会话范围、任务类型与影响范围条件读取产品知识和 Core，最后核实代码。不要默认加载所有产品文档或维护者指南。
 
@@ -15,7 +15,7 @@
 
 ## 解析器约定
 
-未来解析器应按“显式配置 → `AI_GUIDANCE_HOME` → 安装默认位置”的顺序定位知识库。它应返回绑定的仓库清单、产品清单和产品入口；遇到缺失或歧义绑定时必须报错，不能猜测。预期字段见 [仓库清单契约](../core/contracts/repository-manifest.schema.yaml)。
+未来解析器应按“显式配置 → `AI_GUIDANCE_HOME` → 安装默认位置”的顺序定位知识库。它应返回绑定的仓库清单、产品清单和产品入口；遇到缺失或歧义绑定时必须报错，不能猜测。预期字段见 [仓库清单契约](../../core/contracts/repository-manifest.schema.yaml)。
 
 ## 知识图谱与 MCP Context Server
 

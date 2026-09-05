@@ -14,6 +14,25 @@ V1 将一次完整交付组织为一个可恢复的 Delivery，而不是把聊�
 - Bug 在数周后出现时，无法快速定位原需求、契约和已验证证据。
 - 过程记录与长期 Product Knowledge 混在一起，既难恢复，也污染知识库。
 
+## When to use
+
+用于一个需求会经历影响分析、Contract 确认、多个 DEV/INT 任务、跨 Session 协作，或在联调/测试后仍可能回归的真实交付。它尤其适合多仓库、实时链路、设备链路或前后端需要提前对齐的 Feature。
+
+不要把所有工作都放入 Delivery：范围和复现路径已经明确的小 Bug、独立技术研究、单纯 code review、已具备完整 Scope/Contract/Verification 的单个 DEV Task，以及独立 architecture review，都优先采用对应的专用 capability。详见 [Skill Integration Best Practices](skill-integration.md)。
+
+## Quick start
+
+```text
+$ai-guidance-workflows:tu-deliver-feature
+<需求 / 原型>
+
+继续 DF-20260905-01
+DF-20260905-01 当前进展
+DF-20260905-01 设备状态偶尔不刷新
+```
+
+新需求从 Impact 开始。继续、状态和 Bug 均使用 canonical Delivery ID，而非目录 slug。
+
 ## Model and authority
 
 ```text
@@ -46,6 +65,8 @@ work/<domain>/<product>/tasks/active/<delivery-id>-<slug>/
 
 不强制生成空文件。新建时只创建 `task.yaml`、`resume.md` 与当前 Phase Artifact，并仅在 `artifacts` 中声明已创建文件。包归档时整体移动到同级 `archive/`；完成、阻塞或被替代时补齐 `status` 与 `archived_at`。
 
+上图是人类说明的简化结构。Runtime authoritative template 是 [Task Package reference](../../../plugins/ai-guidance-workflows/skills/tu-deliver-feature/references/task-package.md)；不要让本页示例成为第二份 Runtime Authority。教学演练见 [robot-dog fill-light example](examples/robotdog-fill-light/walkthrough.md)。
+
 `task.yaml` 是生命周期状态和导航索引，至少包含 `delivery_id`、`title`、`status`、`phase`、`product`、`repositories`、`created_at`、`gates`、`artifacts`、`current_focus`、`last_verified`、`next_actions`、`evidence` 和 `knowledge_update_assessment`。它不复制需求或接口正文。`repositories` 是列表，记录已确认的实际范围；不因产品知识或示例推断加入仓库。
 
 `resume.md` 是短小的 Resume Cache，包含 Delivery ID、Current Phase、Goal、Confirmed Decisions、Current Implementation、Open Items、Relevant Commits、Read Next 和 Next Action。Phase 切换、重要 DEV 批次完成、联调结束、重要 Bug 修复、用户暂停和归档前都刷新它。恢复时先读 `task.yaml`，再读 `resume.md` 与当前阶段 Artifact，最后读取完成当前动作所需的最小代码/契约/证据。
@@ -58,6 +79,22 @@ work/<domain>/<product>/tasks/active/<delivery-id>-<slug>/
 | 2. Contract | 前端、后端、上下游如何约定？ | `02-api-contract.md`，可选 `02-openapi.yaml` | `G2_contract_confirmed` |
 | 3. Execution | 怎么拆、怎么实现？ | `03-execution-backlog.md` | `G3_tasks_ready` |
 | 4. Integration & Stabilization | 联调、测试、Bug、回归如何闭环？ | `04-integration-log.md` | `G4_test_ready` |
+
+```text
+Impact → G1 → Contract → G2 → Execution → G3 → Integration & Stabilization → G4 → Archive
+```
+
+### Phase artifacts
+
+| Artifact | Solves |
+| --- | --- |
+| `task.yaml` | Lifecycle state、Gate 与 Artifact navigation。 |
+| `01-impact-review.md` | Scope、CAP、repository/cross-service impact 与未决项。 |
+| `02-api-contract.md` | 人类评审的 REST/Event/Device Contract Authority。 |
+| `02-openapi.yaml` | 可选的 machine-readable REST Contract。 |
+| `03-execution-backlog.md` | EXT/DEV/INT 的执行条件、验证与证据。 |
+| `04-integration-log.md` | 联调、Bug、回归和 reopen evidence。 |
+| `resume.md` | 短小 Resume Cache，不替代上述 Authority。 |
 
 ### Phase 1 — Impact
 
@@ -103,7 +140,16 @@ Phase 4 ADOPT 已可用的 `diagnosing-bugs`；总入口只负责 Delivery、CAP
 /tu-deliver-feature DF-20260904-01 <Bug 描述>
 ```
 
-新需求：创建 ID 与包，创建必要的 `task.yaml`/`resume.md`，进入 Impact。继续或查询：按索引定位包，读取最小恢复集并报告/执行当前阶段的下一动作。若 Bug 属于 archive 中的 Delivery，先把整个目录移回 `active/`，保留 ID、设为 `status: active`、移除 `archived_at`，并在 integration log 记录 reopened time、原因、BUG/CAP、先前完成上下文与分类，再刷新 resume。Bug：创建或定位 `BUG-xx`，先分类；只有 Contract 或 Requirement 变化才回退 Gate。任何代码修改、外部发布、Apifox 写入或跨仓库读取仍遵循当前用户授权和本地约束。
+新需求：创建 ID 与包，创建必要的 `task.yaml`/`resume.md`，进入 Impact。继续或查询：按索引定位包，读取最小恢复集并报告/执行当前阶段的下一动作。若 Bug 属于 archive 中的 Delivery，先把整个目录移回 `active/`，保留 ID、设为 `status: active`、移除 `archived_at`，并在 integration log 记录 reopened time、原因、BUG/CAP、先前完成上下文与分类；如果该日志缺失，先为本次稳定化/重开创建它并登记到 `task.yaml.artifacts`，再写入证据。然后刷新 resume。Bug：创建或定位 `BUG-xx`，先分类；只有 Contract 或 Requirement 变化才回退 Gate。任何代码修改、外部发布、Apifox 写入或跨仓库读取仍遵循当前用户授权和本地约束。
+
+## Common mistakes
+
+- 从 UI button 直接推导 API，或把显示字段直接变为请求字段和数据库列。
+- 提前创建所有 Artifact 空文件，或在 `artifacts` 中指向不存在的文件。
+- 把 Chat History、Apifox 或 Issue Tracker 当成 Authority。
+- 因普通实现 Bug 重开 G1/G2，或为后续 Bug 创建失去原上下文的新 Delivery。
+- 用 `handoff` 替代持久的 Task Package / `resume.md`。
+- 强制所有小任务走完整 Feature Delivery。
 
 ## Knowledge promotion and non-goals
 

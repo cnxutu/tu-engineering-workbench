@@ -45,6 +45,6 @@
 
 ## 记录
 
-`Core` 下的 [契约](../core/contracts/) 是文档契约，不是可执行校验器。任务记录应保持简洁，最终记录归档到 `work/<domain>/<product>/tasks/archive/`；持久架构选择使用 ADR；加入证据前先脱敏。任务过程只在验证后提炼为产品知识，不直接把排查过程写入 `products/`。
+`Core` 下的 [契约](../../core/contracts/) 是文档契约，不是可执行校验器。任务记录应保持简洁，最终记录归档到 `work/<domain>/<product>/tasks/archive/`；持久架构选择使用 ADR；加入证据前先脱敏。任务过程只在验证后提炼为产品知识，不直接把排查过程写入 `products/`。
 
-仓库配置见 [接入指南](integration-guide.md)，AI 读取、Skill 与 Template 使用见 [工程师使用与维护指南](usage-guide.md)。
+仓库配置见 [接入指南](../guides/integration-guide.md)，AI 读取、Skill 与 Template 使用见 [工程师使用与维护指南](../guides/usage-guide.md)。

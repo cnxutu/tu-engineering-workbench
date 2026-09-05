@@ -18,15 +18,16 @@
 ## 从这里开始
 
 - [运行时约束](AGENTS.md)：供 Codex 按范围、简写协议和条件读取执行任务的最小入口。
-- [工程师使用与维护指南](docs/usage-guide.md)：供工程师理解范围声明、目录与日常使用方式。
-- [Feature Delivery Workflow V1](docs/feature-delivery-workflow.md)：一个 Delivery ID 串起影响分析、契约、实施、联调与 Bug 回归的正式说明。
-- [Agent Skill 项目与安装清单](docs/agent-skill-landscape.md)：S1 开源参考模块、GitHub 模板来源与当前环境 Skill 快照。
-- [项目导航与维护地图](docs/project-guide.md)：供工程师理解 AI 运行时加载链路、工程师使用与维护路径、项目骨架与扩展入口。
+- [文档导航](docs/README.md)：按使用、治理、Codex 与工作流目标查找资料。
+- [工程师使用与维护指南](docs/guides/usage-guide.md)：供工程师理解范围声明、目录与日常使用方式。
+- [Feature Delivery Workflow V1](docs/workflows/feature-delivery/README.md)：一个 Delivery ID 串起影响分析、契约、实施、联调与 Bug 回归的正式说明。
+- [Agent Skill 项目与安装清单](docs/codex/agent-skill-landscape.md)：S1 开源参考模块、GitHub 模板来源与当前环境 Skill 快照。
+- [项目导航与维护地图](docs/guides/project-guide.md)：供工程师理解 AI 运行时加载链路、工程师使用与维护路径、项目骨架与扩展入口。
 - [Core 入口](core/index.md)：角色、规则、Playbook、契约与参考模板。
 - [仓库注册表](core/registry/repositories.yaml)：项目标记、工程身份与产品绑定的唯一来源；仓库在产品中的职责由 `products/**/repositories/*.yaml` 维护。
 - [交付状态](work/README.md)：任务过程和归档的边界。
 - [无人机巡检产品入口](products/company/device-inspection-platform/index.md)：P1–P4、P3-1 的业务、架构和链路上下文。
-- [接入指南](docs/integration-guide.md)：如何让一个代码仓库绑定产品上下文。
+- [接入指南](docs/guides/integration-guide.md)：如何让一个代码仓库绑定产品上下文。
 
 ## 目录职责
 
@@ -39,6 +40,6 @@
 
 产品事实应有代码、接口或运行证据；未知内容必须标记为待验证。语义优先级始终是：仓库局部约束与代码 > 产品上下文 > Core 通用规则。
 
-产品入口、链路、设计和仓库入口地图的固定写法见 [编写指南](docs/authoring-guide.md)。
+产品入口、链路、设计和仓库入口地图的固定写法见 [编写指南](docs/governance/authoring-guide.md)。
 
 `README.md` 与 `docs/` 面向维护者，不是 Codex 的默认读取范围；实际运行时加载规则以 [AGENTS.md](AGENTS.md) 为准。
