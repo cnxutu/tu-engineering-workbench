@@ -9,11 +9,11 @@ Engineering Task Loop 是一次具体 DEV、Bug、Refactor 或技术改造的细
 ## Quick Start
 
 - **明确且低风险的小改动**：说明目标、已知修改位置与验证方式，直接走 Execute → Verify。
-- **普通 DEV / Bug / Refactor**：先发送本页 Explore 模板；确认结论后进入 Codex Plan Mode，确认边界后再发送 Execute 模板。
+- **普通 DEV / Bug / Refactor**：先发送本页 Explore 模板；确认结论后用 Codex Plan Mode 形成和收敛候选计划，待用户确认边界后再发送 Execute 模板。
 - **高风险或跨服务改动**：先深度 Explore，评审 Plan，并在执行中严格遵守 Stop Conditions。
 - **属于 Feature Delivery 的任务**：Loop 管一次工程动作；长期状态和关键结论仍写回 Task Package。
 
-Goal/Explore 用于表达本轮目标和调查边界，不天然授予只读或修改权限；Plan Mode 用于确认下一轮的执行 Contract，不能替代业务 Contract 或持久 Artifact。
+Goal/Explore 用于表达本轮目标和调查边界，不天然授予只读或修改权限；Plan Mode 用于形成和收敛候选执行计划，不自动授权执行。用户确认后的 Plan 才是本轮 Execution Boundary；若属于 Feature Delivery，持久边界和结果必须回填对应 Workbench Artifact。Plan Mode 不替代业务 Contract 或持久 Artifact。
 
 ```mermaid
 flowchart TD
@@ -76,7 +76,7 @@ flowchart TD
 
 ### Plan: execution contract
 
-Plan 是用户与 AI 对下一轮实际修改边界的最终确认，至少包含 Goal、Scope、Files / Components、Steps、Verification 与 Stop Conditions。它不是业务 Contract，也不取代 Workbench Artifact。
+Codex Plan Mode 用于形成和收敛候选执行计划，至少覆盖 Goal、Scope、Files / Components、Steps、Verification 与 Stop Conditions。它本身不自动授权执行；用户确认后的 Plan 才定义本轮实际修改边界。它不是业务 Contract，也不取代 Workbench Artifact；属于 Feature Delivery 时，持久边界和结果必须回填对应 Artifact。
 
 ```text
 基于刚才探索结果，进入计划模式。
@@ -148,7 +148,7 @@ flowchart LR
 | Stage | 推荐 provider / 方法 | 使用边界 |
 | --- | --- | --- |
 | Explore | `tu-analyzing-feature-impact`（原型/PRD）、`tu-loading-device-inspection-cross-service-context`（跨服务）、`tu-diagnosing-spring-backend-incidents`（Spring 事故） | 产出事实、影响和诊断输入，不接管长期交付状态。 |
-| Plan | Codex Plan Mode；可用时借鉴 `to-spec` / `to-tickets` | Plan Mode / Workbench Artifact 才是最终执行边界。 |
+| Plan | Codex Plan Mode；可用时借鉴 `to-spec` / `to-tickets` | Plan Mode 形成候选计划；用户确认后的 Plan 定义本轮边界。Feature Delivery 的持久边界和结果回填 Workbench Artifact。 |
 | Execute | 用户显式调用且可用时 `implement`；适合时 `tdd` | 只处理已授权、已准备好的改动。 |
 | Verify | 测试、构建、lint、typecheck；可用时 `code-review` | review 是实现审查，不是 Lifecycle Authority。 |
 | Verify failure | 可用时 `diagnosing-bugs` | 用诊断获取新证据，再回到 Explore。 |

@@ -7,7 +7,7 @@
 ## 核心循环
 
 1. **Explore — Understand before changing**：核实发生了什么、原因、真实 change seam、可复用实现、受影响仓库/模块、替代方案、最小可行改动、风险与验证方式。探索默认不创建持久文件；“只探索不修改”必须由明确执行边界授权，不能仅根据 Goal Mode 推断。
-2. **Plan — Lock the execution boundary**：确认 Goal、Scope、Files / Components、Steps、Verification 与 Stop Conditions。Plan 是用户与 AI 对下一轮修改边界的确认，不是业务 Contract Authority。
+2. **Plan — Lock the execution boundary**：Codex Plan Mode 用于形成和收敛候选计划，确认 Goal、Scope、Files / Components、Steps、Verification 与 Stop Conditions。只有用户确认后的 Plan 才定义本轮修改边界；Plan Mode 本身不自动授权执行，也不是业务 Contract Authority。属于 Feature Delivery 时，持久边界和结果必须回填对应 Workbench Artifact。
 3. **Execute — Change only inside the approved boundary**：只实施已确认范围内的改动。发现边界假设不成立或范围必须扩大时，停止修改并回到 Explore / Plan。
 4. **Verify — Prove the result with evidence**：按任务选择测试、构建、lint、typecheck、契约/API、协议模拟、运行观测或 review。验证失败时先以新证据重新 Explore，不做无限猜测式 patch。
 

@@ -1,6 +1,6 @@
 # Feature Delivery × Skill Integration Best Practices
 
-`tu-deliver-feature` 负责 durable Feature lifecycle、Delivery ID、Phase/Gate、Artifact 和恢复路由。Provider 决定如何完成某一步；Task Package、批准 Contract 和证据决定 Delivery 当前含义。
+`tu-deliver-feature` 是 durable Feature lifecycle 的入口与编排器，负责 Delivery ID、Phase/Gate、Artifact 和恢复路由。Provider 决定如何完成某一步；Task Package、批准 Contract、Phase Artifact 与可复现证据构成 Delivery Authority。
 
 本页回答 Feature Delivery 各阶段优先使用什么 Provider；具体一个 DEV / Bug 如何结合 Goal/Explore、Plan Mode、implement、TDD、review 与验证，统一参考 [Engineering Task Loop](../engineering-task-loop/README.md)。该 Loop 不改变本页的 Lifecycle Authority 边界。
 
@@ -8,7 +8,7 @@
 
 | Context | Preferred capability | Relationship to Feature Delivery |
 | --- | --- | --- |
-| 整个 Feature 生命周期 | `tu-deliver-feature` | 生命周期入口与状态 Authority。 |
+| 整个 Feature 生命周期 | `tu-deliver-feature` | 生命周期入口、状态恢复与阶段编排；Delivery State 由 Task Package 保存。 |
 | 原型/PRD → Backend Impact | `tu-analyzing-feature-impact` | Phase 1 OWN provider，产出 Impact Review。 |
 | 外部 SDK、协议或技术资料核实 | `research`（可用时） | 补充证据，不替代 CAP/Impact Artifact。 |
 | 领域概念、状态或实体关系复杂 | `domain-modeling`（可用时） | 帮助澄清 Phase 1/2，不接管 Contract。 |
