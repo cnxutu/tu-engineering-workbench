@@ -12,7 +12,7 @@ flowchart TD
     subgraph REQUIRED[必经的公共约束层]
         R[仓库根目录 AGENTS.md]
         P01[根 AGENTS.md\nP0 公共运行时约束]
-        S[识别项目范围与任务类型]
+        S[识别项目范围、任务语义与阶段]
         R --> P01 --> S
     end
     S --> W{是否为范围内工程任务？}

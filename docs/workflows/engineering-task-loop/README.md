@@ -2,44 +2,131 @@
 
 Engineering Task Loop 是一次具体 DEV、Bug、Refactor 或技术改造的细粒度安全执行方法：先充分理解，再锁定边界，随后在授权范围内修改，并用证据决定是否完成。它不取代长期的 [Feature Delivery](../feature-delivery/README.md)。可复用方法见 [Core Playbook](../../../core/playbooks/engineering-task-loop.md)；本页是面向人的使用说明和可复制提示。
 
-## Daily Stage Shortcuts
-
-日常不需要复制后面的完整 Prompt。自然语言始终有效；需要强调本轮默认行为时，只写 Stage 加本次特殊上下文：
+## Mental Model
 
 ```text
-Explore
+Repository Scope
++
+Task Semantics
++
+Optional Stage
+=
+Current Engineering Intent
+```
+
+`P1`、`P2` 等项目标记说明在哪里工作；自然语言说明要做什么；Stage 只表达本轮操作意图；Playbook、Skill 与 Role 是按语义选择的专业能力 Provider。长期 Feature 则由 Feature Delivery 保存生命周期与证据。
+
+```mermaid
+flowchart TD
+    U[User] --> S[Repository Scope<br/>P1 / P2 / ...]
+    U --> T[Natural Language<br/>Bug / Feature / Refactor / Review / Cross-service]
+    U --> G[Optional Stage<br/>E / Explore · P / Plan · X / Execute · V / Verify]
+    S --> R[Runtime semantic routing]
+    T --> R
+    G --> R
+    R --> PB[Playbook / Role]
+    R --> SK[Skill]
+    PB --> W[Engineering Work]
+    SK --> W
+    W --> V[Verification]
+    FD[Feature Delivery<br/>Impact → Contract → Execution → Stabilization] --> FI[DEV-xx / BUG / INT]
+    FI --> ETL[Engineering Task Loop]
+```
+
+Feature Delivery 管长期生命周期；Engineering Task Loop 管一次具体修改；Stage Shortcut 不是 Provider，也不替代 Delivery ID、Task Package、Contract、Artifact 或证据。
+
+## Daily Stage Shortcuts
+
+日常不需要复制后面的完整 Prompt。自然语言始终有效；需要强调本轮默认行为时，只写 Stage 加本次特殊上下文。新用户推荐全名，熟练用户可用短写：
+
+| Stage | Full | Short |
+| --- | --- | --- |
+| Explore | `Explore` | `E` |
+| Plan | `Plan` | `P` |
+| Execute | `Execute` | `X` |
+| Verify | `Verify` | `V` |
+
+长写、短写和大小写均等价：`e`、`E`、`explore`、`Explore`、`EXPLORE` 都是 Explore。Stage Shortcut 应位于消息的任务头部区域，可出现在可选 Repository Scope 之后、主要自然语言任务正文之前，并作为独立 token / 独立标签出现，例如 `e` 或 `e:`；正文中的普通字母不触发 Stage。独立 `P` 是 Plan，`P1`、`P2`、`P3-1` 始终是项目标记。
+
+```text
+E
 <问题和特殊上下文>
 ```
 
 ```text
-Plan
+P
 <本轮额外边界>
 ```
 
 ```text
-Execute
+X
 <可选补充>
 ```
 
 ```text
-Verify
+V
 <可选额外验证>
 ```
 
-Stage Shortcut 提供默认行为，用户补充内容提供本次问题与额外约束；补充可收窄或覆盖默认行为，但仍受指令优先级限制。Explore 默认不修改生产代码；Plan 默认只形成候选计划；Execute 只在用户确认的边界内修改；Verify 只取得证据，不在失败后自动修复。
+Stage Shortcut 提供默认行为，用户补充内容提供本次问题与额外约束；补充可收窄或覆盖默认行为，但仍受指令优先级限制。Explore 默认不修改 tracked files；Plan 默认只形成候选计划；Execute 只在有效边界内修改；Verify 只取得证据，不在失败后自动修复。
 
-## Why
+## Real Daily Usage
 
-直接要求 AI 改代码会把理解、决策、修改和验收混在一起。这个 Loop 将它们分开：Explore 允许充分调查，Plan 与人对齐边界，Execute 严格受授权约束，Verify 以测试和证据而不是“看起来正确”决定结果。
+### Level 2: ordinary task
 
-## Quick Start
+```text
+P1
 
-- **明确且低风险的小改动**：说明目标、已知修改位置与验证方式，直接走 Execute → Verify。
-- **普通 DEV / Bug / Refactor**：先发送本页 Explore 模板；确认结论后用 Codex Plan Mode 形成和收敛候选计划，待用户确认边界后再发送 Execute 模板。
-- **高风险或跨服务改动**：先深度 Explore，评审 Plan，并在执行中严格遵守 Stop Conditions。
-- **属于 Feature Delivery 的任务**：Loop 管一次工程动作；长期状态和关键结论仍写回 Task Package。
+E
 
-Goal/Explore 用于表达本轮目标和调查边界，不天然授予只读或修改权限；Plan Mode 用于形成和收敛候选执行计划，不自动授权执行。用户确认后的 Plan 才是本轮 Execution Boundary；若属于 Feature Delivery，持久边界和结果必须回填对应 Workbench Artifact。Plan Mode 不替代业务 Contract 或持久 Artifact。
+设备状态 WS 偶尔不刷新。
+重点看 DeviceStateService → WsPublisher。
+```
+
+Explore 完成后切换 Codex Plan Mode：
+
+```text
+P
+
+采用推荐的最小方案。
+不要动 adapter repository。
+```
+
+Plan 输出候选计划。若 UI 提供 `Execute Plan`、`Implement` 或等价原生 Action，直接使用它，无需再输入 `X`。若 Plan 后继续讨论，例如“不要新建 DTO，继续复用现有状态对象”，待最新方案重新收敛后输入 `X`，即确认并执行该唯一、有效的最新 Plan。
+
+完成后可补充验证：
+
+```text
+V
+
+额外覆盖 WS reconnect。
+```
+
+### Level 1 and Level 3
+
+明确小改可以直接开始：
+
+```text
+X
+
+修复这里已经确认的 NPE，补对应单测。
+```
+
+跨服务或高风险任务先扩大探索，再在 Plan 中锁定边界：
+
+```text
+P1 + P2
+
+E
+
+梳理设备状态跨服务链路，重点确认消息 ownership 和状态收敛语义。
+```
+
+Plan 中可明确“允许修改 P1、P2，不能改 DB Schema 和外部 API Contract”。优先使用原生执行 Action；没有时再使用 `X`，最后用 `V` 取得证据。
+
+### Loop at a glance
+
+直接要求 AI 改代码会把理解、决策、修改和验收混在一起。这个 Loop 将它们分开：Explore 允许充分调查，Plan 收敛候选边界，Execute 严格受授权约束，Verify 以测试和证据而不是“看起来正确”决定结果。
 
 ```mermaid
 flowchart TD
@@ -79,7 +166,7 @@ flowchart TD
 
 ### Explore: understand before changing
 
-回答发生了什么、为什么、真实 change seam 在哪里、已有何种可复用实现、受影响哪些仓库/模块、有什么替代方案、最小可行改动是什么、可能失败什么以及如何验证。默认只输出紧凑 Explore Summary：Finding、Root/likely cause、Relevant code path、Recommended approach、Alternatives、Affected scope、Explicit non-scope、Risk、Verification approach 与 Open questions；普通小任务无需新建持久文件。
+回答发生了什么、为什么、真实 change seam 在哪里、已有何种可复用实现、受影响哪些仓库/模块、有什么替代方案、最小可行改动是什么、可能失败什么以及如何验证。默认不修改任何 tracked file；普通小任务只输出紧凑 Explore Summary：Finding、Root/likely cause、Relevant code path、Recommended approach、Alternatives、Affected scope、Explicit non-scope、Risk、Verification approach 与 Open questions，无需新建持久文件。
 
 ```text
 先不要修改代码。
@@ -100,11 +187,11 @@ flowchart TD
 完成后先停在方案评审，不执行修改。
 ```
 
-“只探索不修改”来自此类明确执行边界。Goal Mode 或 Explore 类请求本身不天然等于只读模式。
+Explore 默认禁止 tracked-file 修改、commit、push、deploy、release、生产写入和外部副作用；可以读取、搜索调用链、运行现有测试或非持久诊断/验证。用户可显式放宽明确范围，例如允许新增临时测试，但不会因此授权生产代码修改。Goal Mode 或 Explore 类请求本身不天然等于只读模式。
 
 ### Plan: execution contract
 
-Codex Plan Mode 用于形成和收敛候选执行计划，至少覆盖 Goal、Scope、Files / Components、Steps、Verification 与 Stop Conditions。它本身不自动授权执行；用户确认后的 Plan 才定义本轮实际修改边界。它不是业务 Contract，也不取代 Workbench Artifact；属于 Feature Delivery 时，持久边界和结果必须回填对应 Artifact。
+Codex Plan Mode 用于形成和收敛候选执行计划，至少覆盖 Goal、Scope、Files / Components、Steps、Verification 与 Stop Conditions。它本身不修改代码，也不是业务 Contract 或 Workbench Artifact。若 UI 提供原生 Plan 执行 Action，优先使用；否则 `X` / `Execute` 可确认并执行当前唯一、明确、无未决且未失效的最新 Plan。属于 Feature Delivery 时，持久边界和结果必须回填对应 Artifact。
 
 ```text
 基于刚才探索结果，进入计划模式。
@@ -125,6 +212,8 @@ Codex Plan Mode 用于形成和收敛候选执行计划，至少覆盖 Goal、Sc
 
 ### Execute: act inside the boundary
 
+只有当前 Plan 唯一、明确、无未决关键决定且未被新证据推翻时，`X` / `Execute` 才可视为用户对该 Plan 的确认和实施授权；否则先回到 Plan。它不自动授权 commit、push、release、deploy、生产写入、外部系统变更、付费或破坏性操作。
+
 ```text
 按已确认计划执行。
 
@@ -141,7 +230,7 @@ Codex Plan Mode 用于形成和收敛候选执行计划，至少覆盖 Goal、Sc
 
 ### Verify: require evidence
 
-根据任务选用 unit/integration test、build、lint、typecheck、SQL/API 验证、WS/MQTT 模拟、设备反馈、运行观测或 code review。验证失败时返回 Explore，以新证据更新 Plan；不要连续猜测式 patch。
+根据任务选用 unit/integration test、build、lint、typecheck、SQL/API 验证、WS/MQTT 模拟、设备反馈、运行观测或 code review。默认只验证，不扩大实现 Scope 或在失败后自动 patch；验证失败时返回 Explore，以新证据更新 Plan。
 
 ## Stop Conditions
 

@@ -31,14 +31,14 @@
 
 ### 3.1 Engineering Task Loop Stage Shortcuts
 
-自然语言是默认入口。用户可在消息第一行或首段用独立的 `Explore`、`Plan`、`Execute`、`Verify`（也可带 `:`）声明本轮阶段意图；这是人机快捷约定，不是严格 Parser 或新 DSL。未使用 Shortcut 时，仍根据用户的自然语言任务语义选择适用的 Role、Playbook 和 Skill。
+自然语言是默认入口。Stage Shortcut 应位于消息的任务头部区域，可出现在可选 Repository Scope 之后、主要自然语言任务正文之前，并作为独立 token / 独立标签出现：`Explore` / `E`、`Plan` / `P`、`Execute` / `X`、`Verify` / `V`；长写、短写和大小写均等价，也可带 `:`。这是人机快捷约定，不是严格 Parser 或新 DSL；正文中的普通字母不触发识别。独立 `P` 是 Plan，`P1`、`P2`、`P3-1` 等始终是项目标记。未使用 Shortcut 时，仍根据用户的自然语言任务语义选择适用的 Role、Playbook 和 Skill。
 
-- **Explore — Understand before changing**：默认不修改生产代码、不提交、不推送、不发布，也不执行外部业务副作用；可读取代码、配置、契约和必要产品知识，搜索调用链并运行安全的只读、诊断或验证命令。核实现状，区分事实、假设与未知，定位 change seam，给出最小推荐方案（必要时给替代方案）、Scope、Non-scope、风险、Verification 与待确认项；完成后停在方案评审，不开始实施。
-- **Plan — Lock the execution boundary**：Codex Plan Mode（当前产品表面提供时）用于形成和收敛候选计划，基于当前 Thread 已有 Explore 结果继续，不重复从头调查。候选 Plan 至少考虑 Goal、Scope、Files / Components、Steps、Verification 与 Stop Conditions；默认不实施、不自动扩大 Scope、新增 Repository、修改公开 Contract、引入 DB Schema，或调整权限/数据隔离模型。Plan Mode 只是候选计划形成；只有用户确认后的 Plan 才是本轮 Execution Boundary。
-- **Execute — Change inside the approved boundary**：使用当前 Thread 中最近一次可识别的用户确认 Plan，只在已确认 Scope 和 Files / Components 内实施，遵守 Stop Conditions，不顺手优化或重新发散设计，并完成适当 Verification。若没有已确认 Plan，只有 Level 1 的明确小改可按用户当前说明直接实施；非平凡任务先说明缺少执行边界。`Execute` 授权本轮代码修改，但不自动授权 commit、push、release、deploy、生产写入、外部系统变更、付费或破坏性操作。
-- **Verify — Prove the result with evidence**：不扩大实现 Scope；按当前 Plan/任务运行适用的 unit/integration test、build、lint、typecheck、API、SQL、WS、MQTT、设备或运行验证，并明确 passed、failed、not executed 或 not verifiable 及证据。失败时先报告证据并回到 Explore；除非用户明确要求“验证失败就继续修复”，Verify 本身不授权新的生产代码修复。
+- **Explore / E — Understand before changing**：默认不修改任何 tracked file（生产代码、测试、配置、文档或脚本），不提交、不推送、不发布，也不执行外部业务副作用；可读取代码、配置、契约和必要产品知识，搜索调用链，运行只读命令、现有测试、诊断命令或不会产生持久修改的验证。核实现状，区分事实、假设与未知，定位 change seam，给出最小推荐方案（必要时给替代方案）、Scope、Non-scope、风险、Verification 与待确认项；完成后停在方案评审，不开始实施。
+- **Plan / P — Lock the execution boundary**：Codex Plan Mode（当前产品表面提供时）用于形成和收敛候选计划，基于当前 Thread 已有 Explore 结果继续，不重复从头调查。候选 Plan 至少考虑 Goal、Scope、Files / Components、Steps、Verification 与 Stop Conditions；默认不实施、不自动扩大 Scope、新增 Repository、修改公开 Contract、引入 DB Schema，或调整权限/数据隔离模型。Plan Mode 只是候选计划形成；若产品 UI 提供执行该计划的原生 Action，优先使用它，不另要求输入 `X`。
+- **Execute / X — Change inside the approved boundary**：在没有原生 Plan 执行 Action，或 Plan 后继续讨论并重新收敛、或恢复已有明确边界时使用。若当前 Thread 有唯一、明确、无未决关键决定、未被新证据推翻的最新 Plan，`Execute` / `X` 即表示用户确认该 Plan 并授权本轮实施；若存在互斥方案、关键未决项、新证据或实质 Scope 冲突，先回到 Plan。只在已确认 Scope 和 Files / Components 内实施，遵守 Stop Conditions，不顺手优化或重新发散设计，并完成适当 Verification。若没有可识别 Plan，只有 Level 1 的明确小改可按用户当前说明直接实施；非平凡任务先说明缺少执行边界。`Execute` 授权本轮代码修改，但不自动授权 commit、push、release、deploy、生产写入、外部系统变更、付费或破坏性操作。
+- **Verify / V — Prove the result with evidence**：默认只验证、不扩大实现 Scope；按当前 Plan/任务运行适用的 unit/integration test、build、lint、typecheck、API、SQL、WS、MQTT、设备或运行验证，并明确 passed、failed、not executed 或 not verifiable 及证据。失败时先报告证据并回到 Explore；除非用户明确要求继续修复，Verify 本身不授权新的生产代码修复。
 
-Stage Shortcut 给出默认行为；用户本轮补充内容提供问题、范围和额外约束，可收窄或覆盖默认行为，但仍受指令优先级约束。例如 `Explore` 后明确允许临时测试，只扩展测试级验证，不授权生产代码修改。K2 或其他非后端任务没有适用角色时，不强行套用 Java 角色。
+Stage Shortcut 给出默认行为；用户本轮最新明确补充提供问题、范围和额外约束，可收窄或覆盖默认行为，但仍受指令优先级约束。例如 `E` 后明确允许新增临时测试，只放宽该测试级修改，不授权其他 tracked file 修改。K2 或其他非后端任务没有适用角色时，不强行套用 Java 角色。
 
 若已安装团队插件 `ai-guidance-workflows`：用户显式调用可用的 `tu-` Skill 时，使用该 Skill 并遵循其 `SKILL.md`；未显式调用时，按已安装 Skill 自身的触发描述和任务语义判断是否适用。未安装 Plugin 或没有适用原生 Skill 时，继续遵循本文件引用的 Core 工作流。仅出现多个项目标记但未说明服务交互时，不自动加载 P1–P4、P3-1 的全局上下文；先确认关联边界或分别按单项目任务处理。
 

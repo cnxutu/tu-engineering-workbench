@@ -48,7 +48,7 @@ Explore
 
 ## 5. 使用团队 Skill Plugin
 
-`ai-guidance-workflows` 是可选的团队 Codex Plugin，为高价值且重复的场景提供原生 Skill；它补充 `AGENTS.md` 和 Core 规则，不替代任务类型、局部约束或代码核实。
+`ai-guidance-workflows` 是可选的团队 Codex Plugin，为高价值且重复的场景提供原生 Skill；它补充 `AGENTS.md` 和 Core 规则，不替代自然语言任务语义、用户边界、局部约束或代码核实。
 
 团队自定义 Skill 统一以 `tu-` 开头，便于在列表中筛选和在任务中显式调用；Skill 是专用能力，不替代自然语言任务语义或可选 Stage Shortcut。
 

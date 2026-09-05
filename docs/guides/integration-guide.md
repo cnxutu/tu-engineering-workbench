@@ -7,7 +7,7 @@
 1. 将 [AGENTS.md.template](../../bootstrap/AGENTS.md.template) 复制到目标仓库为 `AGENTS.md`，再补充本仓库局部说明路径。
 2. 复制 [repository-manifest.template.yaml](../../bootstrap/repository-manifest.template.yaml)，绑定一个产品，并保证其中产品清单与入口路径一致。
 3. 通过 `AI_GUIDANCE_HOME` 或显式仓库配置（例如 `.tu-engineering-workbench.yaml`）配置 P0 的知识根目录；显式配置可以选择非默认清单路径。
-4. 目标仓库的 `AGENTS.md` 应先定位 P0，再读取当前仓库和目标目录的局部约束；随后按 P0 根 `AGENTS.md` 的会话范围、任务类型与影响范围条件读取产品知识和 Core，最后核实代码。不要默认加载所有产品文档或维护者指南。
+4. 目标仓库的 `AGENTS.md` 应先定位 P0，再读取当前仓库和目标目录的局部约束；随后按 P0 根 `AGENTS.md` 的会话范围、任务语义、阶段与影响范围条件读取产品知识和 Core，最后核实代码。不要默认加载所有产品文档或维护者指南。
 
 指令优先级独立于读取顺序：平台、系统和开发者约束 > 用户最新明确要求 > 仓库局部说明 > Core 公共规则 > 产品上下文。代码、契约、配置和测试用于核实当前事实，不取代用户已授权的目标变更。
 
