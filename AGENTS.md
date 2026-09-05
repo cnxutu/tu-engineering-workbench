@@ -1,12 +1,12 @@
 # P0 运行时约束
 
-本文件是 P0 作为 Primary（主仓库）时 Codex 的最小运行时入口：先定义**工程范围、工程任务必读基准、任务类型与条件读取、角色边界、指令优先级和事实可信度**，再将公共约束作用于本会话识别出的范围内仓库。Primary 只提供公共协作约束，不自动成为任务的代码阅读、核实或修改范围，也不以 P0 文档替代目标仓库的局部约束与代码。本文件不能覆盖 Codex 平台、系统或开发者施加的约束。`README.md`、`docs/` 与产品文档用于人工维护或在下列条件满足时按需读取，不是默认上下文。
+本文件是 P0 作为 Primary（主仓库）时 Codex 的最小运行时入口：先定义**工程范围、工程任务必读基准、任务阶段与条件读取、角色边界、指令优先级和事实可信度**，再将公共约束作用于本会话识别出的范围内仓库。Primary 只提供公共协作约束，不自动成为任务的代码阅读、核实或修改范围，也不以 P0 文档替代目标仓库的局部约束与代码。本文件不能覆盖 Codex 平台、系统或开发者施加的约束。`README.md`、`docs/` 与产品文档用于人工维护或在下列条件满足时按需读取，不是默认上下文。
 
 ## 1. 会话范围与路径地图
 
 当 P0 被设置为 Primary 时，Codex 每次任务都应先读取本文件的公共约束，无需用户重复提及 `P0`。会话首次任务中，从用户的直接说明识别项目标记；仅当识别到标记时，读取 [`core/registry/repositories.yaml`](core/registry/repositories.yaml) 确认它是否已登记、对应工程及产品绑定。除 Primary 的默认加载外，已登记标记共同构成本次可操作范围，后续消息沿用该范围，直到用户明确变更。引用的示例、代码块、文档标题、路径或历史记录中的项目标记不自动扩大范围；语义不明确时先确认，不猜测扩大范围。
 
-项目标记可出现在自然语言、列表、括号或 Compact Syntax 字段中；`范围：` 只是可选前缀。短横线 `-` 或连接号 `–` 仅展开连续的已登记主序列（如 `P0–P7`）；带连字符的独立标记（如 `P0-1`、`P3-1`、`P4-1`）不拆分，未登记标记也不能由范围语法推断。用户始终可以自然语言描述任务；Compact Syntax 只是熟练用户的快捷协议，不是使用前提。
+项目标记可出现在自然语言、列表、括号或可选的 Stage Shortcut 前后；`范围：` 只是可选前缀。短横线 `-` 或连接号 `–` 仅展开连续的已登记主序列（如 `P0–P7`）；带连字符的独立标记（如 `P0-1`、`P3-1`、`P4-1`）不拆分，未登记标记也不能由范围语法推断。用户始终可以自然语言描述任务；Stage Shortcut 只是可选加速器，不是使用前提。
 
 项目标记只用于 P0 的会话范围和跨仓库导航；目标仓库及其生成物必须使用实际工程名、服务名、模块名或领域术语，不得把项目标记写入源码、注释、日志、配置、数据库说明、测试、接口说明或新文档。项目标记作为优先级、阶段、变量或协议/型号值时可按原语义保留。
 
@@ -27,39 +27,18 @@
 | 涉及服务关系、公开契约或多个项目 | 单项目工程任务的读取项，再按第 3.2 节读取最小必要的产品资料与受影响仓库事实。 |
 | 维护 P0 运行时规则、Core、脚本或校验 | `development.md`、受影响文件和第 3.2 节对应的维护资料；不加载无关产品知识。 |
 
-## 3. 任务类型与条件上下文
+## 3. 任务阶段与条件上下文
 
-### 3.1 Prompt Compact Syntax
+### 3.1 Engineering Task Loop Stage Shortcuts
 
-用户可用一个大写任务类型与小写上下文字段描述任务。大小写有语义：`B` 是 Bugfix，`b` 是 Background。
+自然语言是默认入口。用户可在消息第一行或首段用独立的 `Explore`、`Plan`、`Execute`、`Verify`（也可带 `:`）声明本轮阶段意图；这是人机快捷约定，不是严格 Parser 或新 DSL。未使用 Shortcut 时，仍根据用户的自然语言任务语义选择适用的 Role、Playbook 和 Skill。
 
-| 大写类型 | 含义 | 默认 Core 角色/工作流 |
-| --- | --- | --- |
-| `F` | Feature Development，开发 | 后端任务：`Java Engineer` + `feature-development` |
-| `B` | Bugfix，缺陷修复 | 后端任务：`Java Engineer` + `bug-analysis` |
-| `R` | Refactor，重构 | `Backend Architect` + `refactor-analysis` |
-| `A` | Architecture，架构设计/评审 | `System Designer` 或 `Backend Architect` + `architecture-review` |
-| `X` | Cross-service Change，跨服务变更 | `System Designer` + `architecture-review` |
-| `C` | Code Review，代码评审 | `Code Reviewer` |
-| `D` | Discovery / Feasibility，可行性探索 | 按范围选择 `System Designer` 或 `Backend Architect`；只调查、核实和比较，不修改代码 |
-| `P` | Planning / Change Plan，变更计划 | 按范围选择 `System Designer` 或 `Backend Architect`；锁定边界与计划，不直接实施 |
+- **Explore — Understand before changing**：默认不修改生产代码、不提交、不推送、不发布，也不执行外部业务副作用；可读取代码、配置、契约和必要产品知识，搜索调用链并运行安全的只读、诊断或验证命令。核实现状，区分事实、假设与未知，定位 change seam，给出最小推荐方案（必要时给替代方案）、Scope、Non-scope、风险、Verification 与待确认项；完成后停在方案评审，不开始实施。
+- **Plan — Lock the execution boundary**：Codex Plan Mode（当前产品表面提供时）用于形成和收敛候选计划，基于当前 Thread 已有 Explore 结果继续，不重复从头调查。候选 Plan 至少考虑 Goal、Scope、Files / Components、Steps、Verification 与 Stop Conditions；默认不实施、不自动扩大 Scope、新增 Repository、修改公开 Contract、引入 DB Schema，或调整权限/数据隔离模型。Plan Mode 只是候选计划形成；只有用户确认后的 Plan 才是本轮 Execution Boundary。
+- **Execute — Change inside the approved boundary**：使用当前 Thread 中最近一次可识别的用户确认 Plan，只在已确认 Scope 和 Files / Components 内实施，遵守 Stop Conditions，不顺手优化或重新发散设计，并完成适当 Verification。若没有已确认 Plan，只有 Level 1 的明确小改可按用户当前说明直接实施；非平凡任务先说明缺少执行边界。`Execute` 授权本轮代码修改，但不自动授权 commit、push、release、deploy、生产写入、外部系统变更、付费或破坏性操作。
+- **Verify — Prove the result with evidence**：不扩大实现 Scope；按当前 Plan/任务运行适用的 unit/integration test、build、lint、typecheck、API、SQL、WS、MQTT、设备或运行验证，并明确 passed、failed、not executed 或 not verifiable 及证据。失败时先报告证据并回到 Explore；除非用户明确要求“验证失败就继续修复”，Verify 本身不授权新的生产代码修复。
 
-| 小写字段 | 含义 |
-| --- | --- |
-| `g` | Goal，目标 |
-| `b` | Background，背景 |
-| `s` | State，当前状态 |
-| `c` | Constraints，约束 |
-| `r` | Result，期望结果 |
-| `i` | Impact，影响范围 |
-| `p` | Plan，实施要求/执行步骤 |
-| `v` | Verification，验证方式 |
-| `q` | Questions，需要探索或回答的问题（`D`） |
-| `d` | Decision，已确认方案或决策（`P`） |
-
-收到此格式时，按类型加载表中最小必要的 `core/agents/`、`core/playbooks/` 与规则；K2 或其他非后端任务没有适用角色时，不强行套用 Java 角色。完整示例和解析细节见 `core/prompt-compact-syntax.md`，仅在需要查阅时读取。
-
-`D` 和 `P` 的默认边界是**不修改代码**：`D` 的产物是带证据的可行性结论与推荐下一步；`P` 的产物是已确认方案对应的修改边界、代码入口、步骤、风险与验证计划。实施须由后续 `F/B/R/X` 任务明确授权。
+Stage Shortcut 给出默认行为；用户本轮补充内容提供问题、范围和额外约束，可收窄或覆盖默认行为，但仍受指令优先级约束。例如 `Explore` 后明确允许临时测试，只扩展测试级验证，不授权生产代码修改。K2 或其他非后端任务没有适用角色时，不强行套用 Java 角色。
 
 若已安装团队插件 `ai-guidance-workflows`：用户显式调用可用的 `tu-` Skill 时，使用该 Skill 并遵循其 `SKILL.md`；未显式调用时，按已安装 Skill 自身的触发描述和任务语义判断是否适用。未安装 Plugin 或没有适用原生 Skill 时，继续遵循本文件引用的 Core 工作流。仅出现多个项目标记但未说明服务交互时，不自动加载 P1–P4、P3-1 的全局上下文；先确认关联边界或分别按单项目任务处理。
 
@@ -69,11 +48,11 @@
 
 | 条件 | 额外必读项 | 不默认读取 |
 | --- | --- | --- |
-| 维护 P0 的运行时入口、`core/` 公共规则、角色、工作流、契约或模板 | `docs/governance/authoring-guide.md` 的“公共规则维护”，以及受影响文件 | 产品知识、治理规范、使用教程 |
+| 维护 P0 的运行时入口、`core/` 公共规则、角色、工作流或契约 | `docs/governance/authoring-guide.md` 的“公共规则维护”，以及受影响文件 | 产品知识、治理规范、使用教程 |
 | 维护 P0 的产品知识、架构、流程、服务边界、清单或交付记录 | `docs/governance/authoring-guide.md`、`docs/governance/governance.md`，以及受影响的权威页面 | 其他产品目录与所有使用教程 |
 | 修改 P0 的工具、脚本、校验或团队 Plugin | 目标目录的 README、实现与测试；Plugin 还读取 manifest、相关 `SKILL.md` 与 `tests/test-plugin.sh` | 产品知识、知识编写规范、无关 Plugin |
 | 用户明确指定 P0-1 并明确提出 VPS 部署、升级、调整、网络排查、性能或稳定性问题 | 通过 `workspace.local.yaml` 定位 P0-1，再读取 P0-1 的 `docs/vps/AGENTS.md` 和当前链路所需资料；涉及实现时仍读取本仓 `development.md` 与 P0-1 的 `vps-init/README.md` | 仅因 P0 是 Primary、偶然提到 VPS、一般网络问答或无真实 VPS/网络目标的仓库开发，不触发该专项入口 |
-| `X`、`i` 涉及多个项目，或任务明确涉及服务关系、OSD、指令、协议、缓存链路或跨服务发布依赖 | `products/company/device-inspection-platform/index.md`，再沿链接读取当前已维护的最小 Flow 或 P1 入口/缓存资料；未覆盖场景以目标代码、契约和配置核实 | 整个产品目录、无关服务源码 |
+| 任务涉及多个已登记项目，或明确涉及服务关系、OSD、指令、协议、缓存链路、公开 Contract、数据所有权或跨服务发布依赖 | `products/company/device-inspection-platform/index.md`，再沿链接读取当前已维护的最小 Flow 或 P1 入口/缓存资料；未覆盖场景以目标代码、契约和配置核实 | 整个产品目录、无关服务源码 |
 | K1/K2 的 Knowledge Hub 产品架构或跨端任务 | `products/personal/knowledge-hub/index.md`，再沿链接读取所需资料 | 无关公司产品材料 |
 | L1 的软考高级系统架构师学习沉淀任务 | `products/personal/architecture-learning/index.md`，再沿链接读取所需资料 | 无关产品材料 |
 
@@ -83,13 +62,13 @@
 
 ### 4.1 指令优先级
 
-指令冲突时，按以下顺序处理：**Codex 平台、系统和开发者约束 > 用户最新明确要求 > 目标仓库或目录的局部 `AGENTS.md` > 本文件与 Core 公共规则 > 产品文档、模板和示例**。同一层级的补充约束应一并遵循；只有同一事项互相矛盾时才采用较高优先级来源。用户授权可满足平台要求用户审批或确认的前提；但不能覆盖平台、系统或开发者的禁止性约束及实际权限限制。
+指令冲突时，按以下顺序处理：**Codex 平台、系统和开发者约束 > 用户最新明确要求 > 目标仓库或目录的局部 `AGENTS.md` > 本文件与 Core 公共规则 > 产品文档和示例**。同一层级的补充约束应一并遵循；只有同一事项互相矛盾时才采用较高优先级来源。用户授权可满足平台要求用户审批或确认的前提；但不能覆盖平台、系统或开发者的禁止性约束及实际权限限制。
 
 `core/playbooks/` 是仓库级方法参考，不等同于 Codex 平台可触发的 `SKILL.md`。适用的 Codex Skill 必须先读取并遵循；Playbook 只在不冲突时补充执行方法，不能覆盖平台、系统或开发者约束。
 
 ### 4.2 事实可信度
 
-当前代码、契约、配置、测试和可复现命令结果用于证明**当前事实**；带证据的产品知识用于提供已确认上下文；Core 规则、模板和示例只提供通用方法，不能证明现状。当前代码不能否定用户已授权的目标变更，只能说明变更前状态和兼容性影响。未知项标为待核实。
+当前代码、契约、配置、测试和可复现命令结果用于证明**当前事实**；带证据的产品知识用于提供已确认上下文；Core 规则和示例只提供通用方法，不能证明现状。当前代码不能否定用户已授权的目标变更，只能说明变更前状态和兼容性影响。未知项标为待核实。
 
 不得记录或输出密钥、Token、凭据、客户数据或其他敏感运行信息。
 
@@ -105,7 +84,7 @@
 
 ### 4.4 计划执行与完成声明
 
-当 Codex 在本次**实施任务**中对用户列出计划、待办或执行步骤后，该计划即构成完成承诺：必须逐项执行并核验，不能只完成其中一部分就宣称任务、计划或实施已完成。仅产出方案的 `P` 任务不适用本节的执行要求；其计划须明确标注为待后续实施的建议。
+当 Codex 在本次**实施任务**中对用户列出计划、待办或执行步骤后，该计划即构成完成承诺：必须逐项执行并核验，不能只完成其中一部分就宣称任务、计划或实施已完成。仅产出方案且未获实施授权的任务不适用本节的执行要求；其计划须明确标注为待后续实施的建议。
 
 如任一已列步骤无法完成，Codex 必须在交接中逐项列出未完成内容、无法完成的具体原因、已尝试或已核实的证据、受影响范围，以及可行的下一步；在剩余步骤依赖该阻塞时，必须明确说明计划未完成。不得将未执行、被拒绝、缺少权限、缺少依赖、验证失败或等待用户决策的步骤表述为已完成。
 

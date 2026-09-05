@@ -33,12 +33,8 @@ Core 只描述通用工程方法，不存放任何产品或仓库事实。使用
 
 Playbook 是仓库级的通用工程方法，不等同于 Codex 平台安装且可触发的 `SKILL.md`。平台 Skill 的适用与优先级以 [P0 运行时约束](../AGENTS.md) 为准；Playbook 仅在不冲突时补充其执行细节。
 
-## 日常任务入口
+## 日常任务
 
-- [Prompt Compact Syntax](prompt-compact-syntax.md)：熟练用户的快捷协议；自然语言任务同样有效，不要求填写长 Markdown 模板。
+用户默认使用自然语言描述任务。对非平凡工程任务，可选用 [Engineering Task Loop](playbooks/engineering-task-loop.md) 的 Stage Shortcuts：Explore → Plan → Execute → Verify。它们表达本轮阶段意图，不取代用户确认、局部 `AGENTS.md`、Contract 或证据。
 
-任务涉及多个仓库、公开契约或消息协议时，应先加载产品架构与链路文档，使用 `System Designer` 进行设计或评审；任务类型使用 `X`，并在 `i` 中列出受影响的仓库。只需先判断可行性时使用 `D`；已确认方向、只需锁定改动边界与步骤时使用 `P`。
-
-## 历史模板
-
-[`templates/README.md`](templates/README.md) 说明每类模板的最小必填、建议项、可选项与使用示例。`templates/` 提供功能、缺陷修复、重构、架构设计、代码评审、跨服务变更、可行性探索与变更计划的参考框架。除非用户明确指定，Codex 不主动要求或加载它们。
+任务涉及多个仓库、公开契约或消息协议时，应先加载最小必要的产品架构与链路资料，使用 `System Designer` 进行设计或评审；只需先判断可行性时使用 Explore，已确认方向、只需锁定改动边界与步骤时使用 Plan。面向人的日常示例见 [Engineering Task Loop Best Practice](../docs/workflows/engineering-task-loop/README.md)，但 Runtime 不强制加载该页面。

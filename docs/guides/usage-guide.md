@@ -10,11 +10,10 @@
 
 ```text
 范围：P0 + P1
-F
-g: 增加巡检任务的状态查询能力
-i: P1
-p: 先核实现有缓存与接口，再提出最小实现方案并完成代码和测试
-v: 单元测试与接口回归
+Explore
+
+增加巡检任务的状态查询能力。
+先核实现有缓存与接口；本轮不修改代码。
 ```
 
 项目标记、实际仓库名与产品绑定以 [仓库注册表](../../core/registry/repositories.yaml) 为准；仓库在产品中的职责由产品 repository manifest 维护。`P0–P7` 只展开连续主序列；P0-1、P3-1、P4-1 是独立标记。`workspace.local.yaml` 只维护本机绝对路径；首次接入时从 [`../../workspace.example.yaml`](../../workspace.example.yaml) 复制创建。缺少映射时不得猜测源码位置。除 P0 文档外，项目文件不得把这些标记当作项目或服务名称，应改用实际工程名；优先级、阶段、变量名和协议/型号值等非项目语义不受此限制。
@@ -32,7 +31,7 @@ v: 单元测试与接口回归
 
 ## 3. 目录导航
 
-- `core/`：通用角色、规则、Playbook、契约、注册表和参考模板。
+- `core/`：通用角色、规则、Playbook、契约和注册表。
 - `products/`：已验证的产品架构、流程、仓库入口与长期决策。
 - `work/`：当前与归档的 Delivery State；不作为产品知识默认入口。
 - `workspace.example.yaml`：可提交的本机路径映射模板；实际路径写入被忽略的 `workspace.local.yaml`。
@@ -41,7 +40,7 @@ v: 单元测试与接口回归
 
 个人级 Codex 指令、团队级工程规则与其他配置入口的边界，分别见 [全局 `AGENTS.md` 指南](../codex/global-agents-guidance.md) 和 [Codex 可配置入口地图](../codex/codex-customization-map.md)。这两页用于工程师理解和维护，不应复制进 P0 根 `AGENTS.md`。
 
-日常 Prompt 使用 [Compact Syntax](../../core/prompt-compact-syntax.md)。`core/templates/` 是防遗漏的完整参考表单，不是自动渲染器，也不是默认输入。
+日常任务默认使用自然语言；对非平凡工程任务，可选用 `Explore`、`Plan`、`Execute`、`Verify` 表达本轮阶段意图。最短用法、默认边界和受控模板见 [Engineering Task Loop](../workflows/engineering-task-loop/README.md)。
 
 ## 4. 接入新仓库
 
@@ -51,7 +50,7 @@ v: 单元测试与接口回归
 
 `ai-guidance-workflows` 是可选的团队 Codex Plugin，为高价值且重复的场景提供原生 Skill；它补充 `AGENTS.md` 和 Core 规则，不替代任务类型、局部约束或代码核实。
 
-团队自定义 Skill 统一以 `tu-` 开头，便于在列表中筛选和在任务中显式调用；该前缀不属于 Compact Syntax，因此不改变 `B`、`X` 等任务类型的含义。
+团队自定义 Skill 统一以 `tu-` 开头，便于在列表中筛选和在任务中显式调用；Skill 是专用能力，不替代自然语言任务语义或可选 Stage Shortcut。
 
 Skill 采用少量优先的策略：成熟通用能力优先 **Adopt**；需要叠加本仓工程语义时 **Adapt**；只有 Workbench 独有、且已被真实交付反复验证的模式才 **Own**。不要把每个技术主题或一次性流程变成新 Skill。
 
@@ -72,24 +71,24 @@ codex plugin add ai-guidance-workflows@tu-engineering-workbench
 | `tu-loading-device-inspection-cross-service-context` | P1–P4、P3-1 的 API、消息、数据归属、协议、MQTT、OSD、DJI 或视频流媒体链路变更前的全局理解。 |
 | `tu-scaffolding-spring-feature-from-prototype` | 兼容旧的显式原型调用；它路由到 `tu-deliver-feature` 与 Phase 1 Impact，不再维护独立生命周期。 |
 
-### 与 Compact Syntax 的关系
+### 与 Stage Shortcuts 的关系
 
-`F/B/R/A/X/C/D/P` 仍是任务类型；Skill 是可选的专用工作流，不新增 `S-B` 之类的任务类型，也不改变 `B` 的缺陷修复语义。最可靠的显式调用方式是在任务首行写 Skill 名称，下一行仍写原任务类型：
+Skill 是可选的专用工作流。最可靠的显式调用方式是在任务首行写 Skill 名称，随后用自然语言说明任务；需要强调本轮阶段时，再写可选 Stage Shortcut：
 
 ```text
 $ai-guidance-workflows:tu-diagnosing-spring-backend-incidents
-B
-g: P2 的设备状态消息偶发丢失
-i: P2
-v: 输出证据链、根因或下一步取证计划
+Explore
+
+P2 的设备状态消息偶发丢失。
+输出证据链、根因或下一步取证计划；不要修改代码。
 ```
 
 ```text
 $ai-guidance-workflows:tu-loading-device-inspection-cross-service-context
-X
-g: 支持新设备的状态上报和控制指令
-i: P1、P2、P3、P4
-p: 先核实上下行链路、契约与发布依赖，再给出方案
+Explore
+
+P1、P2、P3、P4 需要支持新设备的状态上报和控制指令。
+先核实上下行链路、契约与发布依赖，再给出方案。
 ```
 
 ```text

@@ -19,7 +19,7 @@ flowchart TD
     W -->|是| D[core/rules/development.md\n第 2 节指定的必读工程基准]
     D --> L[目标仓库/目录的局部 AGENTS.md]
     L --> B[根 AGENTS.md 第 3 节\n判定条件读取]
-    B -->|任务类型匹配| CR[最小必要的 Core 角色或 Playbook]
+    B -->|任务语义或 Stage Shortcut 匹配| CR[最小必要的 Core 角色或 Playbook]
     B -->|跨服务、协议或链路| PK[最小必要的产品知识]
     B -->|Plugin Skill 触发条件匹配| SK[适用的 Codex Skill]
     B -->|维护 P0 运行时规则或 Core| RG[docs/governance/authoring-guide.md\n与受影响文件]
@@ -47,11 +47,11 @@ flowchart TD
 | --- | --- | --- | --- |
 | 纯问答、纯文案、会议纪要等非工程任务 | 已适用的局部 `AGENTS.md`（如有） | `development.md`、产品目录、Core 工作流 | “解释这段错误信息的含义，不修改代码。” |
 | 单项目工程任务，且没有明确服务边界 | `core/rules/development.md`、目标仓库/目录的局部 `AGENTS.md`、相关代码/调用方/契约/测试 | 其他仓库源码、产品目录、治理和使用文档 | “P1：给现有接口增加一个校验字段。” |
-| 使用 `F`、`B`、`R`、`A`、`X` 等 Compact Syntax 类型 | 该类型对应的最小 Core 角色或工作流 | 其他类型的角色和工作流 | “`R P1 g: ...`”只加载重构所需工作流，不加载缺陷排查工作流。 |
+| 自然语言任务，或可选 `Explore` / `Plan` / `Execute` / `Verify` Stage Shortcut | 按任务语义、风险和阶段选择最小必要的 Core 角色、Playbook、Skill 与验证 | 无关角色、Playbook、Skill 与产品上下文 | “`P1 Explore：梳理状态缓存调用链，不修改代码。`”只加载所需探索上下文。 |
 | 显式调用 `tu-` Skill，或任务语义命中其描述 | 该 Skill 的 `SKILL.md` 及其要求的最小上下文 | 其他 `tu-` Skill | “`$ai-guidance-workflows:tu-diagnosing-spring-backend-incidents`”只加载该诊断 Skill。 |
 | 明确涉及 P1–P4、P3-1 的 API、消息、数据归属、协议、MQTT、OSD、视频流媒体链路或跨服务发布 | 产品 `index.md`，再沿链接读取当前已维护的最小 Flow 或仓库入口资料；未覆盖场景以受影响仓库的局部约束、代码、契约和配置核实 | 整个产品目录、未受影响服务的源码 | “P1 通过 P3-1 管理视频资源并获取播放地址。” |
 | 仅写了多个项目标记，但未说明交互边界 | 已明确范围内项目各自的局部约束；服务关系不明时先确认 | 不自动加载 P1–P4、P3-1 全局上下文 | “P1、P2 帮我看看这个问题。” |
-| 维护 P0 运行时入口、`core/` 规则、角色、工作流、契约或模板 | `docs/governance/authoring-guide.md` 的“公共规则维护”及受影响文件 | 产品知识、治理规范、使用教程 | “调整 `development.md` 的验证规则。” |
+| 维护 P0 运行时入口、`core/` 规则、角色、工作流或契约 | `docs/governance/authoring-guide.md` 的“公共规则维护”及受影响文件 | 产品知识、治理规范、使用教程 | “调整 `development.md` 的验证规则。” |
 | 维护 P0 产品知识、架构、流程、服务边界或 Delivery State | `docs/governance/authoring-guide.md`、`docs/governance/governance.md` 与受影响的权威页面 | 其他产品目录和所有使用教程 | “拆分 DJI OSD 上行与指令下行流程文档。” |
 | 修改 P0 工具、脚本、校验或团队 Plugin | 工程基准、目标目录 README、实现和测试；Plugin 还读取 manifest、相关 `SKILL.md` 和 `tests/test-plugin.sh` | 产品知识、知识编写规范、无关 Plugin | “调整 guidance 校验脚本以检查一个新字段。” |
 
@@ -62,7 +62,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     M[维护者的需求] --> T{要做什么？}
-    T -->|日常使用 Codex| U[usage-guide.md\n范围、Compact Syntax、Plugin 调用]
+    T -->|日常使用 Codex| U[usage-guide.md\n范围、Stage Shortcuts、Plugin 调用]
     T -->|接入新仓库| I[integration-guide.md\nbootstrap/、仓库清单与本机路径]
     T -->|维护产品事实| A[authoring-guide.md + governance.md\n证据、目录结构与归档]
     T -->|维护公共规则| R[authoring-guide.md\n公共规则维护] --> C[core/rules/]
@@ -81,8 +81,8 @@ flowchart TD
 
 | 位置 | 职责 | 何时进入或修改 |
 | --- | --- | --- |
-| 根目录 `AGENTS.md` | P0 公共运行时入口：范围、任务简写、条件读取、优先级与事实边界 | 调整跨仓库且长期稳定的 AI 加载或协作规则时。 |
-| `core/` | 跨产品复用的 Kernel、角色、规则、Playbook、契约和模板 | 需要通用方法而非产品事实时；遵循渐进式加载。 |
+| 根目录 `AGENTS.md` | P0 公共运行时入口：范围、可选 Stage Shortcuts、条件读取、优先级与事实边界 | 调整跨仓库且长期稳定的 AI 加载或协作规则时。 |
+| `core/` | 跨产品复用的 Kernel、角色、规则、Playbook、契约 | 需要通用方法而非产品事实时；遵循渐进式加载。 |
 | `products/` | 已有证据支撑的产品、服务边界、链路与决策 | 改变长期入口、服务/数据边界、公开契约或端到端流程时。 |
 | `work/` | 当前与归档的 Delivery State，包括任务证据与联调记录 | 推进、复盘或归档真实需求时；验证后的结论才提炼到 `products/`。 |
 | `docs/` | 仅供工程师按需查阅的使用、接入、编写、治理和项目导航 | 调整工程师使用方式、维护入口或知识治理规则时。 |
@@ -97,7 +97,7 @@ flowchart TD
 
 | 目标 | 首先阅读 | 主要修改位置 | 必做核对 |
 | --- | --- | --- | --- |
-| 使用自然语言、Compact Syntax 或团队 Skill | [工程师使用与维护指南](usage-guide.md) | 通常无需修改 | Compact Syntax 是快捷协议；安装 Plugin 后新建 Codex 任务以重新发现 Skill。 |
+| 使用自然语言、Stage Shortcut 或团队 Skill | [工程师使用与维护指南](usage-guide.md) | 通常无需修改 | Stage Shortcut 是可选加速器；安装 Plugin 后新建 Codex 任务以重新发现 Skill。 |
 | 接入新服务仓库 | [接入指南](integration-guide.md) | `bootstrap/`、仓库清单、目标仓库局部 `AGENTS.md`、本机映射 | 不猜测路径或产品绑定；运行 guidance 校验。 |
 | 补充产品链路、边界或决策 | [编写指南](../governance/authoring-guide.md)、[治理规范](../governance/governance.md) | `products/` 中最小必要的权威页面 | 记录证据和可信度；不以文档替代代码核实。 |
 | 修改跨仓库公共规则 | [编写指南](../governance/authoring-guide.md) 的“公共规则维护” | `AGENTS.md` 或 `core/` | 保持条件、动作、例外清晰；避免加入产品事实。 |

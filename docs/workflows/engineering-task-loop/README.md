@@ -2,6 +2,32 @@
 
 Engineering Task Loop 是一次具体 DEV、Bug、Refactor 或技术改造的细粒度安全执行方法：先充分理解，再锁定边界，随后在授权范围内修改，并用证据决定是否完成。它不取代长期的 [Feature Delivery](../feature-delivery/README.md)。可复用方法见 [Core Playbook](../../../core/playbooks/engineering-task-loop.md)；本页是面向人的使用说明和可复制提示。
 
+## Daily Stage Shortcuts
+
+日常不需要复制后面的完整 Prompt。自然语言始终有效；需要强调本轮默认行为时，只写 Stage 加本次特殊上下文：
+
+```text
+Explore
+<问题和特殊上下文>
+```
+
+```text
+Plan
+<本轮额外边界>
+```
+
+```text
+Execute
+<可选补充>
+```
+
+```text
+Verify
+<可选额外验证>
+```
+
+Stage Shortcut 提供默认行为，用户补充内容提供本次问题与额外约束；补充可收窄或覆盖默认行为，但仍受指令优先级限制。Explore 默认不修改生产代码；Plan 默认只形成候选计划；Execute 只在用户确认的边界内修改；Verify 只取得证据，不在失败后自动修复。
+
 ## Why
 
 直接要求 AI 改代码会把理解、决策、修改和验收混在一起。这个 Loop 将它们分开：Explore 允许充分调查，Plan 与人对齐边界，Execute 严格受授权约束，Verify 以测试和证据而不是“看起来正确”决定结果。
@@ -47,7 +73,9 @@ flowchart TD
 | 2 — Standard Path | Service 行为、cache/SQL/WS、权限条件、一般 Bug、小重构 | Explore → Plan → Execute → Verify |
 | 3 — Controlled Path | 跨服务、公开 API、DB Schema/迁移、并发、认证授权、设备控制、多仓库、陌生遗留代码 | Deep Explore → Plan Review → Execute → Code Review → Verify |
 
-## Explore → Plan → Execute → Verify
+## Full / Controlled Templates
+
+以下完整模板适合 Level 3、新用户学习、高风险任务，或需要显式强化边界时使用；不是日常每次都必须复制的输入。
 
 ### Explore: understand before changing
 
