@@ -5,6 +5,9 @@
 当前工作流：
 
 - [Feature Delivery](feature-delivery/README.md)：从需求/原型到长期联调、Bug 与归档的完整交付生命周期。
+- [Engineering Task Loop](engineering-task-loop/README.md)：对一个具体 DEV / Bug / Refactor / 技术任务进行 Explore → Plan → Execute → Verify 的细粒度执行最佳实践。
+
+两者并列：Feature Delivery 是 durable delivery lifecycle；Engineering Task Loop 是 one engineering task execution loop，不替代 Delivery 的 ID、CAP、Gate 或 Artifact。
 
 后续成熟工作流使用 `workflows/<workflow-name>/`，按以下边界维护：
 

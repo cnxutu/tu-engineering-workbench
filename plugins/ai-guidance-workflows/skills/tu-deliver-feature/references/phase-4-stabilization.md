@@ -13,4 +13,6 @@ Route each Bug before changing state:
 
 When reopening an archived Delivery, move the package to `active/`, restore `status: active`, and log Reopened At, Reason, related BUG/CAP, previous completion context, and current classification before routing. If `04-integration-log.md` is absent, create it for this stabilization/reopen round and register `integration: 04-integration-log.md` under `task.yaml.artifacts` before writing that evidence. Weeks later, resume the same Delivery ID, read the package's recovery set, and create or update `BUG-xx`; do not start a contextless replacement Delivery.
 
+For non-trivial BUG or INT work, use the Explore → Plan → Execute → Verify task loop. Do not bypass current authorization or the Delivery Gate/Artifact authority.
+
 Preferred provider: use `diagnosing-bugs` for implementation defects when available and model-invokable. The orchestrator still owns Delivery/CAP/phase classification and Artifact updates.

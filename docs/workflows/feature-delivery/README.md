@@ -116,6 +116,10 @@ Backlog 中只使用 `EXT`（外部确认/环境/设备）、`DEV`（可直接�
 
 本阶段 ADAPT `to-tickets` 的 tracer bullet、vertical slice 与 blocker edge；外部 Tracker 不能成为 Authority。成熟 `implement` 是 user-invoked 时，总入口只在 DEV Ready 后给出建议入口；不要绕过平台机制或另建巨大实现 Skill。优先使用可 model-invokable 的 `tdd`、`code-review` capabilities。
 
+### Engineering Task Loop inside Delivery
+
+Phase 3 的非 trivial DEV，以及 Phase 4 的 BUG / INT，推荐按 [Engineering Task Loop](../engineering-task-loop/README.md) 执行 Explore → Plan → Execute → Verify。它约束一次具体修改的理解、授权边界和验证；Delivery 仍保留 Delivery ID、CAP、Gate、Task Package 与 Artifact Authority。关键 Plan/实施结果回填 `03-execution-backlog.md`，Bug/INT 的根因、修复和回归回填 `04-integration-log.md`，暂停或 Phase 变化刷新 `resume.md`。
+
 ### Phase 4 — Integration & Stabilization
 
 联调日志覆盖前后端、WS、MQTT、Device、测试环境、部署依赖、真实设备、Bug 与回归。每条场景记录参与系统、输入/环境、期望、实际、证据与结论；`G4_test_ready` 只在验证与必要联调证据足够、未完成项被明确为 blocked/deferred/out-of-scope 时关闭。

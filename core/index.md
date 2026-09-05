@@ -28,6 +28,7 @@ Core 只描述通用工程方法，不存放任何产品或仓库事实。使用
 
 ## Playbook
 
+- [Engineering Task Loop](playbooks/engineering-task-loop.md)：通用的 Explore → Plan → Execute → Verify 细粒度任务执行循环。
 - [功能开发](playbooks/feature-development.md)、[问题排查](playbooks/bug-analysis.md)、[架构评审](playbooks/architecture-review.md)、[重构分析](playbooks/refactor-analysis.md)。
 
 Playbook 是仓库级的通用工程方法，不等同于 Codex 平台安装且可触发的 `SKILL.md`。平台 Skill 的适用与优先级以 [P0 运行时约束](../AGENTS.md) 为准；Playbook 仅在不冲突时补充其执行细节。
