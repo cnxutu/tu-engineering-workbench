@@ -49,6 +49,7 @@ rules:
   - repositories lists every repository in the confirmed delivery scope; do not infer a repository merely from product knowledge or an example.
   - task.yaml is lifecycle state and artifact navigation, not a copy of requirements or contracts.
   - feature delivery task packages include resume.md as a non-authoritative resume cache; code, approved contracts, task artifacts, and reproducible evidence remain authoritative.
+  - reopening an archived Delivery moves its complete package back to active, preserves delivery_id, sets status to active, removes archived_at, and records the previous completion context and reopen reason in the integration log.
   - completed, blocked, and superseded tasks belong in the work task archive and require archived_at.
   - active tasks may omit archived_at.
   - evidence must be reproducible references, never copied secrets or sensitive payloads.

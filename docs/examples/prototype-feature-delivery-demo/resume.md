@@ -1,6 +1,7 @@
-# Resume — DF-DEMO-20260903-01-robotdog-fill-light
+# Resume — DF-20260903-99
 
 - Current Phase: stabilization.
+- Reopen Context: none; this active demonstration has not been archived.
 - Goal: demonstrate accepted fill-light control followed by state convergence.
 - Confirmed Decisions: D-01 through D-03 in `task.yaml`; they are simulated only.
 - Current Implementation: simulated Contract and ready backlog exist; no real business code was changed.

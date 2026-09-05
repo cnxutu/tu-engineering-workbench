@@ -29,7 +29,9 @@ Product knowledge supplies verified domain context.
 
 ## Delivery ID and package
 
-每次软件交付使用一个稳定、可排序的 Delivery ID：`DF-YYYYMMDD-NN`，可附可读 slug，例如 `DF-20260904-01-robotdog-fill-light`。同一 Delivery ID 贯穿需求、契约、实现、联调、Bug、回归与归档；不要因为后续 Bug 新建丢失原上下文的 Delivery。Delivery 内子任务使用 `CAP-01`、`EXT-01`、`DEV-01`、`INT-01`、`BUG-01` 等局部编号。
+每次软件交付使用一个稳定、可排序的 canonical Delivery ID：`DF-YYYYMMDD-NN`。它是机器身份，不能包含或依赖需求标题；可读 slug 仅属于目录，例如 `DF-20260904-01-robotdog-fill-light`。同一 Delivery ID 贯穿需求、契约、实现、联调、Bug、回归与归档；不要因为后续 Bug 新建丢失原上下文的 Delivery。Delivery 内子任务使用 `CAP-01`、`EXT-01`、`DEV-01`、`INT-01`、`BUG-01` 等局部编号。
+
+新建时同时扫描 `work/**/tasks/active/` 与 `work/**/tasks/archive/` 下当天的 ID，取最大 `NN + 1`；若目标目录已存在则重新扫描并取下一号。不使用 UUID、sequence file、registry、锁、服务或数据库。
 
 ```text
 work/<domain>/<product>/tasks/active/<delivery-id>-<slug>/
@@ -42,9 +44,9 @@ work/<domain>/<product>/tasks/active/<delivery-id>-<slug>/
 └── resume.md
 ```
 
-不强制生成空文件。包归档时整体移动到同级 `archive/`；完成、阻塞或被替代时补齐 `status` 与 `archived_at`。
+不强制生成空文件。新建时只创建 `task.yaml`、`resume.md` 与当前 Phase Artifact，并仅在 `artifacts` 中声明已创建文件。包归档时整体移动到同级 `archive/`；完成、阻塞或被替代时补齐 `status` 与 `archived_at`。
 
-`task.yaml` 是生命周期状态和导航索引，至少包含 `delivery_id`、`title`、`status`、`phase`、`product`、`repositories`、`gates`、`artifacts`、`current_focus`、`last_verified`、`next_actions` 和 `knowledge_update_assessment`。它不复制需求或接口正文。`repositories` 是列表，记录已确认的实际范围；不因产品知识或示例推断加入仓库。
+`task.yaml` 是生命周期状态和导航索引，至少包含 `delivery_id`、`title`、`status`、`phase`、`product`、`repositories`、`created_at`、`gates`、`artifacts`、`current_focus`、`last_verified`、`next_actions`、`evidence` 和 `knowledge_update_assessment`。它不复制需求或接口正文。`repositories` 是列表，记录已确认的实际范围；不因产品知识或示例推断加入仓库。
 
 `resume.md` 是短小的 Resume Cache，包含 Delivery ID、Current Phase、Goal、Confirmed Decisions、Current Implementation、Open Items、Relevant Commits、Read Next 和 Next Action。Phase 切换、重要 DEV 批次完成、联调结束、重要 Bug 修复、用户暂停和归档前都刷新它。恢复时先读 `task.yaml`，再读 `resume.md` 与当前阶段 Artifact，最后读取完成当前动作所需的最小代码/契约/证据。
 
@@ -61,7 +63,7 @@ work/<domain>/<product>/tasks/active/<delivery-id>-<slug>/
 
 `01-impact-review.md` 必须保留范围与非目标、原型/PRD Evidence、`CAP-xx`、页面或行为到 Backend disposition、仓库影响、跨服务责任、REST/WS/MQTT/状态链路、待确认事项、风险与分批建议。Disposition 为 `reuse`、`change`、`new`、`frontend_only`、`upstream_dependency`、`out_of_scope` 或 `unknown`。Evidence 不足时不能冻结最终 API。
 
-这是 V1 的 OWN 能力，由 `tu-analyzing-feature-impact` 提供聚焦的原型/需求到影响评审方法。可 ADOPT/ADAPT 已可用的 research、domain modeling、codebase design 方法来核实协议、领域边界和责任；无法组合的外部 Skill 只借鉴方法，不绕过调用策略。
+这是 V1 的 OWN 能力，由 `tu-analyzing-feature-impact` 提供聚焦的原型/需求到影响评审方法。优先在可用且 model-invokable 时 ADOPT/ADAPT research、domain modeling、codebase design 来核实协议、领域边界和责任；无法组合的外部 Skill 只借鉴方法，不绕过调用策略。
 
 ### Phase 2 — Contract
 
@@ -69,13 +71,13 @@ work/<domain>/<product>/tasks/active/<delivery-id>-<slug>/
 
 REST 较多时新增可导入 Apifox 的 `02-openapi.yaml`，但它不是 WS、MQTT 或设备契约的唯一表达。IDEA→Apifox 保持为实现后的 Runtime Contract Synchronization：Phase 2 用草案供前端早期对齐；Phase 3 Controller/DTO/Swagger 形成 Runtime OpenAPI；Phase 4 比对运行时输出和已批准 Contract，再决定是否同步 Apifox。不要为提前生成 Apifox 文档而创建未实现的空 Controller。
 
-本阶段 ADAPT `to-spec` 的结论收敛、完整性与 seam 分析方法；V1 不新增庞大的 Contract Skill。
+本阶段 ADAPT `to-spec` 的结论收敛、完整性与 seam 分析方法；不自动调用 user-invoked provider，且批准的 Workbench Contract 不随 provider 改变 Authority。V1 不新增庞大的 Contract Skill。
 
 ### Phase 3 — Execution
 
 Backlog 中只使用 `EXT`（外部确认/环境/设备）、`DEV`（可直接编码）和 `INT`（联调与验收）。每项至少有 Task ID、CAP-xx、Type、Goal、Repository、Preconditions、Blocking dependencies、Relevant contract、Expected changes、Verification、Status 与 Evidence。`DEV` 仅在其前置均已满足时 ready；它必须是 fresh-context-sized、可独立验证的垂直切片。
 
-本阶段 ADAPT `to-tickets` 的 tracer bullet、vertical slice 与 blocker edge；外部 Tracker 不能成为 Authority。成熟 `implement` 是 user-invoked 时，总入口只在 DEV Ready 后给出建议入口；不要绕过平台机制或另建巨大实现 Skill。允许调用的 `tdd`、`code-review` 等 primitives 可按需采用。
+本阶段 ADAPT `to-tickets` 的 tracer bullet、vertical slice 与 blocker edge；外部 Tracker 不能成为 Authority。成熟 `implement` 是 user-invoked 时，总入口只在 DEV Ready 后给出建议入口；不要绕过平台机制或另建巨大实现 Skill。优先使用可 model-invokable 的 `tdd`、`code-review` capabilities。
 
 ### Phase 4 — Integration & Stabilization
 
@@ -83,9 +85,9 @@ Backlog 中只使用 `EXT`（外部确认/环境/设备）、`DEV`（可直接�
 
 Bug 先定位 Delivery 和 CAP，再分类路由：
 
-- 实现 Bug：留在 Phase 4，使用 `diagnosing-bugs` 或等价诊断，修复并回归，更新 integration log。
-- Contract Bug：重开 Phase 2，重置并重新确认 G2，更新受影响 DEV Task。
-- Requirement Gap：重开 Phase 1，更新 CAP、影响与后续 Contract。
+- 实现 Bug：留在 Phase 4，保持 G1–G3，使用 `diagnosing-bugs` 或等价诊断，修复并回归，更新 integration log。
+- Contract Bug：进入 Phase 2，将 G2 重置为 `pending`，更新受影响 DEV/INT Task 后重新确认。
+- Requirement Gap：进入 Phase 1，将 G1 重置为 `pending`，更新 CAP、影响、后续 Contract 与 Backlog。
 - Environment/Integration Issue：留在 Phase 4，建立/更新 INT Task。
 
 Phase 4 ADOPT 已可用的 `diagnosing-bugs`；总入口只负责 Delivery、CAP、Phase 和 Artifact 路由，不重写通用 Debug 方法。
@@ -101,7 +103,7 @@ Phase 4 ADOPT 已可用的 `diagnosing-bugs`；总入口只负责 Delivery、CAP
 /tu-deliver-feature DF-20260904-01 <Bug 描述>
 ```
 
-新需求：创建 ID 与包，创建必要的 `task.yaml`/`resume.md`，进入 Impact。继续或查询：按索引定位包，读取最小恢复集并报告/执行当前阶段的下一动作。Bug：创建或定位 `BUG-xx`，先分类；只有 Contract 或 Requirement 变化才回退 Gate。任何代码修改、外部发布、Apifox 写入或跨仓库读取仍遵循当前用户授权和本地约束。
+新需求：创建 ID 与包，创建必要的 `task.yaml`/`resume.md`，进入 Impact。继续或查询：按索引定位包，读取最小恢复集并报告/执行当前阶段的下一动作。若 Bug 属于 archive 中的 Delivery，先把整个目录移回 `active/`，保留 ID、设为 `status: active`、移除 `archived_at`，并在 integration log 记录 reopened time、原因、BUG/CAP、先前完成上下文与分类，再刷新 resume。Bug：创建或定位 `BUG-xx`，先分类；只有 Contract 或 Requirement 变化才回退 Gate。任何代码修改、外部发布、Apifox 写入或跨仓库读取仍遵循当前用户授权和本地约束。
 
 ## Knowledge promotion and non-goals
 

@@ -1,6 +1,8 @@
 # Task Package and Resume Cache
 
-Create packages under `work/<domain>/<product>/tasks/active/<delivery-id>-<slug>/`. Use `DF-YYYYMMDD-NN` and an optional lowercase readable slug. The ID survives all phases and later Bugs; child work uses `CAP-xx`, `EXT-xx`, `DEV-xx`, `INT-xx`, and `BUG-xx`.
+Create packages under `work/<domain>/<product>/tasks/active/<delivery-id>-<slug>/`. `delivery_id` is only the stable machine identity `DF-YYYYMMDD-NN`; the directory slug is a separately changeable, lowercase readable aid. The ID survives all phases and later Bugs; child work uses `CAP-xx`, `EXT-xx`, `DEV-xx`, `INT-xx`, and `BUG-xx`.
+
+For a new Delivery, scan `work/**/tasks/active/` and `work/**/tasks/archive/` for that day's `DF-YYYYMMDD-NN`, choose the greatest `NN` plus one, and retry with the next number if the target directory already exists. This is a local allocation convention only: do not add a lock, sequence file, registry, service, or database.
 
 ```yaml
 delivery_id: DF-20260904-01
@@ -10,7 +12,7 @@ phase: impact
 product: company/device-inspection-platform
 repositories:
   - c-drone-inspection
-  - c-iot-server
+created_at: 2026-09-04T10:00:00+08:00
 gates:
   G1_scope_confirmed: pending
   G2_contract_confirmed: pending
@@ -18,10 +20,6 @@ gates:
   G4_test_ready: pending
 artifacts:
   impact: 01-impact-review.md
-  contract: 02-api-contract.md
-  openapi: 02-openapi.yaml
-  backlog: 03-execution-backlog.md
-  integration: 04-integration-log.md
   resume: resume.md
 current_focus:
   type: feature
@@ -29,9 +27,14 @@ current_focus:
   summary: Confirm device-command success semantics.
 last_verified: []
 next_actions: []
+evidence:
+  - source: <requirement-or-prototype-reference>
+    summary: Short, non-sensitive source summary.
 knowledge_update_assessment: deferred
 ```
 
-Omit `openapi` and its file when REST is absent or a machine-readable REST contract is not needed. Artifact keys point to files that actually exist. Archive the whole directory after completing, blocking, or superseding it, adding `archived_at` as required by task metadata.
+New Deliveries create only `task.yaml`, `resume.md`, and the current phase Artifact; Artifact keys point only to files that already exist. Add Contract, OpenAPI, Backlog, and Integration keys as their files are created. Archive the whole directory after completing, blocking, or superseding it, adding `archived_at` as required by task metadata.
+
+When a later Bug belongs to an archived Delivery, move the whole directory back to `active/`, preserve `delivery_id`, set `status: active`, remove `archived_at`, and record Reopened At, Reason, related BUG/CAP, previous completion context, and current classification in `04-integration-log.md`. Refresh the resume cache before continuing.
 
 `resume.md` has only: Delivery ID, Current Phase, Goal, Confirmed Decisions, Current Implementation, Open Items, Relevant Commits, Read Next, and Next Action. Link rather than copy Contracts, source, logs, or requirements. It is never the authority when it conflicts with current evidence.

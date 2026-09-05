@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import re
 from pathlib import Path
 
 
@@ -255,6 +256,67 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("workspace.local.yaml has unresolved path", result.stderr)
+
+
+class FeatureDeliveryTaskPackageContractTest(unittest.TestCase):
+    """Keep the documentation contract, creation template, and demo aligned without a YAML dependency."""
+
+    def test_new_delivery_template_and_demo_have_metadata_v2_required_fields(self) -> None:
+        required_fields = (
+            "delivery_id",
+            "title",
+            "status",
+            "repositories",
+            "product",
+            "created_at",
+            "evidence",
+            "knowledge_update_assessment",
+        )
+        metadata = (REPOSITORY_ROOT / "core" / "contracts" / "task-metadata.schema.yaml").read_text(
+            encoding="utf-8"
+        )
+        template = (
+            REPOSITORY_ROOT
+            / "plugins"
+            / "ai-guidance-workflows"
+            / "skills"
+            / "tu-deliver-feature"
+            / "references"
+            / "task-package.md"
+        ).read_text(encoding="utf-8")
+        demo = (
+            REPOSITORY_ROOT / "docs" / "examples" / "prototype-feature-delivery-demo" / "task.yaml"
+        ).read_text(encoding="utf-8")
+
+        for field in required_fields:
+            self.assertRegex(metadata, re.compile(rf"^  {field}:", re.MULTILINE), field)
+            self.assertRegex(template, re.compile(rf"^{field}:", re.MULTILINE), field)
+            self.assertRegex(demo, re.compile(rf"^{field}:", re.MULTILINE), field)
+
+    def test_delivery_id_is_canonical_and_new_template_declares_only_created_artifacts(self) -> None:
+        template = (
+            REPOSITORY_ROOT
+            / "plugins"
+            / "ai-guidance-workflows"
+            / "skills"
+            / "tu-deliver-feature"
+            / "references"
+            / "task-package.md"
+        ).read_text(encoding="utf-8")
+        demo = (
+            REPOSITORY_ROOT / "docs" / "examples" / "prototype-feature-delivery-demo" / "task.yaml"
+        ).read_text(encoding="utf-8")
+        template_yaml = re.search(r"```yaml\n(.*?)\n```", template, re.DOTALL)
+        self.assertIsNotNone(template_yaml)
+        self.assertIn("  impact: 01-impact-review.md", template_yaml.group(1))
+        self.assertIn("  resume: resume.md", template_yaml.group(1))
+        self.assertNotIn("  contract:", template_yaml.group(1))
+        self.assertNotIn("  openapi:", template_yaml.group(1))
+        self.assertNotIn("  backlog:", template_yaml.group(1))
+        self.assertNotIn("  integration:", template_yaml.group(1))
+        delivery_id = re.search(r"^delivery_id: (.+)$", demo, re.MULTILINE)
+        self.assertIsNotNone(delivery_id)
+        self.assertRegex(delivery_id.group(1), r"^DF-\d{8}-\d{2}$")
 
 
 if __name__ == "__main__":

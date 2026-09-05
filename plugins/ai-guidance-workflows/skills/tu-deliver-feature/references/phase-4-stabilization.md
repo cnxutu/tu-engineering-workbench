@@ -6,9 +6,11 @@ Check REST initial reads, real-time updates, reconnect/fallback, authorization, 
 
 Route each Bug before changing state:
 
-- **Implementation Bug:** remain in Phase 4; diagnose, fix, regress, and log evidence.
-- **Contract Bug:** reopen Phase 2; reset G2 and update every affected DEV task before reconfirmation.
-- **Requirement Gap:** reopen Phase 1; update CAP, impact, and downstream Contract.
-- **Environment/Integration Issue:** remain in Phase 4 as an INT task.
+- **Implementation Bug:** remain in Phase 4; keep G1–G3 unchanged, diagnose, fix, regress, and log evidence.
+- **Contract Bug:** set phase to `contract`, reset G2 to `pending`, and update every affected DEV/INT task before reconfirmation.
+- **Requirement Gap:** set phase to `impact`, reset G1 to `pending`, and update CAP, impact, Contract, and Backlog.
+- **Environment/Integration Issue:** remain in `stabilization` as an INT task.
 
-Weeks later, resume the same Delivery ID, read the package's recovery set, and create or update `BUG-xx`; do not start a contextless replacement Delivery.
+When reopening an archived Delivery, move the package to `active/`, restore `status: active`, and log Reopened At, Reason, related BUG/CAP, previous completion context, and current classification before routing. Weeks later, resume the same Delivery ID, read the package's recovery set, and create or update `BUG-xx`; do not start a contextless replacement Delivery.
+
+Preferred provider: use `diagnosing-bugs` for implementation defects when available and model-invokable. The orchestrator still owns Delivery/CAP/phase classification and Artifact updates.

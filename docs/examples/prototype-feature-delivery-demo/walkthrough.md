@@ -234,10 +234,10 @@ AI 应先读 `task.yaml` 指向的权威产物，再只读取当前任务需要�
 
 此模拟包验证了四个可恢复入口：
 
-1. **New Delivery**：第一段调用创建 `DF-DEMO-20260903-01-robotdog-fill-light`，从 Impact 开始并只建立必要产物。
+1. **New Delivery**：第一段调用创建 canonical ID `DF-20260903-99`；可读名称只属于目录 slug，从 Impact 开始并只建立必要产物。
 2. **Phase Transition**：`task.yaml` 的 Gates 与 `artifacts` 指向 Step 1–4 的唯一权威文件；每次确认都由当前 Artifact 驱动下一阶段。
 3. **Resume**：新会话先读 `task.yaml`、[resume.md](resume.md) 和 `04-integration-log.md`，可定位 `INT-02`，无需重放原型和历史聊天。
-4. **Bug Resume**：若设备状态偶尔不刷新，继续同一 Delivery 并新增 `BUG-01`；实现问题留在 Stabilization，Contract 或 Requirement 问题才分别重开 Phase 2 或 Phase 1。
+4. **Archive / Reopen Bug**：Delivery completed 后，整个目录移入 `archive/`。两周后若设备状态偶尔不刷新，使用同一 `DF-20260903-99` 定位 archive 包、移回 `active/`、设为 active，新增 `BUG-01`，在 integration log 与 resume 记录 reopen。实现问题留在 Stabilization，Contract 或 Requirement 问题才分别重开 Phase 2 或 Phase 1。
 
 它是静态模拟，不证明真实设备、接口或环境已验证。
 

@@ -6,6 +6,7 @@ Keep this file short and current. Use links or identifiers to point to authorita
 # Resume — DF-YYYYMMDD-NN
 
 - Current Phase: impact | contract | execution | stabilization
+- Reopen Context: omit when new; otherwise prior completion, reopened-at time, reason, BUG/CAP, and classification.
 - Goal: one sentence.
 - Confirmed Decisions: IDs and short outcomes.
 - Current Implementation: completed CAP/DEV/INT work and verified evidence only.

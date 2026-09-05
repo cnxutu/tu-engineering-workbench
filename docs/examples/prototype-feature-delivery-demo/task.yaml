@@ -1,5 +1,5 @@
 # DEMO ONLY: all values and decisions are simulated workflow examples.
-delivery_id: DF-DEMO-20260903-01-robotdog-fill-light
+delivery_id: DF-20260903-99
 title: 机器狗驾驶舱补光控制与状态回显（模拟）
 demo: true
 status: active
@@ -7,6 +7,7 @@ phase: stabilization
 repositories:
   - c-drone-inspection
 product: company/device-inspection-platform
+created_at: 2026-09-03T09:00:00+08:00
 prototype_sources:
   - source: simulated-prototype/frame-cockpit-light-panel
     status: simulated

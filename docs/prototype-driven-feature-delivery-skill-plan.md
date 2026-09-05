@@ -11,7 +11,7 @@
 
 ## 1. 结论
 
-建议保留“影响范围 → 接口契约 → 任务实施 → 联调提测”四阶段，但不要拆成四个互相独立、各自猜测上下文的 Skill。应将现有 `tu-scaffolding-spring-feature-from-prototype` 升级为一个**有阶段门禁、可断点续跑、以 P0 任务包为状态载体**的生命周期 Skill。
+已收口为“影响范围 → 接口契约 → 任务实施 → 联调提测”四阶段，但不拆为四个独立 Phase Skill。当前 `tu-deliver-feature` 是有阶段门禁、可断点续跑、以 P0 任务包为状态载体的主生命周期入口；`tu-scaffolding-spring-feature-from-prototype` 仅保留 legacy compatibility wrapper。
 
 核心方案：
 
@@ -303,10 +303,8 @@ Skill 流程化完成后，应能满足以下场景：
 6. 联调缺陷能被分流到需求、契约、实现或环境，不通过临时 fallback 掩盖根因。
 7. 任务完成后能给出提测范围、验证证据、剩余风险、发布/回滚边界，并按 P0 治理规则归档。
 
-## 9. 待你评审的三个决策
+## 9. 三个决策的最终记录
 
-1. 是否接受“升级现有 `tu-scaffolding-spring-feature-from-prototype`，不新增四个 Skill”的总体方向。
-2. 是否接受“独立契约为 Step 2 必需产物；Controller/DTO 骨架仅在契约已确认、仓库已有合适模式且明确授权时生成”。
-3. 是否接受每个新功能使用目录式任务包；若希望保持 `work/<domain>/<product>/tasks/active` 平铺，可保留相同逻辑，但文件名统一为 `<feature-id>-01-impact-review.md` 等。
-
-以上三项确认后，再进入 P0-SKILL-01 的契约设计与实际 Skill 改造。
+1. **Accepted with evolution**：不拆四个生命周期 Skill。`tu-deliver-feature` 是主入口；`tu-analyzing-feature-impact` 是 Phase 1 OWN capability；旧 prototype Skill 只做 compatibility wrapper。
+2. **Accepted**：独立 `02-api-contract.md` 是 Phase 2 必需的人类评审 Authority；REST 需要时增加 `02-openapi.yaml`。Controller/DTO 仅在 G2 已确认、目标仓库有安全复用模式且用户明确授权时生成。
+3. **Accepted**：每个新 Feature Delivery 使用目录式 Task Package。它避免 active/archive 平铺膨胀，使一组 Authority Artifacts 可被 Resume、Archive 与 Reopen 一次定位。

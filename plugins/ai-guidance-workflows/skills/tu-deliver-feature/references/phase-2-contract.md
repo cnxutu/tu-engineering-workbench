@@ -5,3 +5,5 @@ The question is “what do frontend, backend, and upstream/downstream systems ag
 Cover REST method/path, permission/data scope, request/response, pagination/sorting, validation, errors, idempotency, and compatibility. Cover events with channel, envelope, identifier, full/incremental behavior, initial read, reconnect, fallback, isolation, ordering, and deduplication. Cover device/cross-service owner, producer, consumer, topic or identifier, deployment dependency, and failure responsibility.
 
 State separately: HTTP success, platform acceptance, publication, adapter dispatch, device execution, and state convergence. Phase 2 OpenAPI enables early Apifox alignment; implementation later exposes Runtime OpenAPI; Phase 4 compares runtime output with the approved Contract before any Apifox synchronization.
+
+Provider strategy: adapt mature specification methods such as `to-spec`; do not automatically invoke a user-invoked external Skill. The approved Workbench Contract remains Authority regardless of provider.
