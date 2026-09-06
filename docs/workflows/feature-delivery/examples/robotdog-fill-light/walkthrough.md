@@ -50,6 +50,6 @@ DF-20260903-99 DEV-01：核对补光控制接口的现有入口、权限和状�
 
 ## 结束时保留什么
 
-`task.yaml` 只保存生命周期状态、Gate 和 Artifact 导航；批准的 Contract、阶段 Artifact 与可复现验证证据才是 Delivery Authority。单个 DEV / BUG 的 Verify 只回填父 Artifact，不关闭整个 Delivery。整个 Delivery 在 G4 / acceptance 或明确 Closing condition 后只能标为 Ready to Close；用户显式调用 `tu-close-delivery` 后，才依次将仍有效的已验证事实 Integrate 至 Product Truth、Archive 完整包到配置的 `tu-vault`、验证 Archive、创建 Closed Index 并 retire active Package。Archive 表示 lifecycle closed，不表示一定成功。
+`task.yaml` 只保存生命周期状态、Gate 和 Artifact 导航；批准的 Contract、阶段 Artifact 与可复现验证证据才是 Delivery Authority。单个 DEV / BUG 的 Verify 只回填父 Artifact，不关闭整个 Delivery。整个 Delivery 在 G4 / acceptance 或明确 Closing condition 后只能标为 Ready to Close；用户显式调用 `tu-close-delivery` 后，才依次将仍有效的已验证事实 Integrate 至 Product Truth、完成 Sensitive Data Review、Archive 完整包到配置的 deterministic `tu-vault` Unit、验证 finalized archive snapshot、创建 Closed Index 并 retire active Package。Archive 表示 lifecycle closed，不表示一定成功。
 
 本案例是静态演练，不证明真实设备、接口或环境已经验证。

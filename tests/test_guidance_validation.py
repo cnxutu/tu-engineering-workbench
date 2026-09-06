@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import importlib.util
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
-import re
 from pathlib import Path
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR = REPOSITORY_ROOT / "scripts" / "validate_guidance.py"
+VALIDATOR_SPEC = importlib.util.spec_from_file_location("guidance_validator", VALIDATOR)
+assert VALIDATOR_SPEC is not None and VALIDATOR_SPEC.loader is not None
+guidance_validator = importlib.util.module_from_spec(VALIDATOR_SPEC)
+VALIDATOR_SPEC.loader.exec_module(guidance_validator)
 
 
 class WorkspaceTemplateValidationTest(unittest.TestCase):
@@ -618,9 +623,43 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         )
         package.joinpath("01-impact-review.md").write_text("fixture\n", encoding="utf-8")
 
+    def configure_vault(self, repository: Path, vault: Path, archive_root: str = "deliveries") -> None:
+        (repository / "workspace.local.yaml").write_text(
+            "\n".join(
+                [
+                    "external_contexts:",
+                    "  tu_vault:",
+                    f"    path: {vault}",
+                    f"    delivery_archive_root: {archive_root}",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+
     def test_accepts_valid_closed_index(self) -> None:
         repository = self.copied_repository()
         self.create_closed_index(repository)
+
+        result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_accepts_valid_blocked_closed_index(self) -> None:
+        repository = self.copied_repository()
+        self.create_closed_index(repository, status="blocked")
+
+        result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_accepts_valid_superseded_closed_index_with_replacement(self) -> None:
+        repository = self.copied_repository()
+        self.create_closed_index(
+            repository,
+            status="superseded",
+            related="DF-20260907-01",
+        )
 
         result = self.validate(repository)
 
@@ -646,9 +685,9 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Delivery cannot be both active and closed", result.stderr)
 
-    def test_rejects_active_status_in_closed_index(self) -> None:
+    def test_rejects_invalid_status_in_closed_index(self) -> None:
         repository = self.copied_repository()
-        self.create_closed_index(repository, status="active")
+        self.create_closed_index(repository, status="closed")
 
         result = self.validate(repository)
 
@@ -668,6 +707,41 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Closed Delivery Index is missing Archive", result.stderr)
 
+    def test_rejects_closed_index_without_key_decisions(self) -> None:
+        repository = self.copied_repository()
+        index = self.create_closed_index(repository)
+        index.write_text(
+            index.read_text(encoding="utf-8").replace("- Key Decisions: none\n", ""),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Closed Delivery Index is missing Key Decisions", result.stderr)
+
+    def test_rejects_closed_index_without_related_deliveries(self) -> None:
+        repository = self.copied_repository()
+        index = self.create_closed_index(repository)
+        index.write_text(
+            index.read_text(encoding="utf-8").replace("- Related Deliveries: none\n", ""),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Closed Delivery Index is missing Related Deliveries", result.stderr)
+
+    def test_rejects_closed_index_with_unsafe_archive_reference(self) -> None:
+        repository = self.copied_repository()
+        self.create_closed_index(repository, archive="tu-vault:/absolute/archive")
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Closed Delivery Index archive must use safe logical tu-vault reference", result.stderr)
+
     def test_rejects_superseded_closed_index_without_replacement_reference(self) -> None:
         repository = self.copied_repository()
         self.create_closed_index(repository, status="superseded")
@@ -677,27 +751,73 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("superseded Closed Delivery Index requires", result.stderr)
 
+    def test_accepts_valid_separate_absolute_vault_path(self) -> None:
+        repository = self.copied_repository()
+        vault = repository.parent / "vault"
+        vault.mkdir()
+        self.configure_vault(repository, vault)
+        self.create_closed_index(repository)
+
+        result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_rejects_vault_path_equal_to_workbench(self) -> None:
+        repository = self.copied_repository()
+        self.configure_vault(repository, repository)
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("tu_vault path must not be the Workbench itself", result.stderr)
+
+    def test_rejects_vault_path_inside_workbench(self) -> None:
+        repository = self.copied_repository()
+        vault = repository / "vault"
+        vault.mkdir()
+        self.configure_vault(repository, vault)
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("tu_vault path must be a separate directory tree from Workbench", result.stderr)
+
+    def test_rejects_workbench_path_inside_vault(self) -> None:
+        repository = self.copied_repository()
+        self.configure_vault(repository, repository.parent)
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("tu_vault path must be a separate directory tree from Workbench", result.stderr)
+
     def test_rejects_unsafe_external_archive_configuration(self) -> None:
         repository = self.copied_repository()
         vault = repository.parent / "vault"
         vault.mkdir()
-        (repository / "workspace.local.yaml").write_text(
-            "\n".join(
-                [
-                    "external_contexts:",
-                    "  tu_vault:",
-                    f"    path: {vault}",
-                    "    delivery_archive_root: ../escape",
-                    "",
-                ]
-            ),
-            encoding="utf-8",
-        )
+        self.configure_vault(repository, vault, "../escape")
 
         result = self.validate(repository)
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("tu_vault delivery_archive_root must be a safe relative path", result.stderr)
+
+    def test_rejects_absolute_external_archive_root(self) -> None:
+        repository = self.copied_repository()
+        vault = repository.parent / "vault"
+        vault.mkdir()
+        self.configure_vault(repository, vault, str(repository / "archives"))
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("tu_vault delivery_archive_root must be a safe relative path", result.stderr)
+
+    def test_builds_deterministic_archive_reference(self) -> None:
+        self.assertEqual(
+            guidance_validator.deterministic_archive_reference("archives/engineering", "DF-20260906-01"),
+            "tu-vault:archives/engineering/DF-20260906-01",
+        )
 
 
 class ClosingSkillRegistrationTest(unittest.TestCase):

@@ -15,7 +15,7 @@
 
 ## Delivery 生命周期与位置
 
-Feature Delivery 的四个工程阶段保持为 Impact → Contract → Execution → Integration & Stabilization；具体 DEV、BUG 或 INT 修改使用 Engineering Task Loop 的 Explore → Plan → Execute → Verify。Verify 仅为当前工程任务返回证据，并回填父 Delivery Artifact。G4 / acceptance 或明确 Closing condition 只代表 Ready to Close；只有用户显式授权 `tu-close-delivery DF-...`，才进入 **Delivery Closing → Integrate → Archive → Closed Index → Retire Active**。Integrate 和 Archive 不是新的 E/P/X/V Stage Shortcut，也不属于第五个工程 Phase。
+Feature Delivery 的四个工程阶段保持为 Impact → Contract → Execution → Integration & Stabilization；具体 DEV、BUG 或 INT 修改使用 Engineering Task Loop 的 Explore → Plan → Execute → Verify。Verify 仅为当前工程任务返回证据，并回填父 Delivery Artifact。G4 / acceptance 或明确 Closing condition 只代表 Ready to Close；只有用户显式授权 `tu-close-delivery DF-...`，才进入 **Delivery Closing → Integrate → Sensitive Data Review → deterministic Vault Archive → Verify Archive → Closed Index → Retire Active**。Integrate 和 Archive 不是新的 E/P/X/V Stage Shortcut，也不属于第五个工程 Phase。
 
 ```text
 work/active/<domain>/<product>/DF-YYYYMMDD-NN-<slug>/
@@ -49,7 +49,7 @@ Delivery Closing 的 readiness 由整个 Delivery 的关闭条件决定，而不
 
 **Integrate**：将本次已验证且未来可复用的事实更新到对应 `products/` 权威页或 ADR；未形成此类事实时在 Delivery 中明确 `not-needed`。Requirement Authority（approved Product Spec/PRD、decision、Contract 或 acceptance criteria）与 Implementation Reality（code、test、configuration、runtime evidence）分别维护，差异记为 Requirement / Implementation Gap。产品当前状态不应依赖阅读多个旧 Delivery 才能拼出。
 
-**Archive**：按 [Delivery Closing Playbook](../core/playbooks/delivery-closing.md) 将完整 Package 写入 `workspace.local.yaml` 的可选 `external_contexts.tu_vault` target，验证后以 `tu-vault:<relative-path>` 创建 Closed Index，最后 retire active Package。配置缺失或 Archive Verification 失败时保留 active Package。普通 Workbench 运行不依赖 `tu-vault`；只有 Closing 需要已配置 target。
+**Archive**：按 [Delivery Closing Playbook](../core/playbooks/delivery-closing.md) 先完成 Sensitive Data Review，再将完整 Package copy 到 `workspace.local.yaml` 的 `external_contexts.tu_vault` target 中唯一的 `<delivery_archive_root>/<DF-ID>/` Unit；仅 archived `delivery/task.yaml` 成为 final historical snapshot。验证后以同一 `tu-vault:<delivery_archive_root>/<DF-ID>` 创建 Closed Index，最后 retire active Package。配置缺失或 Archive Verification 失败时保留 active Package；reopen restore/copy immutable Vault snapshot，不移动或删除它。普通 Workbench 运行不依赖 `tu-vault`；只有 Closing 需要已配置 target。
 
 ## External boundary and navigation
 

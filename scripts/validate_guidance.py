@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 
 LINK_PATTERN = re.compile(r"\[[^\]]+\]\(([^)#]+)(?:#[^)]*)?\)")
@@ -90,8 +90,34 @@ def external_tu_vault_values(text: str) -> dict[str, str] | None:
 
 
 def is_safe_relative_path(value: str) -> bool:
-    candidate = Path(value)
-    return bool(value) and not candidate.is_absolute() and ".." not in candidate.parts
+    normalized = value.replace("\\", "/")
+    posix_path = PurePosixPath(normalized)
+    windows_path = PureWindowsPath(value)
+    return (
+        bool(value)
+        and not posix_path.is_absolute()
+        and not windows_path.is_absolute()
+        and not windows_path.drive
+        and ".." not in posix_path.parts
+    )
+
+
+def deterministic_archive_reference(delivery_archive_root: str, delivery_id: str) -> str:
+    """Return the sole logical Vault reference for one configured Delivery archive."""
+    if not is_safe_relative_path(delivery_archive_root):
+        raise ValueError("delivery_archive_root must be a safe relative path")
+    if DELIVERY_ID_PATTERN.fullmatch(delivery_id) is None:
+        raise ValueError("delivery_id must use DF-YYYYMMDD-NN")
+    parts = [part for part in PurePosixPath(delivery_archive_root.replace("\\", "/")).parts if part != "."]
+    return "tu-vault:" + "/".join([*parts, delivery_id])
+
+
+def path_is_descendant(path: Path, ancestor: Path) -> bool:
+    try:
+        path.relative_to(ancestor)
+    except ValueError:
+        return False
+    return True
 
 
 def platform_product_ids(repo_root: Path) -> set[str]:
@@ -218,8 +244,14 @@ def validate_workspace_configuration(repo_root: Path, registered_codes: set[str]
         errors.append("workspace.local.yaml tu_vault path must be an absolute configured directory")
     elif not Path(vault_path).is_dir():
         errors.append(f"workspace.local.yaml tu_vault path does not exist: {vault_path}")
-    elif Path(vault_path).resolve() == repo_root:
-        errors.append("workspace.local.yaml tu_vault path must not be the Workbench itself")
+    else:
+        resolved_vault = Path(vault_path).resolve()
+        if resolved_vault == repo_root:
+            errors.append("workspace.local.yaml tu_vault path must not be the Workbench itself")
+        elif path_is_descendant(resolved_vault, repo_root) or path_is_descendant(repo_root, resolved_vault):
+            errors.append(
+                "workspace.local.yaml tu_vault path must be a separate directory tree from Workbench"
+            )
     if PLACEHOLDER_PATTERN.match(archive_root) or not is_safe_relative_path(archive_root):
         errors.append("workspace.local.yaml tu_vault delivery_archive_root must be a safe relative path")
 
@@ -347,11 +379,12 @@ def validate_feature_delivery_packages(repo_root: Path, errors: list[str]) -> No
                             "active Feature Delivery package must have status: active: "
                             f"{task_file.relative_to(repo_root)}"
                         )
-                    if archived_at is not None:
-                        errors.append(
-                            "active Feature Delivery package must not declare archived_at: "
-                            f"{task_file.relative_to(repo_root)}"
-                        )
+                    for key in ("archived_at", "archive_reference", "closed_index"):
+                        if yaml_scalar(task_text, key) is not None:
+                            errors.append(
+                                f"active Feature Delivery package must not declare {key}: "
+                                f"{task_file.relative_to(repo_root)}"
+                            )
                 else:
                     if status == "active":
                         errors.append(
@@ -422,6 +455,9 @@ def validate_closed_delivery_indexes(repo_root: Path, errors: list[str]) -> None
     if not closed_root.is_dir():
         return
     active_ids = active_delivery_ids(repo_root)
+    local = repo_root / "workspace.local.yaml"
+    tu_vault = external_tu_vault_values(local.read_text(encoding="utf-8")) if local.is_file() else None
+    archive_root = tu_vault.get("delivery_archive_root") if tu_vault is not None else None
     for index in closed_root.rglob("*"):
         if index.is_dir():
             continue
@@ -447,6 +483,8 @@ def validate_closed_delivery_indexes(repo_root: Path, errors: list[str]) -> None
             "Repositories",
             "Product Truth",
             "Knowledge Update",
+            "Key Decisions",
+            "Related Deliveries",
             "Archive",
             "Closed At",
         )
@@ -469,6 +507,13 @@ def validate_closed_delivery_indexes(repo_root: Path, errors: list[str]) -> None
                     "Closed Delivery Index archive must use safe logical tu-vault reference: "
                     f"{index.relative_to(repo_root)}"
                 )
+            elif archive_root is not None and is_safe_relative_path(archive_root):
+                expected_reference = deterministic_archive_reference(archive_root, delivery_id)
+                if archive_reference != expected_reference:
+                    errors.append(
+                        "Closed Delivery Index archive must match configured deterministic Archive Unit: "
+                        f"{index.relative_to(repo_root)} -> {expected_reference}"
+                    )
         if status == "superseded":
             related = closed_index_value(text, "Related Deliveries")
             replacement = closed_index_value(text, "Superseded By")

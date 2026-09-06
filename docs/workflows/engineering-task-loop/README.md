@@ -34,7 +34,7 @@ flowchart TD
     FI --> ETL[Engineering Task Loop]
 ```
 
-Feature Delivery 管长期生命周期；Engineering Task Loop 管一次具体修改；Stage Shortcut 不是 Provider，也不替代 Delivery ID、Task Package、Contract、Artifact 或证据。Task Loop 的 Verify 只回填当前 DEV 的 `03-execution-backlog.md`，或 BUG / INT 的 `04-integration-log.md`；它不触发 Integrate / Archive。G4 / acceptance 只允许 Agent 建议 Ready to Close；用户显式授权后，Delivery Closing 才依次更新 Current Product Truth、Archive、创建 Closed Context Index 并 retire active Package；这不是新的 Stage Shortcut，也不改变 E/P/X/V。
+Feature Delivery 管长期生命周期；Engineering Task Loop 管一次具体修改；Stage Shortcut 不是 Provider，也不替代 Delivery ID、Task Package、Contract、Artifact 或证据。Task Loop 的 Verify 只回填当前 DEV 的 `03-execution-backlog.md`，或 BUG / INT 的 `04-integration-log.md`；它不触发 Integrate / Archive。G4 / acceptance 只允许 Agent 建议 Ready to Close；用户显式授权后，Delivery Closing 才依次更新 Current Product Truth、执行 Sensitive Data Review、Archive 并验证 finalized snapshot、创建 Closed Context Index 并 retire active Package；这不是新的 Stage Shortcut，也不改变 E/P/X/V。
 
 ## Daily Stage Shortcuts
 
@@ -288,13 +288,14 @@ flowchart TD
     R --> U[User explicit authorization]
     U --> DC[Delivery Closing]
     DC --> IP[Integrate Product Truth]
-    IP --> A[Archive Full History]
+    IP --> SDR[Sensitive Data Review]
+    SDR --> A[Archive Full History]
     A --> VA[Verify Archive]
     VA --> CI[Create Closed Context Index]
     CI --> RA[Retire Active Package]
 ```
 
-在 Delivery 中，非 trivial DEV 将关键 Plan、实际实施结果和 Verify 证据回填 `03-execution-backlog.md`；Bug/INT 的根因、修复、回归和 Verify 证据回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。这不使单个 Task Loop 关闭 Delivery。整个 Delivery 达到 G4 / acceptance 或明确 Closing condition 后，Agent 只能建议显式调用 `tu-close-delivery`；获授权后才依次 Integrate、Archive、验证 Archive、创建 Closed Index 并 retire active Package。
+在 Delivery 中，非 trivial DEV 将关键 Plan、实际实施结果和 Verify 证据回填 `03-execution-backlog.md`；Bug/INT 的根因、修复、回归和 Verify 证据回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。这不使单个 Task Loop 关闭 Delivery。整个 Delivery 达到 G4 / acceptance 或明确 Closing condition 后，Agent 只能建议显式调用 `tu-close-delivery`；获授权后才依次 Integrate、Sensitive Data Review、Archive/verify finalized snapshot、创建 Closed Index 并 retire active Package。
 
 ### Bug scenario
 
