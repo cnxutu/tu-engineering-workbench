@@ -11,6 +11,7 @@ from pathlib import Path
 
 REQUIRED_SKILLS = {
     "tu-diagnosing-spring-backend-incidents",
+    "tu-close-delivery",
     "tu-deliver-feature",
     "tu-analyzing-feature-impact",
     "tu-loading-device-inspection-cross-service-context",

@@ -1,7 +1,7 @@
 {
   "name": "ai-guidance-workflows",
-  "version": "0.1.0+codex.20260904090000",
-  "description": "Evidence-led feature delivery, impact analysis, Spring incident, and cross-service workflows.",
+  "version": "0.1.0+codex.20260906090000",
+  "description": "Evidence-led feature delivery, closing, impact analysis, Spring incident, and cross-service workflows.",
   "author": {
     "name": "tu-engineering-workbench"
   },
@@ -17,6 +17,7 @@
       "Diagnose a P2 backend message-processing incident with evidence.",
       "Load P1\u2013P4 context before designing a cross-service change.",
       "Start or resume a Delivery ID from a prototype, contract, implementation task, or integration bug.",
+      "Close one explicitly authorized Delivery ID after reviewing its readiness.",
       "Analyze prototype or PRD evidence into a repository-backed impact review."
     ]
   }

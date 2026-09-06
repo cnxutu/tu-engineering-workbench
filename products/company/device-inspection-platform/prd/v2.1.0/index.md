@@ -1,6 +1,6 @@
 # v2.1.0 PRD（Historical Reference）
 
-> Transition / Existing Historical Material：用于追溯 v2.1.0 背景，不单独声明当前产品需求 Authority；当前有效需求以明确标注的 Current 页面、批准 Contract、产品决策和代码证据为准。
+> Transition / Existing Historical Material：用于追溯 v2.1.0 背景，不单独声明当前产品需求 Authority；Current Requirement 以明确标注的 Current Product Spec/PRD、批准 Product Decision、批准 Contract 或 acceptance criteria 为准，Implementation Reality 则由代码、测试、配置和运行证据确认。
 
 ## 版本目标
 

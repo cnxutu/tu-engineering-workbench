@@ -20,8 +20,8 @@ P0 `tu-engineering-workbench` 是 Living Engineering Model：`core/` 提供工�
 
 `products/` 是 Current Verified Product Truth：稳定、经验证且长期可复用的当前行为、架构、flow、contract、ownership、constraint、implementation entry 和 ADR 通常属于这里。`context/domain/`、vendor / SDK 摘要、技术背景与候选设计可作为 Supporting Context 留在产品树，但不自动成为 Current Product Truth，不替代代码、Contract 或验证证据，只按任务需要读取并标明 evidence / verification state。
 
-`work/` 是 Delivery Change State。新 Delivery 在 `work/active/<domain>/<product>/` 保存完整 Package；结束后在 `work/closed/<domain>/<product>/` 保留 Thin Context Index。完整过程在外部 archive 尚未配置时可继续保留在现有产品内 `tasks/archive/` 作为 legacy / local cold history；pre-V1 archive 保持原样，不能与 `active/`、`closed/` 并列为当前正式结构。任务记录不是产品 Current Truth 默认入口，也不是保存密钥或临时草稿的地方。
+`work/` 是 Delivery Change State。新 Delivery 在 `work/active/<domain>/<product>/` 保存完整 Package；用户授权 Closing、Vault Archive 验证通过后，才在 `work/closed/<domain>/<product>/` 保留 Thin Context Index 并 retire active Package。`work/**/tasks/archive/` 是 legacy / local cold history；pre-V1 archive 保持原样，不能与 `active/`、`closed/` 并列为当前正式结构。任务记录不是产品 Current Truth 默认入口，也不是保存密钥或临时草稿的地方。
 
-当任务发现候选事实时，先记录在 `work/`；只有在整个 Delivery 达到 Closing condition 后，且已通过代码、正式契约、测试、真实设备或批准记录验证，才在 Integrate 将精炼结论提炼至 `products/` 的唯一权威页面或 ADR。`completed` 通常须满足 G4 / acceptance；`blocked` 与 `superseded` 也可关闭，但只 Integrate 仍有效的事实，且不能把被替代设计写成 Current Product Truth。Archive 表示 lifecycle closed / cold context，不等于成功。Closed Index 只保留结果、Product Truth links、关键决定与 archive reference，不复制过程正文。
+当任务发现候选事实时，先记录在 `work/`；只有整个 Delivery 达到 Closing condition、用户显式授权收尾，且已通过代码、正式契约、测试、真实设备或批准记录验证，才在 Integrate 将精炼结论提炼至 `products/` 的唯一权威页面或 ADR。`completed` 通常须满足 G4 / acceptance；`blocked` 与 `superseded` 也可关闭，但只 Integrate 仍有效的事实，且不能把被替代设计写成 Current Product Truth。Archive 表示 lifecycle closed / cold context，不等于成功。完整 Package Archive 至配置的 `tu-vault` 并验证后才创建 Closed Index；它只保留结果、Product Truth links、关键决定与逻辑 archive reference，不复制过程正文。
 
 参见 [编写指南](authoring-guide.md)、[接入指南](../guides/integration-guide.md) 和 [任务元数据契约](../../core/contracts/task-metadata.schema.yaml)。

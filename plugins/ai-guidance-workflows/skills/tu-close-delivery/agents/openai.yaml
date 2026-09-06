@@ -1,0 +1,6 @@
+interface:
+  display_name: "TU · Close Delivery"
+  short_description: "Close one user-authorized DF Delivery"
+  default_prompt: "Use $tu-close-delivery to close DF-YYYYMMDD-NN after reviewing its closing readiness."
+policy:
+  allow_implicit_invocation: false

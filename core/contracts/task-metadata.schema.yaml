@@ -1,4 +1,4 @@
-# Documentation contract for active and archived task records. This is intentionally not a JSON Schema validator.
+# Documentation contract for active and closed Delivery lifecycle metadata. This is intentionally not a JSON Schema validator.
 contract:
   name: task-metadata
   version: v2
@@ -59,13 +59,13 @@ rules:
   - repositories lists every repository in the confirmed delivery scope; do not infer a repository merely from product knowledge or an example.
   - task.yaml is lifecycle state and artifact navigation, not a copy of requirements or contracts.
   - feature delivery task packages include resume.md as a non-authoritative resume cache; code, approved contracts, task artifacts, and reproducible evidence remain authoritative.
-  - reopening an archived Delivery moves its complete package back to active, removes its closed_index, preserves delivery_id, sets status to active, removes archived_at, and records the previous completion context and reopen reason in the integration log.
-  - completed, blocked, and superseded tasks belong in the work task archive and require archived_at.
-  - active tasks may omit archived_at.
+  - reopening a closed Delivery resolves its configured external archive first and legacy local archive only as fallback, then restores its complete package to active, removes its closed_index, preserves delivery_id, sets status to active, removes archived_at, and records the previous completion context and reopen reason in the integration log.
+  - completed, blocked, and superseded Deliveries complete only through user-authorized Delivery Closing: create a work/closed Thin Context Index after the full package is stored in configured cold archive; retained work/**/tasks/archive/ is legacy/local compatibility only.
+  - active packages remain status: active until Closing has integrated Product Truth, verified external archive, and created a closed index; archived_at is recorded in the archived full package, not as an active-state transition.
   - a DEV, BUG, or INT Task Loop Verify updates its parent phase artifact only; it does not trigger Delivery Closing.
   - completed Delivery Closing requires acceptance evidence and normally G4; blocked and superseded Deliveries may also close, integrating only verified facts that remain current-worthy.
   - Archive means lifecycle closed and cold context, not successful delivery; superseded records link the replacement through related_deliveries or an equivalent reference and do not promote replaced designs as Current Product Truth.
   - capabilities and related_deliveries provide context routing only; they do not replace Product Truth, approved artifacts, or evidence.
-  - a closed_index and archive_reference point to cold historical context after Delivery Closing; external archive access is optional and must not be assumed.
+  - a closed_index and archive_reference point to cold historical context after Delivery Closing; archive_reference uses a logical tu-vault:<relative-path> form and external archive access must be configured before Closing, never assumed.
   - evidence must be reproducible references, never copied secrets or sensitive payloads.
   - an ADR reference is required when the task records a durable architectural decision.

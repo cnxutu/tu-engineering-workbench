@@ -15,20 +15,20 @@
 
 ## Delivery 生命周期与位置
 
-Feature Delivery 的四个工程阶段保持为 Impact → Contract → Execution → Integration & Stabilization；具体 DEV、BUG 或 INT 修改使用 Engineering Task Loop 的 Explore → Plan → Execute → Verify。Verify 仅为当前工程任务返回证据，并回填父 Delivery Artifact；只有整个 Delivery 达到 G4 / acceptance 或明确 Closing condition 后，才进入 **Delivery Closing → Integrate → Archive**。Integrate 和 Archive 不是新的 E/P/X/V Stage Shortcut。
+Feature Delivery 的四个工程阶段保持为 Impact → Contract → Execution → Integration & Stabilization；具体 DEV、BUG 或 INT 修改使用 Engineering Task Loop 的 Explore → Plan → Execute → Verify。Verify 仅为当前工程任务返回证据，并回填父 Delivery Artifact。G4 / acceptance 或明确 Closing condition 只代表 Ready to Close；只有用户显式授权 `tu-close-delivery DF-...`，才进入 **Delivery Closing → Integrate → Archive → Closed Index → Retire Active**。Integrate 和 Archive 不是新的 E/P/X/V Stage Shortcut，也不属于第五个工程 Phase。
 
 ```text
 work/active/<domain>/<product>/DF-YYYYMMDD-NN-<slug>/
     complete Task Package while the Delivery can continue
 
 work/closed/<domain>/<product>/DF-YYYYMMDD-NN.md
-    thin closed index after Delivery Closing, Integrate, and Archive
+    thin closed index after Delivery Closing, Vault Archive verification, and Active Package retirement
 
 work/<domain>/<product>/tasks/archive/
     retained local cold history and pre-V1 evidence during the transition
 ```
 
-目录在首次有对应 Package 或 Closed Index 时创建，不为形式预建空目录。`active/` 是完整上下文；`closed/` 是可发现的薄索引；本地 archive 与未来外部 archive 都是 Cold Context，不是默认读取范围。现有 pre-V1 archive 不迁移、不伪造 DF ID。
+目录在首次有对应 Package 或 Closed Index 时创建，不为形式预建空目录。`active/` 是完整上下文；`closed/` 是可发现的薄索引；`work/**/tasks/archive/` 是 local legacy compatibility cold context。正式 Archive 只在用户授权 Closing 后写入配置的 `tu-vault`，不是默认读取范围。现有 pre-V1 archive 不迁移、不伪造 DF ID。
 
 ## DF as Context Address
 
@@ -45,11 +45,11 @@ work/<domain>/<product>/tasks/archive/
 
 ## Closing semantics
 
-Delivery Closing 由整个 Delivery 的关闭条件触发，而不是任一 DEV、BUG 或 INT 的 Verify。`completed` 需要 acceptance satisfied，通常也满足 G4；`blocked` 和 `superseded` 也可关闭，但 Archive 不表示成功。blocked 只 Integrate 已验证且仍有效的事实，没有则记录 `knowledge_update_assessment: not-needed`；superseded 仅 Integrate 仍有效的事实，不把被替代的旧设计写成 Current Product Truth，并以 related delivery / superseded-by reference 说明去向。
+Delivery Closing 的 readiness 由整个 Delivery 的关闭条件决定，而不是任一 DEV、BUG 或 INT 的 Verify；执行权则来自用户的显式 Closing Authorization。`tu-deliver-feature` 只能报告 ready 并建议 `tu-close-delivery`。`completed` 需要 acceptance satisfied，通常也满足 G4；`blocked` 和 `superseded` 也可关闭，但 Archive 不表示成功。blocked 只 Integrate 已验证且仍有效的事实，没有则记录 `knowledge_update_assessment: not-needed`；superseded 仅 Integrate 仍有效的事实，不把被替代的旧设计写成 Current Product Truth，并以 related delivery / superseded-by reference 说明去向。
 
-**Integrate**：将本次已验证且未来可复用的事实更新到对应 `products/` 权威页或 ADR；未形成此类事实时在 Delivery 中明确 `not-needed`。产品当前状态不应依赖阅读多个旧 Delivery 才能拼出。
+**Integrate**：将本次已验证且未来可复用的事实更新到对应 `products/` 权威页或 ADR；未形成此类事实时在 Delivery 中明确 `not-needed`。Requirement Authority（approved Product Spec/PRD、decision、Contract 或 acceptance criteria）与 Implementation Reality（code、test、configuration、runtime evidence）分别维护，差异记为 Requirement / Implementation Gap。产品当前状态不应依赖阅读多个旧 Delivery 才能拼出。
 
-**Archive**：创建 Closed Index，记录结果、Product Truth links、capabilities、repositories、关键决定、related deliveries 和 archive reference。完整过程在外部 archive 尚未配置时仍保留为本地 cold history；Workbench 不依赖 `tu-vault` 才能运行。
+**Archive**：按 [Delivery Closing Playbook](../core/playbooks/delivery-closing.md) 将完整 Package 写入 `workspace.local.yaml` 的可选 `external_contexts.tu_vault` target，验证后以 `tu-vault:<relative-path>` 创建 Closed Index，最后 retire active Package。配置缺失或 Archive Verification 失败时保留 active Package。普通 Workbench 运行不依赖 `tu-vault`；只有 Closing 需要已配置 target。
 
 ## External boundary and navigation
 

@@ -32,4 +32,4 @@ Stage Shortcut 位于消息的任务头部区域，可在可选 Repository Scope
 
 ## 与 Feature Delivery 的边界
 
-Engineering Task Loop 管一次具体工程修改。Feature Delivery 管跨天或跨周的 Delivery ID、CAP、Phase/Gate、Task Package 与 Artifact Authority。属于 Delivery 的非平凡 DEV 任务，将重要 Plan、实施结果与 Verify 证据回填 `03-execution-backlog.md`；Bug/Integration 的根因、修复、回归与 Verify 证据回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。单个 Task Loop 的 Verify 不触发 Delivery Closing。只有整个 Delivery 达到 G4 / acceptance 或明确 Closing condition 后，才由 Delivery Closing 执行 Integrate Current Product Truth 与 Archive Closed Context；这不增加或替代 E/P/X/V。
+Engineering Task Loop 管一次具体工程修改。Feature Delivery 管跨天或跨周的 Delivery ID、CAP、Phase/Gate、Task Package 与 Artifact Authority。属于 Delivery 的非平凡 DEV 任务，将重要 Plan、实施结果与 Verify 证据回填 `03-execution-backlog.md`；Bug/Integration 的根因、修复、回归与 Verify 证据回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。单个 Task Loop 的 Verify 不触发 Delivery Closing；G4 / acceptance 只允许 Agent 建议 Ready to Close。用户显式授权 `tu-close-delivery` 后，才按 [Delivery Closing](delivery-closing.md) 顺序 Integrate、Archive、创建 Closed Index 并 retire active Package；这不增加或替代 E/P/X/V。

@@ -28,6 +28,7 @@ Core 是 Engineering Operating Model：只描述通用工程方法、生命周�
 
 ## Playbook
 
+- [Delivery Closing](playbooks/delivery-closing.md)：用户显式授权后执行 Integrate、Vault Archive、Closed Index 与 Active Package retirement 的有序收尾事务。
 - [Engineering Task Loop](playbooks/engineering-task-loop.md)：通用的 Explore → Plan → Execute → Verify 细粒度任务执行循环。
 - [功能开发](playbooks/feature-development.md)、[问题排查](playbooks/bug-analysis.md)、[架构评审](playbooks/architecture-review.md)、[重构分析](playbooks/refactor-analysis.md)。
 

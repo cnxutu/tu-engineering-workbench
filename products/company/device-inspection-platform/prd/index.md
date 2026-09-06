@@ -2,7 +2,7 @@
 
 ## 范围
 
-本目录保留无人机巡检平台按产品版本归档的需求文档。它们属于 Transition / Existing Historical Material，用于追溯背景，不自动拥有 Current Product Truth Authority；当前有效需求必须由明确标注的 Current 页面、批准 Contract、产品决策或代码证据确认。服务实现、数据表和跨服务边界以对应的设计决策与代码证据为准。
+本目录保留无人机巡检平台按产品版本归档的需求文档。它们属于 Transition / Existing Historical Material，用于追溯背景，不自动拥有 Current Product Truth Authority；Current Requirement 必须由明确标注的 Current Product Spec/PRD、批准 Product Decision、批准 Contract 或明确 acceptance criteria 确认。Implementation Reality 由代码、测试、运行配置与可复现运行证据确认；两者不一致时记录 Requirement / Implementation Gap，而不以代码反向否定需求。服务实现、数据表和跨服务边界以对应的设计决策与代码证据为准。
 
 ## 版本导航
 

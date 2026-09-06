@@ -63,7 +63,7 @@ work/active/<domain>/<product>/<delivery-id>-<slug>/
 └── resume.md
 ```
 
-不强制生成空文件。新建时只创建 `task.yaml`、`resume.md` 与当前 Phase Artifact，并仅在 `artifacts` 中声明已创建文件。只有整个 Delivery 达到 Closing condition 后，才先 Integrate 已验证的 Product Truth，再在 `work/closed/<domain>/<product>/<delivery-id>.md` 创建 Thin Context Index；完整 Package 在外部 archive 未配置时转入现有产品内 `tasks/archive/` 作为 local cold history，并补齐 `status` 与 `archived_at`。
+不强制生成空文件。新建时只创建 `task.yaml`、`resume.md` 与当前 Phase Artifact，并仅在 `artifacts` 中声明已创建文件。达到 Closing condition 只表示 Ready to Close；必须由用户显式调用 `tu-close-delivery`，它才会先 Integrate 已验证的 Product Truth、将完整 Package Archive 到配置的 `tu-vault`、验证 archive、创建 `work/closed/<domain>/<product>/<delivery-id>.md` Thin Context Index，并最后 retire active Package。`tasks/archive/` 只保留 legacy/local cold compatibility，不是正式 Closing 目标。
 
 上图是人类说明的简化结构。Runtime authoritative template 是 [Task Package reference](../../../plugins/ai-guidance-workflows/skills/tu-deliver-feature/references/task-package.md)；不要让本页示例成为第二份 Runtime Authority。教学演练见 [robot-dog fill-light example](examples/robotdog-fill-light/walkthrough.md)。
 
@@ -81,7 +81,7 @@ work/active/<domain>/<product>/<delivery-id>-<slug>/
 | 4. Integration & Stabilization | 联调、测试、Bug、回归如何闭环？ | `04-integration-log.md` | `G4_test_ready` |
 
 ```text
-Impact → G1 → Contract → G2 → Execution → G3 → Integration & Stabilization → G4 / Accepted / Closing condition → Delivery Closing → Integrate → Archive
+Impact → G1 → Contract → G2 → Execution → G3 → Integration & Stabilization → G4 / Accepted → Ready to Close → User Authorization → Delivery Closing → Integrate → Vault Archive → Closed Index → Retire Active
 ```
 
 ### Phase artifacts
@@ -135,23 +135,27 @@ Phase 4 ADOPT 已可用的 `diagnosing-bugs`；总入口只负责 Delivery、CAP
 
 ## Closing: Integrate and Archive
 
-单个 DEV / BUG / INT 的 Engineering Task Loop Verify 只回填 `03-execution-backlog.md` 或 `04-integration-log.md`，不触发 Delivery Closing。整个 Delivery 达到 Closing condition 后才进入该收尾：`completed` 需 acceptance satisfied，通常也满足 G4；`blocked` 或 `superseded` 也可明确关闭。Integrate 与 Archive 是 Delivery Closing 的动作，不新增 Engineering Task Loop Stage，也不改变四阶段或 E/P/X/V。
+单个 DEV / BUG / INT 的 Engineering Task Loop Verify 只回填 `03-execution-backlog.md` 或 `04-integration-log.md`，不触发 Delivery Closing。G4 / acceptance 达成时，`tu-deliver-feature` 最多报告 Ready to Close 并建议 `tu-close-delivery DF-YYYYMMDD-NN`；只有用户显式 Closing Authorization 才开始收尾。`completed` 需 acceptance satisfied，通常也满足 G4；`blocked` 或 `superseded` 也可明确关闭。Integrate 与 Archive 是 Delivery Closing 的动作，不新增 Engineering Task Loop Stage，也不改变四阶段或 E/P/X/V。
 
 ```mermaid
 flowchart TD
     I[Impact] --> C[Contract] --> E[Execution] --> S[Integration & Stabilization]
     E --> D[DEV tasks: Explore → Plan → Execute → Verify]
     S --> T[INT / BUG tasks: Explore → Plan → Execute → Verify]
-    S --> G[G4 / Accepted / explicit Closing condition]
-    G --> DC[Delivery Closing]
+    S --> G[G4 / Accepted / Closing condition]
+    G --> R[Ready to Close]
+    R --> U[User explicit authorization]
+    U --> DC[Delivery Closing]
     DC --> IP[Integrate Product Truth]
-    DC --> A[Archive]
-    A --> CI[Closed Context Index]
+    IP --> A[Archive Full History to tu-vault]
+    A --> VA[Verify Archive]
+    VA --> CI[Create Closed Context Index]
+    CI --> RA[Retire Active Package]
 ```
 
-Integrate 将已验证、仍有效且可复用的能力、链路、契约、约束或 ADR 更新至 `products/` 的唯一权威页；没有可提炼事实时记录 `knowledge_update_assessment: not-needed`。对于 `superseded`，不得把被替代的旧设计写成 Current Product Truth，并应记录 related delivery / superseded-by reference。
+Integrate 将已验证、仍有效且可复用的能力、链路、契约、约束或 ADR 更新至 `products/` 的唯一权威页；没有可提炼事实时记录 `knowledge_update_assessment: not-needed`。Requirement Authority 来自 Current Product Spec/PRD、approved Product Decision、approved Contract 或明确 acceptance criteria；Implementation Reality 来自代码、测试、配置与可复现运行证据。两者不一致时记录 Requirement / Implementation Gap，不能让代码反向否定已批准需求。对于 `superseded`，不得把被替代的旧设计写成 Current Product Truth，并应记录 related delivery / superseded-by reference。
 
-Archive 创建 `work/closed/<domain>/<product>/<delivery-id>.md` Thin Context Index，保留 title、result、Product Truth links、capabilities、repositories、关键决定、related deliveries 与 archive reference。它表示 Delivery Lifecycle Closed / Cold Context，不等于成功。完整过程是 cold context：外部 archive 尚未配置时，保留于现有产品内 `tasks/archive/`；不得删除、伪造或要求迁移 pre-V1 historical evidence。
+Archive 仅写入 `workspace.local.yaml` 配置的 `external_contexts.tu_vault.delivery_archive_root`；一个 DF 对应一个独立 Archive Unit，且 Closed Index 的 archive reference 使用 `tu-vault:<relative-path>`，不写本机绝对路径。Archive Verification 通过后，才创建 `work/closed/<domain>/<product>/<delivery-id>.md` Thin Context Index，保留 title、result、Product Truth links、capabilities、repositories、关键决定、related deliveries、archive reference 与 closed timestamp，随后 retire active Package。它表示 Delivery Lifecycle Closed / Cold Context，不等于成功。配置缺失或 archive 不可验证时保留 active Package 并停止；不得降级为本地 archive 后假装成功。已有 pre-V1 `tasks/archive/` 不删除、不伪造也不迁移。
 
 ## Entry and recovery
 
@@ -162,9 +166,10 @@ Archive 创建 `work/closed/<domain>/<product>/<delivery-id>.md` Thin Context In
 /tu-deliver-feature 继续 DF-20260904-01
 /tu-deliver-feature DF-20260904-01 当前进展
 /tu-deliver-feature DF-20260904-01 <Bug 描述>
+/tu-close-delivery DF-20260904-01
 ```
 
-新需求：创建 ID 与包，创建必要的 `task.yaml`/`resume.md`，进入 Impact。继续或查询：先在 `work/active/` 按 DF ID 定位包；未命中时读 `work/closed/` Thin Index，再按其 archive reference 访问 cold history。读取最小恢复集并报告/执行当前阶段的下一动作。若 Bug 属于可访问的 local archive Delivery，先把整个目录移回 `work/active/`、移除对应 Closed Index，保留 ID、设为 `status: active`、移除 `archived_at`，并在 integration log 记录 reopened time、原因、BUG/CAP、先前完成上下文与分类；如果完整 archive 只在外部且不可访问，报告证据缺口而不伪造 prior state。然后刷新 resume。Bug：创建或定位 `BUG-xx`，先分类；只有 Contract 或 Requirement 变化才回退 Gate。任何代码修改、外部发布、Apifox 写入或跨仓库读取仍遵循当前用户授权和本地约束。
+新需求：创建 ID 与包，创建必要的 `task.yaml`/`resume.md`，进入 Impact。继续或查询：先在 `work/active/` 按 DF ID 定位包；未命中时读 `work/closed/` Thin Index，再按其 archive reference 访问 cold history。读取最小恢复集并报告/执行当前阶段的下一动作。Closing：仅在用户明确授权后调用 `tu-close-delivery`，它按 Core Delivery Closing Playbook 处理。若 Bug 属于已关闭 Delivery，先解析配置的 external archive；不可访问时才检查 local legacy cold history。若两者都不可访问，报告证据缺口而不伪造 prior state。然后按既有 reopen 机制恢复 Package、记录分类并刷新 resume。Bug：创建或定位 `BUG-xx`，先分类；只有 Contract 或 Requirement 变化才回退 Gate。任何代码修改、外部发布、Apifox 写入或跨仓库读取仍遵循当前用户授权和本地约束。
 
 ## Common mistakes
 

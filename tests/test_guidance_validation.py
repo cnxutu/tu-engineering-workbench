@@ -529,5 +529,193 @@ class FeatureDeliveryPackageGuardrailTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
 
 
+class DeliveryClosingGuardrailTest(unittest.TestCase):
+    """Verify closed Delivery and external archive contracts remain machine-checkable."""
+
+    def copied_repository(self) -> Path:
+        temporary_directory = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary_directory.cleanup)
+        repository = Path(temporary_directory.name) / "repo"
+        shutil.copytree(
+            REPOSITORY_ROOT,
+            repository,
+            ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc", "workspace.local.yaml"),
+        )
+        return repository
+
+    def validate(self, repository: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(VALIDATOR), "--repo-root", str(repository)],
+            capture_output=True,
+            check=False,
+            encoding="utf-8",
+        )
+
+    def create_closed_index(
+        self,
+        repository: Path,
+        delivery_id: str = "DF-20260906-01",
+        status: str = "completed",
+        archive: str | None = None,
+        related: str = "none",
+    ) -> Path:
+        index = (
+            repository
+            / "work"
+            / "closed"
+            / "company"
+            / "device-inspection-platform"
+            / f"{delivery_id}.md"
+        )
+        index.parent.mkdir(parents=True, exist_ok=True)
+        index.write_text(
+            "\n".join(
+                [
+                    f"# {delivery_id}",
+                    f"- Status: {status}",
+                    "- Result: Guardrail fixture",
+                    "- Product: company/device-inspection-platform",
+                    "- Capabilities: fixture-capability",
+                    "- Repositories: fixture-repository",
+                    "- Product Truth: not-needed",
+                    "- Knowledge Update: not-needed",
+                    "- Key Decisions: none",
+                    f"- Related Deliveries: {related}",
+                    f"- Archive: {archive or f'tu-vault:deliveries/{delivery_id}'}",
+                    "- Closed At: 2026-09-06T12:00:00+08:00",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        return index
+
+    def create_active_package(self, repository: Path, delivery_id: str) -> None:
+        package = (
+            repository
+            / "work"
+            / "active"
+            / "company"
+            / "device-inspection-platform"
+            / f"{delivery_id}-fixture"
+        )
+        package.mkdir(parents=True)
+        package.joinpath("task.yaml").write_text(
+            "\n".join(
+                [
+                    f"delivery_id: {delivery_id}",
+                    "title: Active fixture",
+                    "status: active",
+                    "capabilities:",
+                    "  - fixture-capability",
+                    "related_deliveries: []",
+                    "artifacts:",
+                    "  impact: 01-impact-review.md",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        package.joinpath("01-impact-review.md").write_text("fixture\n", encoding="utf-8")
+
+    def test_accepts_valid_closed_index(self) -> None:
+        repository = self.copied_repository()
+        self.create_closed_index(repository)
+
+        result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_rejects_malformed_closed_index_filename(self) -> None:
+        repository = self.copied_repository()
+        index = self.create_closed_index(repository)
+        index.rename(index.with_name("legacy-delivery.md"))
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Closed Delivery Index must use", result.stderr)
+
+    def test_rejects_active_and_closed_delivery_conflict(self) -> None:
+        repository = self.copied_repository()
+        self.create_closed_index(repository)
+        self.create_active_package(repository, "DF-20260906-01")
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Delivery cannot be both active and closed", result.stderr)
+
+    def test_rejects_active_status_in_closed_index(self) -> None:
+        repository = self.copied_repository()
+        self.create_closed_index(repository, status="active")
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Closed Delivery Index has invalid status", result.stderr)
+
+    def test_rejects_closed_index_without_archive_reference(self) -> None:
+        repository = self.copied_repository()
+        index = self.create_closed_index(repository)
+        index.write_text(
+            index.read_text(encoding="utf-8").replace("- Archive: tu-vault:deliveries/DF-20260906-01\n", ""),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Closed Delivery Index is missing Archive", result.stderr)
+
+    def test_rejects_superseded_closed_index_without_replacement_reference(self) -> None:
+        repository = self.copied_repository()
+        self.create_closed_index(repository, status="superseded")
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("superseded Closed Delivery Index requires", result.stderr)
+
+    def test_rejects_unsafe_external_archive_configuration(self) -> None:
+        repository = self.copied_repository()
+        vault = repository.parent / "vault"
+        vault.mkdir()
+        (repository / "workspace.local.yaml").write_text(
+            "\n".join(
+                [
+                    "external_contexts:",
+                    "  tu_vault:",
+                    f"    path: {vault}",
+                    "    delivery_archive_root: ../escape",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("tu_vault delivery_archive_root must be a safe relative path", result.stderr)
+
+
+class ClosingSkillRegistrationTest(unittest.TestCase):
+    def test_plugin_validator_registers_closing_skill(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(REPOSITORY_ROOT / "plugins" / "ai-guidance-workflows" / "tests" / "validate-skills.py"),
+                str(REPOSITORY_ROOT / "plugins" / "ai-guidance-workflows"),
+            ],
+            capture_output=True,
+            check=False,
+            encoding="utf-8",
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("validated 5 plugin skills", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

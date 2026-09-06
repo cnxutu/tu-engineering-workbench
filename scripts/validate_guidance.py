@@ -26,6 +26,10 @@ PRIMARY_REPOSITORY_BINDINGS = {
 }
 DELIVERY_ID_PATTERN = re.compile(r"^DF-\d{8}-\d{2}$")
 DELIVERY_DIRECTORY_PATTERN = re.compile(r"^(DF-\d{8}-\d{2})(?:-.+)?$")
+CLOSED_DELIVERY_INDEX_PATTERN = re.compile(r"^DF-\d{8}-\d{2}\.md$")
+CLOSED_DELIVERY_STATUSES = {"completed", "blocked", "superseded"}
+
+
 def error_if_missing(path: Path, label: str, errors: list[str]) -> None:
     if not path.is_file():
         errors.append(f"missing {label}: {path}")
@@ -56,6 +60,38 @@ def values_for_keys(path: Path, allowed: set[str]) -> list[tuple[str, str]]:
 
 def workspace_codes(text: str) -> list[str]:
     return re.findall(r"^\s*-\s+code:\s*(\S.*?)\s*$", text, re.MULTILINE)
+
+
+def external_tu_vault_values(text: str) -> dict[str, str] | None:
+    """Read the optional simple external_contexts.tu_vault mapping without YAML dependencies."""
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if line.strip() != "external_contexts:":
+            continue
+        for vault_index in range(index + 1, len(lines)):
+            candidate = lines[vault_index]
+            if candidate and not candidate.startswith((" ", "\t")):
+                break
+            if re.fullmatch(r"\s+tu_vault:\s*", candidate) is None:
+                continue
+            values: dict[str, str] = {}
+            vault_indent = len(candidate) - len(candidate.lstrip())
+            for child in lines[vault_index + 1 :]:
+                if not child.strip():
+                    continue
+                child_indent = len(child) - len(child.lstrip())
+                if child_indent <= vault_indent:
+                    break
+                match = re.match(r"\s+(path|delivery_archive_root):\s*(\S.*?)\s*$", child)
+                if match is not None:
+                    values[match.group(1)] = match.group(2).strip().strip("\\\"'")
+            return values
+    return None
+
+
+def is_safe_relative_path(value: str) -> bool:
+    candidate = Path(value)
+    return bool(value) and not candidate.is_absolute() and ".." not in candidate.parts
 
 
 def platform_product_ids(repo_root: Path) -> set[str]:
@@ -170,6 +206,22 @@ def validate_workspace_configuration(repo_root: Path, registered_codes: set[str]
             errors.append(f"workspace.local.yaml has unresolved path: {value}")
         elif not Path(value).is_dir():
             errors.append(f"workspace.local.yaml path does not exist: {value}")
+    tu_vault = external_tu_vault_values(text)
+    if tu_vault is None:
+        return
+    vault_path = tu_vault.get("path")
+    archive_root = tu_vault.get("delivery_archive_root")
+    if vault_path is None or archive_root is None:
+        errors.append("workspace.local.yaml tu_vault requires path and delivery_archive_root")
+        return
+    if PLACEHOLDER_PATTERN.match(vault_path) or not Path(vault_path).is_absolute():
+        errors.append("workspace.local.yaml tu_vault path must be an absolute configured directory")
+    elif not Path(vault_path).is_dir():
+        errors.append(f"workspace.local.yaml tu_vault path does not exist: {vault_path}")
+    elif Path(vault_path).resolve() == repo_root:
+        errors.append("workspace.local.yaml tu_vault path must not be the Workbench itself")
+    if PLACEHOLDER_PATTERN.match(archive_root) or not is_safe_relative_path(archive_root):
+        errors.append("workspace.local.yaml tu_vault delivery_archive_root must be a safe relative path")
 
 
 def validate_workspace_template(repo_root: Path, registered_codes: set[str], errors: list[str]) -> None:
@@ -191,6 +243,16 @@ def validate_workspace_template(repo_root: Path, registered_codes: set[str], err
         value = raw_path.strip().strip("\\\"'")
         if not PLACEHOLDER_PATTERN.match(value):
             errors.append(f"workspace.example.yaml has concrete repository path: {value}")
+    tu_vault = external_tu_vault_values(text)
+    if tu_vault is None:
+        errors.append("workspace.example.yaml is missing optional tu_vault external context template")
+        return
+    vault_path = tu_vault.get("path")
+    archive_root = tu_vault.get("delivery_archive_root")
+    if vault_path is None or not PLACEHOLDER_PATTERN.match(vault_path):
+        errors.append("workspace.example.yaml tu_vault path must be a placeholder")
+    if archive_root is None or not PLACEHOLDER_PATTERN.match(archive_root):
+        errors.append("workspace.example.yaml tu_vault delivery_archive_root must be a placeholder")
 
 
 def validate_sensitive_values(repo_root: Path, errors: list[str]) -> None:
@@ -338,6 +400,92 @@ def validate_feature_delivery_packages(repo_root: Path, errors: list[str]) -> No
                         )
 
 
+def closed_index_value(text: str, label: str) -> str | None:
+    match = re.search(rf"^- {re.escape(label)}:\s*(\S.*?)\s*$", text, re.MULTILINE)
+    return match.group(1).strip() if match is not None else None
+
+
+def active_delivery_ids(repo_root: Path) -> set[str]:
+    active_root = repo_root / "work" / "active"
+    if not active_root.is_dir():
+        return set()
+    ids: set[str] = set()
+    for task_file in active_root.rglob("task.yaml"):
+        delivery_id = yaml_scalar(task_file.read_text(encoding="utf-8"), "delivery_id")
+        if delivery_id is not None and DELIVERY_ID_PATTERN.fullmatch(delivery_id):
+            ids.add(delivery_id)
+    return ids
+
+
+def validate_closed_delivery_indexes(repo_root: Path, errors: list[str]) -> None:
+    closed_root = repo_root / "work" / "closed"
+    if not closed_root.is_dir():
+        return
+    active_ids = active_delivery_ids(repo_root)
+    for index in closed_root.rglob("*"):
+        if index.is_dir():
+            continue
+        relative = index.relative_to(closed_root)
+        if len(relative.parts) != 3 or CLOSED_DELIVERY_INDEX_PATTERN.fullmatch(index.name) is None:
+            errors.append(
+                "Closed Delivery Index must use work/closed/<domain>/<product>/DF-YYYYMMDD-NN.md: "
+                f"{index.relative_to(repo_root)}"
+            )
+            continue
+        delivery_id = index.stem
+        text = index.read_text(encoding="utf-8")
+        if re.search(rf"^# {re.escape(delivery_id)}\s*$", text, re.MULTILINE) is None:
+            errors.append(
+                "Closed Delivery Index heading must match delivery ID: "
+                f"{index.relative_to(repo_root)}"
+            )
+        required_labels = (
+            "Status",
+            "Result",
+            "Product",
+            "Capabilities",
+            "Repositories",
+            "Product Truth",
+            "Knowledge Update",
+            "Archive",
+            "Closed At",
+        )
+        for label in required_labels:
+            if closed_index_value(text, label) is None:
+                errors.append(
+                    f"Closed Delivery Index is missing {label}: {index.relative_to(repo_root)}"
+                )
+        status = closed_index_value(text, "Status")
+        if status is not None and status not in CLOSED_DELIVERY_STATUSES:
+            errors.append(
+                "Closed Delivery Index has invalid status: "
+                f"{index.relative_to(repo_root)} -> {status}"
+            )
+        archive_reference = closed_index_value(text, "Archive")
+        if archive_reference is not None:
+            archive_path = archive_reference.removeprefix("tu-vault:")
+            if not archive_reference.startswith("tu-vault:") or not is_safe_relative_path(archive_path):
+                errors.append(
+                    "Closed Delivery Index archive must use safe logical tu-vault reference: "
+                    f"{index.relative_to(repo_root)}"
+                )
+        if status == "superseded":
+            related = closed_index_value(text, "Related Deliveries")
+            replacement = closed_index_value(text, "Superseded By")
+            if not (
+                related is not None and re.search(r"DF-\d{8}-\d{2}", related) is not None
+            ) and replacement is None:
+                errors.append(
+                    "superseded Closed Delivery Index requires related Delivery or Superseded By: "
+                    f"{index.relative_to(repo_root)}"
+                )
+        if delivery_id in active_ids:
+            errors.append(
+                "Delivery cannot be both active and closed: "
+                f"{delivery_id}"
+            )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -357,6 +505,7 @@ def main() -> int:
     validate_workspace_template(repo_root, registered_codes, errors)
     validate_sensitive_values(repo_root, errors)
     validate_feature_delivery_packages(repo_root, errors)
+    validate_closed_delivery_indexes(repo_root, errors)
 
     if errors:
         print("AI guidance validation failed:", file=sys.stderr)
