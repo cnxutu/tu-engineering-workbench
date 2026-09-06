@@ -563,6 +563,7 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         status: str = "completed",
         archive: str | None = None,
         related: str = "none",
+        superseded_by: str | None = None,
     ) -> Path:
         index = (
             repository
@@ -586,6 +587,7 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
                     "- Knowledge Update: not-needed",
                     "- Key Decisions: none",
                     f"- Related Deliveries: {related}",
+                    *([f"- Superseded By: {superseded_by}"] if superseded_by is not None else []),
                     f"- Archive: {archive or f'tu-vault:deliveries/{delivery_id}'}",
                     "- Closed At: 2026-09-06T12:00:00+08:00",
                     "",
@@ -659,6 +661,18 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
             repository,
             status="superseded",
             related="DF-20260907-01",
+        )
+
+        result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_accepts_valid_superseded_closed_index_with_superseded_by(self) -> None:
+        repository = self.copied_repository()
+        self.create_closed_index(
+            repository,
+            status="superseded",
+            superseded_by="DF-20260907-01",
         )
 
         result = self.validate(repository)
@@ -742,9 +756,31 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Closed Delivery Index archive must use safe logical tu-vault reference", result.stderr)
 
-    def test_rejects_superseded_closed_index_without_replacement_reference(self) -> None:
+    def test_rejects_superseded_closed_index_with_none_replacement(self) -> None:
         repository = self.copied_repository()
-        self.create_closed_index(repository, status="superseded")
+        self.create_closed_index(repository, status="superseded", superseded_by="none")
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("superseded Closed Delivery Index requires", result.stderr)
+
+    def test_rejects_superseded_closed_index_with_tbd_replacement(self) -> None:
+        repository = self.copied_repository()
+        self.create_closed_index(repository, status="superseded", superseded_by="TBD")
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("superseded Closed Delivery Index requires", result.stderr)
+
+    def test_rejects_superseded_closed_index_with_self_replacement(self) -> None:
+        repository = self.copied_repository()
+        self.create_closed_index(
+            repository,
+            status="superseded",
+            superseded_by="DF-20260906-01",
+        )
 
         result = self.validate(repository)
 

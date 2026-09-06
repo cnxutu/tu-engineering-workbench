@@ -49,7 +49,7 @@ Delivery Closing 的 readiness 由整个 Delivery 的关闭条件决定，而不
 
 **Integrate**：将本次已验证且未来可复用的事实更新到对应 `products/` 权威页或 ADR；未形成此类事实时在 Delivery 中明确 `not-needed`。Requirement Authority（approved Product Spec/PRD、decision、Contract 或 acceptance criteria）与 Implementation Reality（code、test、configuration、runtime evidence）分别维护，差异记为 Requirement / Implementation Gap。产品当前状态不应依赖阅读多个旧 Delivery 才能拼出。
 
-**Archive**：按 [Delivery Closing Playbook](../core/playbooks/delivery-closing.md) 先完成 Sensitive Data Review，再将完整 Package copy 到 `workspace.local.yaml` 的 `external_contexts.tu_vault` target 中唯一的 `<delivery_archive_root>/<DF-ID>/` Unit；仅 archived `delivery/task.yaml` 成为 final historical snapshot。验证后以同一 `tu-vault:<delivery_archive_root>/<DF-ID>` 创建 Closed Index，最后 retire active Package。配置缺失或 Archive Verification 失败时保留 active Package；reopen restore/copy immutable Vault snapshot，不移动或删除它。普通 Workbench 运行不依赖 `tu-vault`；只有 Closing 需要已配置 target。
+**Archive**：按 [Delivery Closing Playbook](../core/playbooks/delivery-closing.md) 先完成 Sensitive Data Review，再将完整 Package copy 到 `workspace.local.yaml` 的 `external_contexts.tu_vault` target 中唯一的 `<delivery_archive_root>/<DF-ID>/` Unit；仅 archived `delivery/task.yaml` 成为 final historical snapshot。验证后以同一 `tu-vault:<delivery_archive_root>/<DF-ID>` 创建 Closed Index，最后 retire active Package。配置缺失或 Archive Verification 失败时保留 active Package；reopen 只将 immutable `<Archive Unit>/delivery/` restore/copy 为 Active Package，不移动、删除或修改 Vault Unit，且不把 summary 或 manifest 带入 active。普通 Workbench 运行不依赖 `tu-vault`；只有 Closing 需要已配置 target。
 
 ## External boundary and navigation
 

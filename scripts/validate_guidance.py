@@ -517,11 +517,13 @@ def validate_closed_delivery_indexes(repo_root: Path, errors: list[str]) -> None
         if status == "superseded":
             related = closed_index_value(text, "Related Deliveries")
             replacement = closed_index_value(text, "Superseded By")
-            if not (
-                related is not None and re.search(r"DF-\d{8}-\d{2}", related) is not None
-            ) and replacement is None:
+            replacement_ids = {
+                *re.findall(r"\bDF-\d{8}-\d{2}\b", related or ""),
+                *re.findall(r"\bDF-\d{8}-\d{2}\b", replacement or ""),
+            }
+            if not (replacement_ids - {delivery_id}):
                 errors.append(
-                    "superseded Closed Delivery Index requires related Delivery or Superseded By: "
+                    "superseded Closed Delivery Index requires a replacement Delivery distinct from itself: "
                     f"{index.relative_to(repo_root)}"
                 )
         if delivery_id in active_ids:
