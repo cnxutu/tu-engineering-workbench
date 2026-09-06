@@ -299,14 +299,9 @@ def validate_feature_delivery_packages(repo_root: Path, errors: list[str]) -> No
 
             if state == "active":
                 for candidate in task_root.iterdir():
-                    if not candidate.is_file() or candidate.name == ".gitkeep":
-                        continue
-                    text = candidate.read_text(encoding="utf-8")
-                    if candidate.name.startswith("DF-") or re.search(
-                        r"^delivery_id:\s*DF-", text, re.MULTILINE
-                    ):
+                    if not candidate.is_dir() or not candidate.name.startswith("DF-"):
                         errors.append(
-                            "Feature Delivery state must be stored in a package, not a flat active file: "
+                            "active Feature Delivery tasks must contain only DF package directories: "
                             f"{candidate.relative_to(repo_root)}"
                         )
 

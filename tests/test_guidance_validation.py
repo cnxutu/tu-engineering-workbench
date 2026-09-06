@@ -394,7 +394,7 @@ class FeatureDeliveryPackageGuardrailTest(unittest.TestCase):
     def test_accepts_valid_active_and_archived_packages(self) -> None:
         repository = self.copied_repository()
         self.create_package(
-            repository, "active", "DF-20260905-01-fill-light", "DF-20260905-01", "active"
+            repository, "active", "DF-20260906-01-fill-light", "DF-20260906-01", "active"
         )
         self.create_package(
             repository,
@@ -463,7 +463,7 @@ class FeatureDeliveryPackageGuardrailTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Feature Delivery artifact is missing", result.stderr)
 
-    def test_rejects_flat_active_delivery_state(self) -> None:
+    def test_rejects_flat_active_legacy_files(self) -> None:
         repository = self.copied_repository()
         active = (
             repository
@@ -474,14 +474,32 @@ class FeatureDeliveryPackageGuardrailTest(unittest.TestCase):
             / "active"
         )
         active.mkdir(parents=True)
-        active.joinpath("DF-20260905-01.yaml").write_text(
-            "delivery_id: DF-20260905-01\nstatus: active\n", encoding="utf-8"
-        )
+        active.joinpath("p0-legacy-task.yaml").write_text("legacy: state\n", encoding="utf-8")
+        active.joinpath("legacy-note.md").write_text("legacy state\n", encoding="utf-8")
 
         result = self.validate(repository)
 
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("Feature Delivery state must be stored in a package", result.stderr)
+        self.assertIn("active Feature Delivery tasks must contain only DF package directories", result.stderr)
+        self.assertIn("p0-legacy-task.yaml", result.stderr)
+        self.assertIn("legacy-note.md", result.stderr)
+
+    def test_accepts_flat_pre_v1_archive_evidence(self) -> None:
+        repository = self.copied_repository()
+        archive = (
+            repository
+            / "work"
+            / "company"
+            / "device-inspection-platform"
+            / "tasks"
+            / "archive"
+        )
+        archive.mkdir(parents=True, exist_ok=True)
+        archive.joinpath("p1-pre-v1-task.yaml").write_text("legacy: evidence\n", encoding="utf-8")
+
+        result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == "__main__":
