@@ -267,6 +267,8 @@ class FeatureDeliveryTaskPackageContractTest(unittest.TestCase):
             "title",
             "status",
             "repositories",
+            "capabilities",
+            "related_deliveries",
             "product",
             "created_at",
             "evidence",
@@ -362,9 +364,12 @@ class FeatureDeliveryPackageGuardrailTest(unittest.TestCase):
         status: str,
         archived_at: str | None = None,
         create_artifact: bool = True,
+        include_context_routing: bool = True,
     ) -> None:
         package = (
-            repository
+            repository / "work" / "active" / "company" / "device-inspection-platform" / directory_name
+            if state == "active"
+            else repository
             / "work"
             / "company"
             / "device-inspection-platform"
@@ -374,12 +379,18 @@ class FeatureDeliveryPackageGuardrailTest(unittest.TestCase):
         )
         package.mkdir(parents=True)
         archived_line = f"archived_at: {archived_at}\n" if archived_at is not None else ""
+        context_routing = (
+            ["capabilities:", "  - fixture-capability", "related_deliveries: []"]
+            if include_context_routing
+            else []
+        )
         package.joinpath("task.yaml").write_text(
             "\n".join(
                 [
                     f"delivery_id: {delivery_id}",
                     "title: Guardrail fixture",
                     f"status: {status}",
+                    *context_routing,
                     "artifacts:",
                     "  impact: 01-impact-review.md",
                     archived_line.rstrip(),
@@ -436,6 +447,23 @@ class FeatureDeliveryPackageGuardrailTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("active Feature Delivery package must not declare archived_at", result.stderr)
 
+    def test_rejects_active_package_without_context_routing(self) -> None:
+        repository = self.copied_repository()
+        self.create_package(
+            repository,
+            "active",
+            "DF-20260906-01-fill-light",
+            "DF-20260906-01",
+            "active",
+            include_context_routing=False,
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("active Feature Delivery package is missing capabilities", result.stderr)
+        self.assertIn("active Feature Delivery package is missing related_deliveries", result.stderr)
+
     def test_rejects_archived_package_without_archived_at(self) -> None:
         repository = self.copied_repository()
         self.create_package(
@@ -468,10 +496,9 @@ class FeatureDeliveryPackageGuardrailTest(unittest.TestCase):
         active = (
             repository
             / "work"
+            / "active"
             / "company"
             / "device-inspection-platform"
-            / "tasks"
-            / "active"
         )
         active.mkdir(parents=True)
         active.joinpath("p0-legacy-task.yaml").write_text("legacy: state\n", encoding="utf-8")

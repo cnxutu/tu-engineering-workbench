@@ -12,6 +12,12 @@
 
 需打开、核实或修改已登记源码时，读取未提交的 `workspace.local.yaml` 获取本机绝对路径；其仅保存路径，仓库身份与产品绑定以 registry 为准，产品内责任以对应 repository manifest 和已验证产品知识为准。首次接入且该文件不存在时，可从 `workspace.example.yaml` 创建；缺少条目或路径不可访问时，报告缺口，不猜测替代位置。范围外项目仅可作为依赖背景，不读取、核实或修改其源码。
 
+### Delivery Context Routing
+
+`DF-YYYYMMDD-NN` 是 Delivery 的 durable identity 与 Context Address。处理“继续 / 查询 / 关闭 DF-xxxx”时，不扫描整个 Workbench：先在 `work/active/` 按 DF ID 定位 Package；未找到时读取 `work/closed/` 的 Thin Context Index，并仅在该索引指向时访问 local/external cold archive。随后读取 `task.yaml`、`resume.md` 与当前 Phase Artifact，或 Closed Index 的 Product Truth links、repositories、capabilities、related deliveries 和 archive reference。
+
+再按该入口记录的 `product`、capabilities 和 repositories 读取最小相关 Product Truth、真实项目代码/契约与 Core 规则；只有任务确实需要时才加载 Plugin Skill。解释当前产品能力时优先从 `products/` 入口开始；解释工程方法时优先从 `core/` 开始；不要默认扫描整个 `products/`、`work/` 或 `plugins/`。完整模型见 [Living Engineering Model](docs/workbench-model.md)。
+
 ## 2. 工程任务必读基准
 
 凡是阅读、评审、设计或修改源码、配置、脚本、测试的任务，必须先读取 [`core/rules/development.md`](core/rules/development.md)。它是所有服务通用的 Codex 开发基准，规定上下文装载、分析与确认、最小实现、调试、验证、交接和安全边界；随后按第 3 节读取目标仓库或目录的局部 `AGENTS.md`，以及任务命中的专项上下文。语言、框架、仓库和产品专属要求仍按条件读取，且仓库局部约束优先。

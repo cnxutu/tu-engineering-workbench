@@ -32,4 +32,4 @@ Stage Shortcut 位于消息的任务头部区域，可在可选 Repository Scope
 
 ## 与 Feature Delivery 的边界
 
-Engineering Task Loop 管一次具体工程修改。Feature Delivery 管跨天或跨周的 Delivery ID、CAP、Phase/Gate、Task Package 与 Artifact Authority。属于 Delivery 的非平凡 DEV 任务，将重要 Plan 和实际结果回填 `03-execution-backlog.md`；Bug/Integration 的根因、修复和回归回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。
+Engineering Task Loop 管一次具体工程修改。Feature Delivery 管跨天或跨周的 Delivery ID、CAP、Phase/Gate、Task Package 与 Artifact Authority。属于 Delivery 的非平凡 DEV 任务，将重要 Plan 和实际结果回填 `03-execution-backlog.md`；Bug/Integration 的根因、修复和回归回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。Verify 之后由 Feature Delivery 的 Integrate/Archive 收尾：更新 Current Product Truth，并创建 Closed Context Index；这不增加或替代 E/P/X/V。

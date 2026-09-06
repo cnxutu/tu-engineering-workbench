@@ -48,12 +48,12 @@ Product knowledge supplies verified domain context.
 
 ## Delivery ID and package
 
-每次软件交付使用一个稳定、可排序的 canonical Delivery ID：`DF-YYYYMMDD-NN`。它是机器身份，不能包含或依赖需求标题；可读 slug 仅属于目录，例如 `DF-20260904-01-robotdog-fill-light`。同一 Delivery ID 贯穿需求、契约、实现、联调、Bug、回归与归档；不要因为后续 Bug 新建丢失原上下文的 Delivery。Delivery 内子任务使用 `CAP-01`、`EXT-01`、`DEV-01`、`INT-01`、`BUG-01` 等局部编号。
+每次软件交付使用一个稳定、可排序的 canonical Delivery ID：`DF-YYYYMMDD-NN`。它既是机器身份，也是 Context Address：可据此定位当前或已关闭的 Delivery、对应 Product、Capability、Repository、related deliveries 与阶段；不能包含或依赖需求标题。可读 slug 仅属于目录，例如 `DF-20260904-01-robotdog-fill-light`。同一 Delivery ID 贯穿需求、契约、实现、联调、Bug、回归与归档；不要因为后续 Bug 新建丢失原上下文的 Delivery。Delivery 内子任务使用 `CAP-01`、`EXT-01`、`DEV-01`、`INT-01`、`BUG-01` 等局部编号。
 
-新建时同时扫描 `work/**/tasks/active/` 与 `work/**/tasks/archive/` 下当天的 ID，取最大 `NN + 1`；若目标目录已存在则重新扫描并取下一号。不使用 UUID、sequence file、registry、锁、服务或数据库。
+新建时扫描 `work/active/`、`work/closed/` 与兼容保留的 `work/**/tasks/archive/` 下当天的 ID，取最大 `NN + 1`；若目标目录已存在则重新扫描并取下一号。不使用 UUID、sequence file、registry、锁、服务或数据库。
 
 ```text
-work/<domain>/<product>/tasks/active/<delivery-id>-<slug>/
+work/active/<domain>/<product>/<delivery-id>-<slug>/
 ├── task.yaml
 ├── 01-impact-review.md
 ├── 02-api-contract.md
@@ -63,11 +63,11 @@ work/<domain>/<product>/tasks/active/<delivery-id>-<slug>/
 └── resume.md
 ```
 
-不强制生成空文件。新建时只创建 `task.yaml`、`resume.md` 与当前 Phase Artifact，并仅在 `artifacts` 中声明已创建文件。包归档时整体移动到同级 `archive/`；完成、阻塞或被替代时补齐 `status` 与 `archived_at`。
+不强制生成空文件。新建时只创建 `task.yaml`、`resume.md` 与当前 Phase Artifact，并仅在 `artifacts` 中声明已创建文件。Closing 时先 Integrate 已验证的 Product Truth，再在 `work/closed/<domain>/<product>/<delivery-id>.md` 创建 Thin Context Index；完整 Package 在外部 archive 未配置时转入现有产品内 `tasks/archive/` 作为 local cold history，并补齐 `status` 与 `archived_at`。
 
 上图是人类说明的简化结构。Runtime authoritative template 是 [Task Package reference](../../../plugins/ai-guidance-workflows/skills/tu-deliver-feature/references/task-package.md)；不要让本页示例成为第二份 Runtime Authority。教学演练见 [robot-dog fill-light example](examples/robotdog-fill-light/walkthrough.md)。
 
-`task.yaml` 是生命周期状态和导航索引，至少包含 `delivery_id`、`title`、`status`、`phase`、`product`、`repositories`、`created_at`、`gates`、`artifacts`、`current_focus`、`last_verified`、`next_actions`、`evidence` 和 `knowledge_update_assessment`。它不复制需求或接口正文。`repositories` 是列表，记录已确认的实际范围；不因产品知识或示例推断加入仓库。
+`task.yaml` 是生命周期状态和导航索引，至少包含 `delivery_id`、`title`、`status`、`phase`、`product`、`repositories`、`capabilities`、`related_deliveries`、`created_at`、`gates`、`artifacts`、`current_focus`、`last_verified`、`next_actions`、`evidence` 和 `knowledge_update_assessment`。它不复制需求或接口正文。`repositories` 是列表，记录已确认的实际范围；不因产品知识或示例推断加入仓库。
 
 `resume.md` 是短小的 Resume Cache，包含 Delivery ID、Current Phase、Goal、Confirmed Decisions、Current Implementation、Open Items、Relevant Commits、Read Next 和 Next Action。Phase 切换、重要 DEV 批次完成、联调结束、重要 Bug 修复、用户暂停和归档前都刷新它。恢复时先读 `task.yaml`，再读 `resume.md` 与当前阶段 Artifact，最后读取完成当前动作所需的最小代码/契约/证据。
 
@@ -81,7 +81,7 @@ work/<domain>/<product>/tasks/active/<delivery-id>-<slug>/
 | 4. Integration & Stabilization | 联调、测试、Bug、回归如何闭环？ | `04-integration-log.md` | `G4_test_ready` |
 
 ```text
-Impact → G1 → Contract → G2 → Execution → G3 → Integration & Stabilization → G4 → Archive
+Impact → G1 → Contract → G2 → Execution → G3 → Integration & Stabilization → G4 → Integrate → Archive
 ```
 
 ### Phase artifacts
@@ -133,6 +133,12 @@ Bug 先定位 Delivery 和 CAP，再分类路由：
 
 Phase 4 ADOPT 已可用的 `diagnosing-bugs`；总入口只负责 Delivery、CAP、Phase 和 Artifact 路由，不重写通用 Debug 方法。
 
+## Closing: Integrate and Archive
+
+Integrate 与 Archive 是 Delivery 收尾语义，不新增 Engineering Task Loop Stage，也不改变四阶段或 E/P/X/V。Integrate 将本次已验证、可复用的能力、链路、契约、约束或 ADR 更新至 `products/` 的唯一权威页；若没有可提炼事实，记录 `knowledge_update_assessment: not-needed`。
+
+Archive 创建 `work/closed/<domain>/<product>/<delivery-id>.md` Thin Context Index，保留 title、result、Product Truth links、capabilities、repositories、关键决定、related deliveries 与 archive reference。完整过程是 cold context：外部 archive 尚未配置时，保留于现有产品内 `tasks/archive/`；不得删除、伪造或要求迁移 pre-V1 historical evidence。
+
 ## Entry and recovery
 
 用户只需记住以下入口：
@@ -144,7 +150,7 @@ Phase 4 ADOPT 已可用的 `diagnosing-bugs`；总入口只负责 Delivery、CAP
 /tu-deliver-feature DF-20260904-01 <Bug 描述>
 ```
 
-新需求：创建 ID 与包，创建必要的 `task.yaml`/`resume.md`，进入 Impact。继续或查询：按索引定位包，读取最小恢复集并报告/执行当前阶段的下一动作。若 Bug 属于 archive 中的 Delivery，先把整个目录移回 `active/`，保留 ID、设为 `status: active`、移除 `archived_at`，并在 integration log 记录 reopened time、原因、BUG/CAP、先前完成上下文与分类；如果该日志缺失，先为本次稳定化/重开创建它并登记到 `task.yaml.artifacts`，再写入证据。然后刷新 resume。Bug：创建或定位 `BUG-xx`，先分类；只有 Contract 或 Requirement 变化才回退 Gate。任何代码修改、外部发布、Apifox 写入或跨仓库读取仍遵循当前用户授权和本地约束。
+新需求：创建 ID 与包，创建必要的 `task.yaml`/`resume.md`，进入 Impact。继续或查询：先在 `work/active/` 按 DF ID 定位包；未命中时读 `work/closed/` Thin Index，再按其 archive reference 访问 cold history。读取最小恢复集并报告/执行当前阶段的下一动作。若 Bug 属于可访问的 local archive Delivery，先把整个目录移回 `work/active/`、移除对应 Closed Index，保留 ID、设为 `status: active`、移除 `archived_at`，并在 integration log 记录 reopened time、原因、BUG/CAP、先前完成上下文与分类；如果完整 archive 只在外部且不可访问，报告证据缺口而不伪造 prior state。然后刷新 resume。Bug：创建或定位 `BUG-xx`，先分类；只有 Contract 或 Requirement 变化才回退 Gate。任何代码修改、外部发布、Apifox 写入或跨仓库读取仍遵循当前用户授权和本地约束。
 
 ## Common mistakes
 
@@ -157,6 +163,6 @@ Phase 4 ADOPT 已可用的 `diagnosing-bugs`；总入口只负责 Delivery、CAP
 
 ## Knowledge promotion and non-goals
 
-`work/` 保存 Delivery Evidence，不自动进入 `products/`。仅将经验证且未来可复用的架构事实、仓库责任、跨服务 flow、协议语义或 ADR 提炼为 Product Knowledge；在归档时把 `knowledge_update_assessment` 更新为 `updated` 或 `not-needed`。
+`work/` 保存 Delivery Change State，不自动进入 `products/`。仅在 Integrate 时将经验证且未来可复用的架构事实、仓库责任、跨服务 flow、协议语义或 ADR 提炼为 Current Product Truth；Closing 时把 `knowledge_update_assessment` 更新为 `updated` 或 `not-needed`。
 
 V1 不引入运行时框架、工作流引擎、数据库、复杂 DSL、额外 Schema Framework、大量 phase Skill，也不把 Apifox/Issue Tracker 设为 Authority。Prototype parsing、通用 debugging、TDD、review、ticketing 和 implementation 保留给成熟可用能力；本 Workbench 只拥有生命周期状态与领域交付语义。

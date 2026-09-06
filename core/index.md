@@ -1,6 +1,6 @@
 # Engineering Kernel
 
-Core 只描述通用工程方法，不存放任何产品或仓库事实。使用时按任务选择最小必要集合。
+Core 是 Engineering Operating Model：只描述通用工程方法、生命周期与 Context Routing，不存放任何产品或仓库事实。使用时按任务选择最小必要集合；整体区域边界见 [Living Engineering Model](../docs/workbench-model.md)。
 
 ## 概念边界
 

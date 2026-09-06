@@ -232,8 +232,13 @@ def yaml_map_values(text: str, key: str) -> list[str]:
 
 def validate_feature_delivery_packages(repo_root: Path, errors: list[str]) -> None:
     for state in ("active", "archive"):
-        for task_root in repo_root.glob(f"work/**/tasks/{state}"):
-            for candidate in task_root.glob("DF-*"):
+        task_roots = list(repo_root.glob(f"work/**/tasks/{state}"))
+        current_active_root = repo_root / "work" / "active"
+        if state == "active" and current_active_root.is_dir():
+            task_roots.append(current_active_root)
+        for task_root in task_roots:
+            candidates = task_root.rglob("DF-*") if task_root == current_active_root else task_root.glob("DF-*")
+            for candidate in candidates:
                 if not candidate.is_dir():
                     errors.append(
                         "Feature Delivery package must be a directory: "
@@ -269,6 +274,12 @@ def validate_feature_delivery_packages(repo_root: Path, errors: list[str]) -> No
                 status = yaml_scalar(task_text, "status")
                 archived_at = yaml_scalar(task_text, "archived_at")
                 if state == "active":
+                    for key in ("capabilities", "related_deliveries"):
+                        if re.search(rf"^{key}:", task_text, re.MULTILINE) is None:
+                            errors.append(
+                                f"active Feature Delivery package is missing {key}: "
+                                f"{task_file.relative_to(repo_root)}"
+                            )
                     if status != "active":
                         errors.append(
                             "active Feature Delivery package must have status: active: "
@@ -298,10 +309,31 @@ def validate_feature_delivery_packages(repo_root: Path, errors: list[str]) -> No
                         )
 
             if state == "active":
-                for candidate in task_root.iterdir():
-                    if not candidate.is_dir() or not candidate.name.startswith("DF-"):
+                candidates = task_root.rglob("*") if task_root == current_active_root else task_root.iterdir()
+                for candidate in candidates:
+                    relative_parts = candidate.relative_to(task_root).parts
+                    inside_package = any(part.startswith("DF-") for part in relative_parts[:-1])
+                    if (
+                        task_root != current_active_root
+                        and (not candidate.is_dir() or not candidate.name.startswith("DF-"))
+                    ):
                         errors.append(
                             "active Feature Delivery tasks must contain only DF package directories: "
+                            f"{candidate.relative_to(repo_root)}"
+                        )
+                    elif not candidate.is_dir() and not inside_package:
+                        errors.append(
+                            "active Feature Delivery tasks must contain only DF package directories: "
+                            f"{candidate.relative_to(repo_root)}"
+                        )
+                    elif (
+                        candidate.is_dir()
+                        and not inside_package
+                        and candidate.name.startswith("DF-")
+                        and DELIVERY_DIRECTORY_PATTERN.fullmatch(candidate.name) is None
+                    ):
+                        errors.append(
+                            "Feature Delivery package directory has invalid canonical ID: "
                             f"{candidate.relative_to(repo_root)}"
                         )
 

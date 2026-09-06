@@ -25,7 +25,7 @@ Explore
 仅当任务改变了长期可复用的关键入口、跨服务链路、服务/数据边界、公开契约或持久架构决策时，才更新 `products/`。修改时阅读：
 
 - [编写指南](../governance/authoring-guide.md)：收录标准和文档结构。
-- [治理规范](../governance/governance.md)：证据、过期性、敏感信息、ADR 与 Delivery State 归档。
+- [治理规范](../governance/governance.md)：证据、过期性、敏感信息、ADR、Current Product Truth 与 Delivery Closing。
 
 单个业务代码改动、临时排查过程、完整配置清单和未经证实的运行猜测不应进入产品知识。
 
@@ -33,7 +33,7 @@ Explore
 
 - `core/`：通用角色、规则、Playbook、契约和注册表。
 - `products/`：已验证的产品架构、流程、仓库入口与长期决策。
-- `work/`：当前与归档的 Delivery State；不作为产品知识默认入口。
+- `work/`：Delivery Change State；`active/` 保存完整当前 Package，`closed/` 保存薄历史索引，不作为产品知识默认入口。
 - `workspace.example.yaml`：可提交的本机路径映射模板；实际路径写入被忽略的 `workspace.local.yaml`。
 - `bootstrap/`：其他仓库接入时复制的模板。
 - `docs/`：面向维护者的使用、接入、编写与治理资料。
@@ -96,6 +96,6 @@ $ai-guidance-workflows:tu-deliver-feature
 目标：开始设备分组管理 Delivery
 ```
 
-继续、查询和 Bug 都只需要 canonical Delivery ID：`继续 DF-20260904-01`、`DF-20260904-01 当前进展` 或 `DF-20260904-01 设备状态偶尔不刷新`。若匹配的 Delivery 已归档且反馈属于它，Skill 将整包重新打开到 `active/` 后再分类处理。Skill 先读取 `task.yaml`、`resume.md` 和当前阶段权威产物，再加载最小必要代码上下文。也可以只调用 Impact Skill 并附上原型图；目标项目、分层与数据约定、确认门禁、实现范围和验证方式仍须从当前工程上下文与代码核实。
+继续、查询和 Bug 都只需要 canonical Delivery ID：`继续 DF-20260904-01`、`DF-20260904-01 当前进展` 或 `DF-20260904-01 设备状态偶尔不刷新`。Skill 先在 `work/active/` 定位 Package；未命中时读 `work/closed/` 的 Thin Context Index，并按其 archive reference 访问 cold history。可访问的 local archive Delivery 可被重开到 `work/active/`；仅有不可访问外部 archive 时，Skill 报告证据缺口。随后读取 `task.yaml`、`resume.md` 和当前阶段权威产物，再加载最小必要代码上下文。也可以只调用 Impact Skill 并附上原型图；目标项目、分层与数据约定、确认门禁、实现范围和验证方式仍须从当前工程上下文与代码核实。
 
 安装后，Codex 也可根据任务描述和运行时约束自动选择 Skill；显式写 `$插件名:Skill名` 更确定。仅出现多个项目标记但未说明服务交互时，不自动加载 P1–P4、P3-1 的全局上下文。

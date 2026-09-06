@@ -33,7 +33,7 @@ flowchart TD
     FI --> ETL[Engineering Task Loop]
 ```
 
-Feature Delivery 管长期生命周期；Engineering Task Loop 管一次具体修改；Stage Shortcut 不是 Provider，也不替代 Delivery ID、Task Package、Contract、Artifact 或证据。
+Feature Delivery 管长期生命周期；Engineering Task Loop 管一次具体修改；Stage Shortcut 不是 Provider，也不替代 Delivery ID、Task Package、Contract、Artifact 或证据。Delivery 在 Verify 后可执行 Integrate/Archive 收尾以更新 Current Product Truth 与 Closed Context Index；这不是新的 Stage Shortcut，也不改变 E/P/X/V。
 
 ## Daily Stage Shortcuts
 
@@ -284,7 +284,7 @@ flowchart TD
     S --> N1[INT-01<br/>Engineering Task Loop]
 ```
 
-在 Delivery 中，非 trivial DEV 将关键 Plan 和实际实施结果回填 `03-execution-backlog.md`；Bug/INT 的根因、修复和回归回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。
+在 Delivery 中，非 trivial DEV 将关键 Plan 和实际实施结果回填 `03-execution-backlog.md`；Bug/INT 的根因、修复和回归回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。Delivery Closing 将已验证事实 Integrate 至 `products/`，Archive 后由 Closed Index 提供按 DF ID 的 cold-context 路由。
 
 ### Bug scenario
 

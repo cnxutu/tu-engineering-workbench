@@ -6,6 +6,9 @@ status: active
 phase: stabilization
 repositories:
   - c-drone-inspection
+capabilities:
+  - robot-dog-fill-light-control
+related_deliveries: []
 product: company/device-inspection-platform
 created_at: 2026-09-03T09:00:00+08:00
 prototype_sources:

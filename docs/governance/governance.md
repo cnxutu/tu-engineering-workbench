@@ -18,8 +18,8 @@ P0 `tu-engineering-workbench` 是共享工程知识库。只有读者能区分�
 
 针对持久且重要的架构选择，在产品 `decisions/` 下创建 ADR，例如服务边界、数据所有权、契约、持久化策略或重大技术方向。ADR 应说明决策、背景、候选方案、结果和证据。
 
-`products/` 只保存稳定、经验证且长期可复用的事实；`work/` 保存交付过程证据。进行中的任务放在 `work/<domain>/<product>/tasks/active/`，可没有 `archived_at`；完成、阻塞或被替代的任务移入同级 `archive/`，保留标识和证据，补齐最终状态与必填的 `archived_at`，并链接任务产生的 ADR。任务记录不是产品知识默认入口，也不是保存密钥或临时草稿的地方。
+`products/` 是 Current Verified Product Truth：只保存稳定、经验证且长期可复用的当前事实；`work/` 是 Delivery Change State。新 Delivery 在 `work/active/<domain>/<product>/` 保存完整 Package；结束后在 `work/closed/<domain>/<product>/` 保留 Thin Context Index。完整过程在外部 archive 尚未配置时可继续保留在现有产品内 `tasks/archive/` 作为 cold history；pre-V1 archive 保持原样。任务记录不是产品知识默认入口，也不是保存密钥或临时草稿的地方。
 
-当任务发现候选事实时，先记录在 `work/`；只有通过代码、正式契约、测试、真实设备或批准记录验证后，才将精炼结论提炼至 `products/` 的唯一权威页面或 ADR。链接到该结论的交付记录保留证据链，但不复制其正文。
+当任务发现候选事实时，先记录在 `work/`；只有通过代码、正式契约、测试、真实设备或批准记录验证后，才在 Integrate 收尾时将精炼结论提炼至 `products/` 的唯一权威页面或 ADR。Closed Index 只保留结果、Product Truth links、关键决定与 archive reference，不复制过程正文。
 
 参见 [编写指南](authoring-guide.md)、[接入指南](../guides/integration-guide.md) 和 [任务元数据契约](../../core/contracts/task-metadata.schema.yaml)。

@@ -11,7 +11,9 @@ Route each Bug before changing state:
 - **Requirement Gap:** set phase to `impact`, reset G1 to `pending`, and update CAP, impact, Contract, and Backlog.
 - **Environment/Integration Issue:** remain in `stabilization` as an INT task.
 
-When reopening an archived Delivery, move the package to `active/`, restore `status: active`, and log Reopened At, Reason, related BUG/CAP, previous completion context, and current classification before routing. If `04-integration-log.md` is absent, create it for this stabilization/reopen round and register `integration: 04-integration-log.md` under `task.yaml.artifacts` before writing that evidence. Weeks later, resume the same Delivery ID, read the package's recovery set, and create or update `BUG-xx`; do not start a contextless replacement Delivery.
+At Delivery Closing, first Integrate verified reusable facts into Product Truth, then create the `work/closed/` Thin Context Index and record the cold archive reference. This is a lifecycle closing action, not a new Task Loop Stage.
+
+When reopening a locally archived Delivery, move the package to `work/active/`, remove its Closed Index, restore `status: active`, and log Reopened At, Reason, related BUG/CAP, previous completion context, and current classification before routing. If `04-integration-log.md` is absent, create it for this stabilization/reopen round and register `integration: 04-integration-log.md` under `task.yaml.artifacts` before writing that evidence. Weeks later, resume the same Delivery ID, read the package's recovery set, and create or update `BUG-xx`; do not start a contextless replacement Delivery. If the closed index only points to unavailable external history, report the evidence gap.
 
 For non-trivial BUG or INT work, use the Explore → Plan → Execute → Verify task loop. Do not bypass current authorization or the Delivery Gate/Artifact authority.
 

@@ -50,6 +50,6 @@ DF-20260903-99 DEV-01：核对补光控制接口的现有入口、权限和状�
 
 ## 结束时保留什么
 
-`task.yaml` 只保存生命周期状态、Gate 和 Artifact 导航；批准的 Contract、阶段 Artifact 与可复现验证证据才是 Delivery Authority。完成、阻塞或被替代后，整个包移入 `archive/` 并补齐最终状态和 `archived_at`。
+`task.yaml` 只保存生命周期状态、Gate 和 Artifact 导航；批准的 Contract、阶段 Artifact 与可复现验证证据才是 Delivery Authority。完成、阻塞或被替代后，先将已验证事实 Integrate 至 Product Truth，再创建 Closed Index；完整包在外部 archive 未配置时保留为 local cold history，并补齐最终状态和 `archived_at`。
 
 本案例是静态演练，不证明真实设备、接口或环境已经验证。
