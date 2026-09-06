@@ -8,36 +8,29 @@
 
 ```mermaid
 flowchart TD
-    U[用户任务] --> R
-    subgraph REQUIRED[必经的公共约束层]
-        R[仓库根目录 AGENTS.md]
-        P01[根 AGENTS.md\nP0 公共运行时约束]
-        S[识别项目范围、任务语义与阶段]
-        R --> P01 --> S
-    end
-    S --> W{是否为范围内工程任务？}
-    W -->|是| D[core/rules/development.md\n第 2 节指定的必读工程基准]
-    D --> L[目标仓库/目录的局部 AGENTS.md]
-    L --> B[根 AGENTS.md 第 3 节\n判定条件读取]
-    B -->|任务语义或 Stage Shortcut 匹配| CR[最小必要的 Core 角色或 Playbook]
-    B -->|跨服务、协议或链路| PK[最小必要的产品知识]
-    B -->|Plugin Skill 触发条件匹配| SK[适用的 Codex Skill]
-    B -->|维护 P0 运行时规则或 Core| RG[docs/governance/authoring-guide.md\n与受影响文件]
-    B -->|维护 P0 产品知识、架构或流程| MG[docs/governance/governance.md\n与 docs/governance/authoring-guide.md]
-    B --> C[工程基准与所有命中上下文\n均已加载]
-    CR --> C
-    PK --> C
-    SK --> C
-    RG --> C
-    MG --> C
-    C --> E[按任务核实代码、契约、配置、测试或文档证据]
-    E --> I[调查、设计、答复或最小实现\n并执行风险相称验证]
-    W -->|否| A[不强制加载 development.md；继续遵循\n根 AGENTS.md 第 1、4 节\n及已适用的局部 AGENTS.md]
-    A --> B
-    M[工程师] -. 工程师按需查阅 .-> H[README.md 与 docs/\n不属于 AI 默认链路]
+    U[用户任务] --> R[根 AGENTS.md]
+    R --> C[任务 / 范围分类]
+    C --> E{Engineering Task?}
+    E -->|No| N[适用的一般约束\n按语义路由（如需要）]
+    E -->|Yes| B[Baseline Engineering Constraints]
+    B --> D[core/rules/development.md]
+    B --> L[适用的 repository / directory\nlocal AGENTS.md]
+    D --> RT[Context Routing]
+    L --> RT
+    RT -->|DF| A[work/active → work/closed fallback\nTask Package / Closed Index]
+    RT -->|Product Question| P[products/]
+    RT -->|Engineering Method| M[core/]
+    RT -->|Skill Requirement| S[plugins/]
+    A --> G[Progressive Context Loading]
+    P --> G
+    M --> G
+    S --> G
+    G --> H[Product / Capability / Repository / Artifact]
+    H --> X[Code / Contract / Evidence]
+    X --> W[Engineering Work]
 ```
 
-核心原则：根目录 `AGENTS.md` 与范围识别构成**必经的公共约束层**；它们不是条件加载项。范围内工程任务必须读取根 `AGENTS.md` 第 2 节指定的 `core/rules/development.md`；第 3 节只判定需要叠加读取哪些专项 Core、产品知识、维护规范或原生 Skill，命中多个条件时不是相互替代。`development.md` 只提供分析、实施、验证与交接的公共执行基准，不负责跨服务等条件分支。非工程任务并非没有约束：至少继续遵循根 `AGENTS.md` 第 1 节的范围规则和第 4 节的指令优先级、事实与安全边界，以及任何已经适用的局部 `AGENTS.md`；它只是不会因此被强制要求加载 `development.md`。该图仅供维护者理解，Codex 实际遵循的是平台、系统、开发者指令和各级 `AGENTS.md`，不会因这张位于 `docs/` 的图而执行额外操作。产品文档用于导航，当前代码、契约、配置和测试才用于核实现状。P0 提供公共约束，不会因被设为 Primary 而自动成为目标代码的阅读或修改范围。
+核心原则：根目录 `AGENTS.md` 是 Runtime 入口，先完成范围、语义与“是否工程任务”的分类。工程任务随后加载 `development.md` 与适用 local `AGENTS.md` 作为 **Baseline Constraints**，再进行 **Context Routing**；DF 是 Context Address，不会跳过工程基准。这里的 Constraint First 是逻辑 Authority 层级，不要求所有任务机械读取所有文档。Routing 只找到最小相关入口，之后才渐进加载 Product、Capability、Repository 或 Artifact，并以代码、契约、配置、测试和可复现证据核实现状。非工程任务不强制加载 `development.md`，仍遵循已适用的一般约束。该图仅供维护者理解，Codex 实际遵循平台、系统、开发者指令和各级 `AGENTS.md`；P0 不会因被设为 Primary 而自动成为目标代码的阅读或修改范围。
 
 #### 第 3 节判定矩阵：什么情况下读取什么
 
@@ -123,5 +116,5 @@ flowchart TD
 - 工程师按需阅读：`README.md`、`docs/`、接入与治理说明、项目导航页。
 - 当前事实：代码、契约、配置、测试和可复现命令结果。
 - 长期知识：经证据支撑的产品入口、链路、边界和设计决策。
-- Delivery Change State：真实需求的完整当前上下文与薄历史索引；只有 Integrate 后的验证结论才进入 Current Product Truth。
-- 不应进入知识库：密钥、敏感运行数据、全量环境配置、未经核实猜测和一次性排查细节。
+- Delivery Change State：真实需求的完整当前上下文与薄历史索引；只有 Delivery Closing 时 Integrate 的验证结论才进入 Current Product Truth。
+- 不应进入产品 Current Truth：密钥、敏感运行数据、全量环境配置、未经核实猜测和一次性排查细节。

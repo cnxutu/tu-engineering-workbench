@@ -36,6 +36,10 @@
 
 每个产品从 `index.md` 开始。入口应说明范围、何时读取、证据状态，并链接最小必要的领域、架构、流程、仓库和决策文档。Core 保持通用，只提供方法和契约，不承载产品事实；产品事实应放在产品树中，并用 repository manifest 维护仓库在该产品中的责任。项目标记、仓库身份和产品绑定只在 `core/registry/repositories.yaml` 维护。
 
+`products/` 回答“产品现在是什么”。当前行为、架构、flow、contract、ownership、constraint、implementation entry 和已确认 ADR 属于 Current Product Truth。`context/domain/`、vendor / SDK 摘要、技术背景与候选设计属于 Supporting Context：它们可保留在产品树，不自动拥有 Current Product Truth Authority，不替代代码、Contract 或验证证据，并只在任务需要时加载；重要结论须标明 evidence / verification state。
+
+现有按版本存放的 PRD、原型和旧需求是 Transition / Existing Historical Material。它们不移动、不删除，但必须明确当前有效需求与 Historical Reference 的区别；未来不得让所有递增版本 PRD 自动持续拥有 Current Truth Authority，实际迁移待 tu-vault archive 模型建立后再进行。
+
 采用渐进式读取：以链接代替重复细节，每篇文档只聚焦一个主题。必要时标注负责人或来源。通常优先级是：仓库局部说明与代码，其次产品知识，最后 Core。
 
 ## 事实与引用
@@ -46,6 +50,6 @@
 
 ## 记录
 
-`Core` 下的 [契约](../../core/contracts/) 是文档契约，不是可执行校验器。任务记录应保持简洁：活跃 Delivery 位于 `work/active/`，结束后在 `work/closed/` 留下薄索引；完整过程在外部 archive 未配置时可保留于现有 `work/<domain>/<product>/tasks/archive/` cold history。持久架构选择使用 ADR；加入证据前先脱敏。任务过程只在 Integrate 后提炼为产品当前事实，不直接把排查过程写入 `products/`。
+`Core` 下的 [契约](../../core/contracts/) 是文档契约，不是可执行校验器。任务记录应保持简洁：活跃 Delivery 位于 `work/active/`，结束后在 `work/closed/` 留下薄索引；完整过程在外部 archive 未配置时可保留于现有 `work/<domain>/<product>/tasks/archive/` legacy / local cold history。持久架构选择使用 ADR；加入证据前先脱敏。单个 Task Loop Verify 只回填父 Artifact；只有 Delivery Closing 时的 Integrate 才提炼已验证且仍有效的结论为产品当前事实，不直接把排查过程写入 `products/`。
 
 仓库配置见 [接入指南](../guides/integration-guide.md)，AI 读取、Skill 与 Template 使用见 [工程师使用与维护指南](../guides/usage-guide.md)。

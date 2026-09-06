@@ -15,7 +15,7 @@
 
 ## 解析器约定
 
-未来解析器应按“显式配置 → `AI_GUIDANCE_HOME` → 安装默认位置”的顺序定位知识库。它应返回绑定的仓库清单、产品清单和产品入口；遇到缺失或歧义绑定时必须报错，不能猜测。预期字段见 [仓库清单契约](../../core/contracts/repository-manifest.schema.yaml)。
+未来解析器应按“显式配置 → `AI_GUIDANCE_HOME` → 安装默认位置”的顺序定位 Workbench。它应返回绑定的仓库清单、产品清单和产品入口；遇到缺失或歧义绑定时必须报错，不能猜测。预期字段见 [仓库清单契约](../../core/contracts/repository-manifest.schema.yaml)。
 
 ## 知识图谱与 MCP Context Server
 

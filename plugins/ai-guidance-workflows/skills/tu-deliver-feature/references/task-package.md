@@ -36,7 +36,7 @@ evidence:
 knowledge_update_assessment: deferred
 ```
 
-New Deliveries create only `task.yaml`, `resume.md`, and the current phase Artifact; Artifact keys point only to files that already exist. Add Contract, OpenAPI, Backlog, and Integration keys as their files are created. At Closing, Integrate verified reusable facts into Product Truth; create `work/closed/<domain>/<product>/<delivery-id>.md` with title, result, Product Truth links, capabilities, repositories, key decisions, related deliveries, and archive reference. Move the full package to retained `work/<domain>/<product>/tasks/archive/` local cold history until an external archive is available, adding `archived_at`, `closed_index`, and `archive_reference` as required by task metadata.
+New Deliveries create only `task.yaml`, `resume.md`, and the current phase Artifact; Artifact keys point only to files that already exist. Add Contract, OpenAPI, Backlog, and Integration keys as their files are created. A Task Loop Verify only updates its parent Artifact. Only after the whole Delivery reaches G4 / acceptance or an explicit Closing condition, Integrate verified reusable facts into Product Truth; create `work/closed/<domain>/<product>/<delivery-id>.md` with title, result, Product Truth links, capabilities, repositories, key decisions, related deliveries, and archive reference. Move the full package to retained `work/<domain>/<product>/tasks/archive/` local cold history until an external archive is available, adding `archived_at`, `closed_index`, and `archive_reference` as required by task metadata. `blocked` and `superseded` can also close; Archive means closed lifecycle/cold context, not successful delivery.
 
 ```markdown
 # DF-YYYYMMDD-NN

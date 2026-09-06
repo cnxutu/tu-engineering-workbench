@@ -12,11 +12,13 @@
 
 需打开、核实或修改已登记源码时，读取未提交的 `workspace.local.yaml` 获取本机绝对路径；其仅保存路径，仓库身份与产品绑定以 registry 为准，产品内责任以对应 repository manifest 和已验证产品知识为准。首次接入且该文件不存在时，可从 `workspace.example.yaml` 创建；缺少条目或路径不可访问时，报告缺口，不猜测替代位置。范围外项目仅可作为依赖背景，不读取、核实或修改其源码。
 
-### Delivery Context Routing
+### Baseline Constraints and Context Routing
 
-`DF-YYYYMMDD-NN` 是 Delivery 的 durable identity 与 Context Address。处理“继续 / 查询 / 关闭 DF-xxxx”时，不扫描整个 Workbench：先在 `work/active/` 按 DF ID 定位 Package；未找到时读取 `work/closed/` 的 Thin Context Index，并仅在该索引指向时访问 local/external cold archive。随后读取 `task.yaml`、`resume.md` 与当前 Phase Artifact，或 Closed Index 的 Product Truth links、repositories、capabilities、related deliveries 和 archive reference。
+根 `AGENTS.md` 始终是 Workbench Runtime 入口：先识别用户任务的 scope、task semantics 与是否为 engineering task。工程任务按第 2 节加载 Baseline Engineering Constraints：[`core/rules/development.md`](core/rules/development.md) 与适用的 repository / directory local `AGENTS.md`；随后才按任务语义做 Context Routing。这里的先后是逻辑 Authority 层级，不要求所有任务机械读取全部文档；非工程知识查询不默认加载 `development.md`。
 
-再按该入口记录的 `product`、capabilities 和 repositories 读取最小相关 Product Truth、真实项目代码/契约与 Core 规则；只有任务确实需要时才加载 Plugin Skill。解释当前产品能力时优先从 `products/` 入口开始；解释工程方法时优先从 `core/` 开始；不要默认扫描整个 `products/`、`work/` 或 `plugins/`。完整模型见 [Living Engineering Model](docs/workbench-model.md)。
+`DF-YYYYMMDD-NN` 是 Delivery 的 durable identity 与 Context Address，不是 Baseline Constraint。对“继续 / 查询 / 关闭 DF-xxxx”，在 Delivery routing 内先于 `work/active/` 按 DF ID 定位 Package；未找到时读取 `work/closed/` 的 Thin Context Index，并仅在该索引指向时访问 local/external cold archive。随后读取 `task.yaml`、`resume.md` 与当前 Phase Artifact，或 Closed Index 的 Product Truth links、repositories、capabilities、related deliveries 和 archive reference。
+
+再按该入口记录的 `product`、capabilities 和 repositories 渐进读取最小相关 Product Truth、真实项目代码/契约与 Core 方法；只有任务确实需要时才加载 Plugin Skill。解释当前产品能力时从 `products/` 入口开始；解释工程方法时从 `core/` 开始；不要默认扫描整个 `products/`、`work/` 或 `plugins/`。完整模型见 [Living Engineering Model](docs/workbench-model.md)。
 
 ## 2. 工程任务必读基准
 

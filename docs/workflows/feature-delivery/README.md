@@ -12,7 +12,7 @@ V1 将一次完整交付组织为一个可恢复的 Delivery，而不是把聊�
 - 前后端契约太晚才形成，Markdown、OpenAPI、Controller 又各自漂移。
 - 多仓库、实时链路和设备责任边界不清，导致任务拆分和联调语义不稳定。
 - Bug 在数周后出现时，无法快速定位原需求、契约和已验证证据。
-- 过程记录与长期 Product Knowledge 混在一起，既难恢复，也污染知识库。
+- 过程记录与长期 Product Truth 混在一起，既难恢复，也污染当前产品模型。
 
 ## When to use
 
@@ -63,7 +63,7 @@ work/active/<domain>/<product>/<delivery-id>-<slug>/
 └── resume.md
 ```
 
-不强制生成空文件。新建时只创建 `task.yaml`、`resume.md` 与当前 Phase Artifact，并仅在 `artifacts` 中声明已创建文件。Closing 时先 Integrate 已验证的 Product Truth，再在 `work/closed/<domain>/<product>/<delivery-id>.md` 创建 Thin Context Index；完整 Package 在外部 archive 未配置时转入现有产品内 `tasks/archive/` 作为 local cold history，并补齐 `status` 与 `archived_at`。
+不强制生成空文件。新建时只创建 `task.yaml`、`resume.md` 与当前 Phase Artifact，并仅在 `artifacts` 中声明已创建文件。只有整个 Delivery 达到 Closing condition 后，才先 Integrate 已验证的 Product Truth，再在 `work/closed/<domain>/<product>/<delivery-id>.md` 创建 Thin Context Index；完整 Package 在外部 archive 未配置时转入现有产品内 `tasks/archive/` 作为 local cold history，并补齐 `status` 与 `archived_at`。
 
 上图是人类说明的简化结构。Runtime authoritative template 是 [Task Package reference](../../../plugins/ai-guidance-workflows/skills/tu-deliver-feature/references/task-package.md)；不要让本页示例成为第二份 Runtime Authority。教学演练见 [robot-dog fill-light example](examples/robotdog-fill-light/walkthrough.md)。
 
@@ -81,7 +81,7 @@ work/active/<domain>/<product>/<delivery-id>-<slug>/
 | 4. Integration & Stabilization | 联调、测试、Bug、回归如何闭环？ | `04-integration-log.md` | `G4_test_ready` |
 
 ```text
-Impact → G1 → Contract → G2 → Execution → G3 → Integration & Stabilization → G4 → Integrate → Archive
+Impact → G1 → Contract → G2 → Execution → G3 → Integration & Stabilization → G4 / Accepted / Closing condition → Delivery Closing → Integrate → Archive
 ```
 
 ### Phase artifacts
@@ -135,9 +135,23 @@ Phase 4 ADOPT 已可用的 `diagnosing-bugs`；总入口只负责 Delivery、CAP
 
 ## Closing: Integrate and Archive
 
-Integrate 与 Archive 是 Delivery 收尾语义，不新增 Engineering Task Loop Stage，也不改变四阶段或 E/P/X/V。Integrate 将本次已验证、可复用的能力、链路、契约、约束或 ADR 更新至 `products/` 的唯一权威页；若没有可提炼事实，记录 `knowledge_update_assessment: not-needed`。
+单个 DEV / BUG / INT 的 Engineering Task Loop Verify 只回填 `03-execution-backlog.md` 或 `04-integration-log.md`，不触发 Delivery Closing。整个 Delivery 达到 Closing condition 后才进入该收尾：`completed` 需 acceptance satisfied，通常也满足 G4；`blocked` 或 `superseded` 也可明确关闭。Integrate 与 Archive 是 Delivery Closing 的动作，不新增 Engineering Task Loop Stage，也不改变四阶段或 E/P/X/V。
 
-Archive 创建 `work/closed/<domain>/<product>/<delivery-id>.md` Thin Context Index，保留 title、result、Product Truth links、capabilities、repositories、关键决定、related deliveries 与 archive reference。完整过程是 cold context：外部 archive 尚未配置时，保留于现有产品内 `tasks/archive/`；不得删除、伪造或要求迁移 pre-V1 historical evidence。
+```mermaid
+flowchart TD
+    I[Impact] --> C[Contract] --> E[Execution] --> S[Integration & Stabilization]
+    E --> D[DEV tasks: Explore → Plan → Execute → Verify]
+    S --> T[INT / BUG tasks: Explore → Plan → Execute → Verify]
+    S --> G[G4 / Accepted / explicit Closing condition]
+    G --> DC[Delivery Closing]
+    DC --> IP[Integrate Product Truth]
+    DC --> A[Archive]
+    A --> CI[Closed Context Index]
+```
+
+Integrate 将已验证、仍有效且可复用的能力、链路、契约、约束或 ADR 更新至 `products/` 的唯一权威页；没有可提炼事实时记录 `knowledge_update_assessment: not-needed`。对于 `superseded`，不得把被替代的旧设计写成 Current Product Truth，并应记录 related delivery / superseded-by reference。
+
+Archive 创建 `work/closed/<domain>/<product>/<delivery-id>.md` Thin Context Index，保留 title、result、Product Truth links、capabilities、repositories、关键决定、related deliveries 与 archive reference。它表示 Delivery Lifecycle Closed / Cold Context，不等于成功。完整过程是 cold context：外部 archive 尚未配置时，保留于现有产品内 `tasks/archive/`；不得删除、伪造或要求迁移 pre-V1 historical evidence。
 
 ## Entry and recovery
 

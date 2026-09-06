@@ -23,7 +23,7 @@ Treat code, approved Contract, authoritative phase Artifact, and reproducible ev
 - **Execution:** read [Phase 3](references/phase-3-execution.md). Announce ready DEV tasks and suggest an explicit implementation Skill when required; only implement work the user has authorized.
 - **Integration & Stabilization:** read [Phase 4](references/phase-4-stabilization.md). Preserve the distinction between acceptance, publication, adapter dispatch, device execution, and state convergence.
 
-Before closing a Gate, verify its stated evidence. After every meaningful update, change the current Artifact, `task.yaml`, and `resume.md` together enough that a fresh Session can continue without replaying chat history. At Delivery Closing, Integrate verified reusable facts into Product Truth before creating the Thin Context Index and recording its archive reference; this is not a new E/P/X/V stage.
+Before closing a Gate, verify its stated evidence. After every meaningful update, change the current Artifact, `task.yaml`, and `resume.md` together enough that a fresh Session can continue without replaying chat history. A DEV / BUG / INT Task Loop Verify only updates its parent Artifact; it does not close the Delivery. Only after the whole Delivery reaches G4 / acceptance or an explicit Closing condition, Integrate verified reusable facts into Product Truth before creating the Thin Context Index and recording its archive reference; this is not a new E/P/X/V stage.
 
 ## Boundaries
 

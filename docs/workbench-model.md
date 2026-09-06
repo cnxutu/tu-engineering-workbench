@@ -15,14 +15,14 @@
 
 ## Delivery 生命周期与位置
 
-Feature Delivery 的四个工程阶段保持为 Impact → Contract → Execution → Integration & Stabilization；具体 DEV、BUG 或 INT 修改使用 Engineering Task Loop 的 Explore → Plan → Execute → Verify。Verify 后的 **Integrate** 和 **Archive** 是 Delivery 收尾语义，不是新的 E/P/X/V Stage Shortcut。
+Feature Delivery 的四个工程阶段保持为 Impact → Contract → Execution → Integration & Stabilization；具体 DEV、BUG 或 INT 修改使用 Engineering Task Loop 的 Explore → Plan → Execute → Verify。Verify 仅为当前工程任务返回证据，并回填父 Delivery Artifact；只有整个 Delivery 达到 G4 / acceptance 或明确 Closing condition 后，才进入 **Delivery Closing → Integrate → Archive**。Integrate 和 Archive 不是新的 E/P/X/V Stage Shortcut。
 
 ```text
 work/active/<domain>/<product>/DF-YYYYMMDD-NN-<slug>/
     complete Task Package while the Delivery can continue
 
 work/closed/<domain>/<product>/DF-YYYYMMDD-NN.md
-    thin closed index after the Delivery is integrated
+    thin closed index after Delivery Closing, Integrate, and Archive
 
 work/<domain>/<product>/tasks/archive/
     retained local cold history and pre-V1 evidence during the transition
@@ -44,6 +44,8 @@ work/<domain>/<product>/tasks/archive/
 解释产品能力时从 `products/` 开始；解释工程方法时从 `core/` 开始；只有继续、查询或关闭某个 Delivery 时才从 `work/` 开始。
 
 ## Closing semantics
+
+Delivery Closing 由整个 Delivery 的关闭条件触发，而不是任一 DEV、BUG 或 INT 的 Verify。`completed` 需要 acceptance satisfied，通常也满足 G4；`blocked` 和 `superseded` 也可关闭，但 Archive 不表示成功。blocked 只 Integrate 已验证且仍有效的事实，没有则记录 `knowledge_update_assessment: not-needed`；superseded 仅 Integrate 仍有效的事实，不把被替代的旧设计写成 Current Product Truth，并以 related delivery / superseded-by reference 说明去向。
 
 **Integrate**：将本次已验证且未来可复用的事实更新到对应 `products/` 权威页或 ADR；未形成此类事实时在 Delivery 中明确 `not-needed`。产品当前状态不应依赖阅读多个旧 Delivery 才能拼出。
 

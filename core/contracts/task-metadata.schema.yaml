@@ -62,6 +62,9 @@ rules:
   - reopening an archived Delivery moves its complete package back to active, removes its closed_index, preserves delivery_id, sets status to active, removes archived_at, and records the previous completion context and reopen reason in the integration log.
   - completed, blocked, and superseded tasks belong in the work task archive and require archived_at.
   - active tasks may omit archived_at.
+  - a DEV, BUG, or INT Task Loop Verify updates its parent phase artifact only; it does not trigger Delivery Closing.
+  - completed Delivery Closing requires acceptance evidence and normally G4; blocked and superseded Deliveries may also close, integrating only verified facts that remain current-worthy.
+  - Archive means lifecycle closed and cold context, not successful delivery; superseded records link the replacement through related_deliveries or an equivalent reference and do not promote replaced designs as Current Product Truth.
   - capabilities and related_deliveries provide context routing only; they do not replace Product Truth, approved artifacts, or evidence.
   - a closed_index and archive_reference point to cold historical context after Delivery Closing; external archive access is optional and must not be assumed.
   - evidence must be reproducible references, never copied secrets or sensitive payloads.

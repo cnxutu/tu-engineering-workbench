@@ -33,7 +33,7 @@ flowchart TD
     FI --> ETL[Engineering Task Loop]
 ```
 
-Feature Delivery 管长期生命周期；Engineering Task Loop 管一次具体修改；Stage Shortcut 不是 Provider，也不替代 Delivery ID、Task Package、Contract、Artifact 或证据。Delivery 在 Verify 后可执行 Integrate/Archive 收尾以更新 Current Product Truth 与 Closed Context Index；这不是新的 Stage Shortcut，也不改变 E/P/X/V。
+Feature Delivery 管长期生命周期；Engineering Task Loop 管一次具体修改；Stage Shortcut 不是 Provider，也不替代 Delivery ID、Task Package、Contract、Artifact 或证据。Task Loop 的 Verify 只回填当前 DEV 的 `03-execution-backlog.md`，或 BUG / INT 的 `04-integration-log.md`；它不触发 Integrate / Archive。只有整个 Delivery 达到 G4 / acceptance 或明确 Closing condition 后，Delivery Closing 才更新 Current Product Truth、创建 Closed Context Index 并 Archive；这不是新的 Stage Shortcut，也不改变 E/P/X/V。
 
 ## Daily Stage Shortcuts
 
@@ -276,15 +276,19 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    I[Impact] --> C[Contract] --> E[Execution] --> S[Stabilization]
+    I[Impact] --> C[Contract] --> E[Execution] --> S[Integration & Stabilization]
     E --> D1[DEV-01<br/>Engineering Task Loop]
     E --> D2[DEV-02<br/>Engineering Task Loop]
     E --> D3[DEV-03<br/>Engineering Task Loop]
     S --> B1[BUG-01<br/>Engineering Task Loop]
     S --> N1[INT-01<br/>Engineering Task Loop]
+    S --> G[G4 / Accepted / Closing condition]
+    G --> DC[Delivery Closing]
+    DC --> IP[Integrate Product Truth]
+    DC --> A[Archive<br/>Closed Context Index]
 ```
 
-在 Delivery 中，非 trivial DEV 将关键 Plan 和实际实施结果回填 `03-execution-backlog.md`；Bug/INT 的根因、修复和回归回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。Delivery Closing 将已验证事实 Integrate 至 `products/`，Archive 后由 Closed Index 提供按 DF ID 的 cold-context 路由。
+在 Delivery 中，非 trivial DEV 将关键 Plan、实际实施结果和 Verify 证据回填 `03-execution-backlog.md`；Bug/INT 的根因、修复、回归和 Verify 证据回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。这不使单个 Task Loop 关闭 Delivery。整个 Delivery 达到 G4 / acceptance 或明确 Closing condition 后，Delivery Closing 才将已验证事实 Integrate 至 `products/`，再 Archive 并由 Closed Index 提供按 DF ID 的 cold-context 路由。
 
 ### Bug scenario
 
