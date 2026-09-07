@@ -588,7 +588,7 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
                     "- Key Decisions: none",
                     f"- Related Deliveries: {related}",
                     *([f"- Superseded By: {superseded_by}"] if superseded_by is not None else []),
-                    f"- Archive: {archive or f'tu-vault:work/deliveries/{delivery_id}'}",
+                    f"- Archive: {archive or f'tu-vault:04_Work/deliveries/{delivery_id}'}",
                     "- Closed At: 2026-09-06T12:00:00+08:00",
                     "",
                 ]
@@ -711,7 +711,7 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         repository = self.copied_repository()
         index = self.create_closed_index(repository)
         index.write_text(
-            index.read_text(encoding="utf-8").replace("- Archive: tu-vault:work/deliveries/DF-20260906-01\n", ""),
+            index.read_text(encoding="utf-8").replace("- Archive: tu-vault:04_Work/deliveries/DF-20260906-01\n", ""),
             encoding="utf-8",
         )
 
@@ -865,7 +865,7 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         self.configure_vault(repository, vault)
         registry = repository / "core" / "registry" / "external-contexts.yaml"
         registry.write_text(
-            registry.read_text(encoding="utf-8").replace("work/deliveries", "../escape"),
+            registry.read_text(encoding="utf-8").replace("04_Work/deliveries", "../escape"),
             encoding="utf-8",
         )
 
@@ -878,7 +878,7 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         repository = self.copied_repository()
         registry = repository / "core" / "registry" / "external-contexts.yaml"
         registry.write_text(
-            registry.read_text(encoding="utf-8").replace("    delivery_archive_root: work/deliveries\n", ""),
+            registry.read_text(encoding="utf-8").replace("    delivery_archive_root: 04_Work/deliveries\n", ""),
             encoding="utf-8",
         )
 
@@ -889,8 +889,8 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
 
     def test_builds_deterministic_archive_reference(self) -> None:
         self.assertEqual(
-            guidance_validator.deterministic_archive_reference("work/deliveries", "DF-20260906-01"),
-            "tu-vault:work/deliveries/DF-20260906-01",
+            guidance_validator.deterministic_archive_reference("04_Work/deliveries", "DF-20260906-01"),
+            "tu-vault:04_Work/deliveries/DF-20260906-01",
         )
 
 

@@ -5,4 +5,4 @@ external_contexts:
   tu_vault:
     repository: tu-vault
     role: personal-historical-context
-    delivery_archive_root: work/deliveries
+    delivery_archive_root: 04_Work/deliveries
