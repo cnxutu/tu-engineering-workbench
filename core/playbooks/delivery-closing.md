@@ -23,7 +23,7 @@ Inspect → Closing Assessment → Integrate Product Truth → Sensitive Data Re
 
 1. **Integrate Product Truth**：先审查 Delta，只将已验证、仍有效且可复用的当前 capability、behavior、flow、architecture、contract、constraint、tradeoff、implementation entry 或 ADR 写入最小相关 `products/` 页面。不得复制探索历史、失败尝试、临时 workaround 或排查日志。Requirement Authority（approved product/spec/decision/contract/acceptance criteria）与 Implementation Reality（code/test/runtime evidence）分别标明；两者不一致时记录 Requirement / Implementation Gap。没有可提升事实时设 `knowledge_update_assessment: not-needed`。
 2. **Sensitive Data Review**：在任何 Archive copy 前检查 token、credential、API key、private key、customer identifier、internal host、private network information、production payload、未脱敏日志及其他明确敏感数据。发现时停止 Closing Transaction，输出 `Sensitive Data Review Failed`、文件、finding type 与阻塞原因；不得静默删改历史、Archive、创建 Closed Index 或 retire active。用户完成脱敏后可重新执行 Closing。
-3. **Resolve deterministic Archive Unit**：仅在 `workspace.local.yaml` 的 `external_contexts.tu_vault` 配置完整且可访问时使用 `<delivery_archive_root>/<DF-ID>/`。例如 root 为 `archives/engineering` 时，唯一 Unit 为 `archives/engineering/DF-20260906-01/`，唯一 logical reference 为 `tu-vault:archives/engineering/DF-20260906-01`。不得写入 Workbench、嵌套目录树、未配置位置、Vault 的其他 taxonomy 或额外年/月/domain/product/slug 层级；不得把本机绝对路径写入记录。
+3. **Resolve deterministic Archive Unit**：仅在 `workspace.local.yaml` 的 `external_contexts.tu_vault.path` 已配置且可访问，并且 tracked `core/registry/external-contexts.yaml` 定义有效 `delivery_archive_root` 时使用 `<delivery_archive_root>/<DF-ID>/`。例如 shared root 为 `work/deliveries` 时，唯一 Unit 为 `work/deliveries/DF-20260906-01/`，唯一 logical reference 为 `tu-vault:work/deliveries/DF-20260906-01`。不得写入 Workbench、嵌套目录树、未配置位置、Vault 的其他 taxonomy 或额外年/月/domain/product/slug 层级；不得把本机绝对路径写入记录。
 4. **Archive Full History and finalize snapshot**：先复制完整 active Package 到 Unit 的 `delivery/`，不改动 Workbench Active Source。仅在 archived copy 中将 `delivery/task.yaml` finalise 为最终 `status`（`completed`、`blocked` 或 `superseded`）并写入 `archived_at`、`archive_reference` 与 `closed_index`；随后生成 `summary.md` 和 `manifest.yaml`。Re-run 时先 inspect existing manifest、archived task metadata、delivery ID、status、archive reference、closed time 和 artifacts；已经完整一致时不覆盖，从未完成的后续步骤继续。
 5. **Verify Archive**：核对 Unit、summary、manifest、`delivery/task.yaml` 与所有 `task.yaml.artifacts` 文件。`manifest.yaml` 与 archived `delivery/task.yaml` 必须对 `delivery_id`、final `status`、`closed_at` / `archived_at` 与 `archive_reference` 一致；不一致则失败，不得继续 Closed Index 或 retire active。
 6. **Create Closed Index**：仅在 Archive Verification 通过后创建 `work/closed/<domain>/<product>/DF-YYYYMMDD-NN.md`。它是 Thin Context Index，不复制 Delivery 历史，至少包含 `Status`、`Result`、`Product`、`Capabilities`、`Repositories`、`Product Truth`、`Knowledge Update`、`Key Decisions`、`Related Deliveries`、`Archive` 与 `Closed At`。Status 只可为 `completed`、`blocked` 或 `superseded`；`superseded` 的 replacement 以 `Related Deliveries` 或 `Superseded By` 指向。Archive 使用上述唯一 logical reference。
@@ -32,7 +32,7 @@ Inspect → Closing Assessment → Integrate Product Truth → Sensitive Data Re
 
 ## Archive Unit
 
-`delivery_archive_root` 的上层 taxonomy 由 Vault 自己决定；本 Playbook 只负责 deterministic `<delivery_archive_root>/<DF-ID>/`：
+`core/registry/external-contexts.yaml` 定义共享的 `delivery_archive_root`；`workspace.local.yaml` 只解析本机 Vault 物理路径。本 Playbook 只负责 deterministic `<delivery_archive_root>/<DF-ID>/`：
 
 ```text
 <delivery_archive_root>/<DF-ID>/

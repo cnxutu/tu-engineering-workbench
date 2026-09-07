@@ -5,7 +5,7 @@ external_contexts:
   # Optional external historical context target. tu-vault is not a registered source repository.
   tu_vault:
     path: <set-local-tu-vault-path>
-    delivery_archive_root: <set-tu-vault-delivery-archive-root>
+    # The shared logical archive root is defined in core/registry/external-contexts.yaml.
 repositories:
   - code: P0
     path: <set-local-p0-path>

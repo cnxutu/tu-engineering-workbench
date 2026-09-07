@@ -1,0 +1,8 @@
+# Shared logical contracts for optional context outside Engineering source repositories.
+version: v1
+
+external_contexts:
+  tu_vault:
+    repository: tu-vault
+    role: personal-historical-context
+    delivery_archive_root: work/deliveries

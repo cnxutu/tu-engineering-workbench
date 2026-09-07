@@ -20,6 +20,7 @@ SENSITIVE_KEY_PATTERN = re.compile(
 )
 PLACEHOLDER_PATTERN = re.compile(r"^(?:<[^>]+>|\$\{[^}]+\}|redacted)$", re.IGNORECASE)
 REPOSITORY_REGISTRY = Path("core/registry/repositories.yaml")
+EXTERNAL_CONTEXT_REGISTRY = Path("core/registry/external-contexts.yaml")
 PRIMARY_REPOSITORY_BINDINGS = {
     "P0": "tu-engineering-workbench",
     "P0-1": "tu-devkit",
@@ -82,11 +83,33 @@ def external_tu_vault_values(text: str) -> dict[str, str] | None:
                 child_indent = len(child) - len(child.lstrip())
                 if child_indent <= vault_indent:
                     break
-                match = re.match(r"\s+(path|delivery_archive_root):\s*(\S.*?)\s*$", child)
+                match = re.match(r"\s+([a-z_][a-z0-9_]*):\s*(\S.*?)\s*$", child)
                 if match is not None:
                     values[match.group(1)] = match.group(2).strip().strip("\\\"'")
             return values
     return None
+
+
+def validate_external_context_registry(repo_root: Path, errors: list[str]) -> dict[str, str]:
+    registry = repo_root / EXTERNAL_CONTEXT_REGISTRY
+    error_if_missing(registry, "external context registry", errors)
+    if not registry.is_file():
+        return {}
+    tu_vault = external_tu_vault_values(registry.read_text(encoding="utf-8"))
+    if tu_vault is None:
+        errors.append("external context registry is missing tu_vault")
+        return {}
+    expected = {
+        "repository": "tu-vault",
+        "role": "personal-historical-context",
+    }
+    for key, value in expected.items():
+        if tu_vault.get(key) != value:
+            errors.append(f"external context registry tu_vault requires {key}: {value}")
+    archive_root = tu_vault.get("delivery_archive_root")
+    if archive_root is None or not is_safe_relative_path(archive_root):
+        errors.append("external context registry tu_vault delivery_archive_root must be a safe relative path")
+    return tu_vault
 
 
 def is_safe_relative_path(value: str) -> bool:
@@ -236,9 +259,14 @@ def validate_workspace_configuration(repo_root: Path, registered_codes: set[str]
     if tu_vault is None:
         return
     vault_path = tu_vault.get("path")
-    archive_root = tu_vault.get("delivery_archive_root")
-    if vault_path is None or archive_root is None:
-        errors.append("workspace.local.yaml tu_vault requires path and delivery_archive_root")
+    unexpected_fields = sorted(set(tu_vault) - {"path"})
+    if unexpected_fields:
+        errors.append(
+            "workspace.local.yaml tu_vault must only configure path; "
+            "logical archive root belongs in core/registry/external-contexts.yaml"
+        )
+    if vault_path is None:
+        errors.append("workspace.local.yaml tu_vault requires path")
         return
     if PLACEHOLDER_PATTERN.match(vault_path) or not Path(vault_path).is_absolute():
         errors.append("workspace.local.yaml tu_vault path must be an absolute configured directory")
@@ -252,8 +280,6 @@ def validate_workspace_configuration(repo_root: Path, registered_codes: set[str]
             errors.append(
                 "workspace.local.yaml tu_vault path must be a separate directory tree from Workbench"
             )
-    if PLACEHOLDER_PATTERN.match(archive_root) or not is_safe_relative_path(archive_root):
-        errors.append("workspace.local.yaml tu_vault delivery_archive_root must be a safe relative path")
 
 
 def validate_workspace_template(repo_root: Path, registered_codes: set[str], errors: list[str]) -> None:
@@ -280,11 +306,13 @@ def validate_workspace_template(repo_root: Path, registered_codes: set[str], err
         errors.append("workspace.example.yaml is missing optional tu_vault external context template")
         return
     vault_path = tu_vault.get("path")
-    archive_root = tu_vault.get("delivery_archive_root")
     if vault_path is None or not PLACEHOLDER_PATTERN.match(vault_path):
         errors.append("workspace.example.yaml tu_vault path must be a placeholder")
-    if archive_root is None or not PLACEHOLDER_PATTERN.match(archive_root):
-        errors.append("workspace.example.yaml tu_vault delivery_archive_root must be a placeholder")
+    if set(tu_vault) != {"path"}:
+        errors.append(
+            "workspace.example.yaml tu_vault must only configure path; "
+            "logical archive root belongs in core/registry/external-contexts.yaml"
+        )
 
 
 def validate_sensitive_values(repo_root: Path, errors: list[str]) -> None:
@@ -450,14 +478,11 @@ def active_delivery_ids(repo_root: Path) -> set[str]:
     return ids
 
 
-def validate_closed_delivery_indexes(repo_root: Path, errors: list[str]) -> None:
+def validate_closed_delivery_indexes(repo_root: Path, archive_root: str | None, errors: list[str]) -> None:
     closed_root = repo_root / "work" / "closed"
     if not closed_root.is_dir():
         return
     active_ids = active_delivery_ids(repo_root)
-    local = repo_root / "workspace.local.yaml"
-    tu_vault = external_tu_vault_values(local.read_text(encoding="utf-8")) if local.is_file() else None
-    archive_root = tu_vault.get("delivery_archive_root") if tu_vault is not None else None
     for index in closed_root.rglob("*"):
         if index.is_dir():
             continue
@@ -544,6 +569,7 @@ def main() -> int:
     registry_codes, repository_products = registered_repositories(
         repo_root, platform_product_ids(repo_root), errors
     )
+    external_contexts = validate_external_context_registry(repo_root, errors)
     registered_codes = set(registry_codes)
     validate_markdown_links(repo_root, errors)
     validate_product_bindings(repo_root, errors)
@@ -552,7 +578,7 @@ def main() -> int:
     validate_workspace_template(repo_root, registered_codes, errors)
     validate_sensitive_values(repo_root, errors)
     validate_feature_delivery_packages(repo_root, errors)
-    validate_closed_delivery_indexes(repo_root, errors)
+    validate_closed_delivery_indexes(repo_root, external_contexts.get("delivery_archive_root"), errors)
 
     if errors:
         print("AI guidance validation failed:", file=sys.stderr)

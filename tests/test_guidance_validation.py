@@ -588,7 +588,7 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
                     "- Key Decisions: none",
                     f"- Related Deliveries: {related}",
                     *([f"- Superseded By: {superseded_by}"] if superseded_by is not None else []),
-                    f"- Archive: {archive or f'tu-vault:deliveries/{delivery_id}'}",
+                    f"- Archive: {archive or f'tu-vault:work/deliveries/{delivery_id}'}",
                     "- Closed At: 2026-09-06T12:00:00+08:00",
                     "",
                 ]
@@ -625,14 +625,13 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         )
         package.joinpath("01-impact-review.md").write_text("fixture\n", encoding="utf-8")
 
-    def configure_vault(self, repository: Path, vault: Path, archive_root: str = "deliveries") -> None:
+    def configure_vault(self, repository: Path, vault: Path) -> None:
         (repository / "workspace.local.yaml").write_text(
             "\n".join(
                 [
                     "external_contexts:",
                     "  tu_vault:",
                     f"    path: {vault}",
-                    f"    delivery_archive_root: {archive_root}",
                     "",
                 ]
             ),
@@ -712,7 +711,7 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         repository = self.copied_repository()
         index = self.create_closed_index(repository)
         index.write_text(
-            index.read_text(encoding="utf-8").replace("- Archive: tu-vault:deliveries/DF-20260906-01\n", ""),
+            index.read_text(encoding="utf-8").replace("- Archive: tu-vault:work/deliveries/DF-20260906-01\n", ""),
             encoding="utf-8",
         )
 
@@ -798,6 +797,22 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_archive_reference_is_independent_of_local_vault_path(self) -> None:
+        repository = self.copied_repository()
+        first_vault = repository.parent / "vault-a"
+        second_vault = repository.parent / "vault-b"
+        first_vault.mkdir()
+        second_vault.mkdir()
+        self.create_closed_index(repository)
+
+        self.configure_vault(repository, first_vault)
+        first_result = self.validate(repository)
+        self.configure_vault(repository, second_vault)
+        second_result = self.validate(repository)
+
+        self.assertEqual(first_result.returncode, 0, first_result.stderr)
+        self.assertEqual(second_result.returncode, 0, second_result.stderr)
+
     def test_rejects_vault_path_equal_to_workbench(self) -> None:
         repository = self.copied_repository()
         self.configure_vault(repository, repository)
@@ -827,32 +842,55 @@ class DeliveryClosingGuardrailTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("tu_vault path must be a separate directory tree from Workbench", result.stderr)
 
-    def test_rejects_unsafe_external_archive_configuration(self) -> None:
+    def test_rejects_local_archive_root_configuration(self) -> None:
         repository = self.copied_repository()
         vault = repository.parent / "vault"
         vault.mkdir()
-        self.configure_vault(repository, vault, "../escape")
+        self.configure_vault(repository, vault)
+        workspace = repository / "workspace.local.yaml"
+        workspace.write_text(
+            workspace.read_text(encoding="utf-8") + "    delivery_archive_root: ../escape\n",
+            encoding="utf-8",
+        )
 
         result = self.validate(repository)
 
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("tu_vault delivery_archive_root must be a safe relative path", result.stderr)
+        self.assertIn("workspace.local.yaml tu_vault must only configure path", result.stderr)
 
-    def test_rejects_absolute_external_archive_root(self) -> None:
+    def test_rejects_unsafe_shared_archive_root(self) -> None:
         repository = self.copied_repository()
         vault = repository.parent / "vault"
         vault.mkdir()
-        self.configure_vault(repository, vault, str(repository / "archives"))
+        self.configure_vault(repository, vault)
+        registry = repository / "core" / "registry" / "external-contexts.yaml"
+        registry.write_text(
+            registry.read_text(encoding="utf-8").replace("work/deliveries", "../escape"),
+            encoding="utf-8",
+        )
 
         result = self.validate(repository)
 
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("tu_vault delivery_archive_root must be a safe relative path", result.stderr)
+        self.assertIn("external context registry tu_vault delivery_archive_root must be a safe relative path", result.stderr)
+
+    def test_rejects_missing_shared_archive_root(self) -> None:
+        repository = self.copied_repository()
+        registry = repository / "core" / "registry" / "external-contexts.yaml"
+        registry.write_text(
+            registry.read_text(encoding="utf-8").replace("    delivery_archive_root: work/deliveries\n", ""),
+            encoding="utf-8",
+        )
+
+        result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("external context registry tu_vault delivery_archive_root must be a safe relative path", result.stderr)
 
     def test_builds_deterministic_archive_reference(self) -> None:
         self.assertEqual(
-            guidance_validator.deterministic_archive_reference("archives/engineering", "DF-20260906-01"),
-            "tu-vault:archives/engineering/DF-20260906-01",
+            guidance_validator.deterministic_archive_reference("work/deliveries", "DF-20260906-01"),
+            "tu-vault:work/deliveries/DF-20260906-01",
         )
 
 
