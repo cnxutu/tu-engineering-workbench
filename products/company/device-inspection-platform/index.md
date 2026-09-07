@@ -41,6 +41,7 @@
 
 - 业务命令路由、上行消费或 Handler：读 [P1 关键入口地图](repositories/c-drone-inspection/key-entry-points.md)。
 - OSD/DRC 快照、拓扑、运行任务或 DRC 会话：读 [P1 缓存设计](repositories/c-drone-inspection/cache-design.md)。
+- 监控设备列表、位置轮询、位置来源优先级或空间位置回退：读 [P1 监控设备地理位置](repositories/c-drone-inspection/monitor-device-geolocation.md)。
 - WebSocket 推送（设备状态、监控统计、权限通知及专题文档索引）：读 [P1 WebSocket 推送维护入口](repositories/c-drone-inspection/websocket-index.md)。
 
 #### P2 `c-iot-server`

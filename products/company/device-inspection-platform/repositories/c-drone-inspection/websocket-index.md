@@ -12,7 +12,7 @@ P1 WebSocket 主要面向前端实时刷新和局部状态更新。消息通常�
 
 | 场景 | 业务码/接口 | 维护文档 | 主要代码入口 |
 | --- | --- | --- | --- |
-| 设备 OSD、HMS、任务状态局部更新 | `device_osd`、`dock_osd`、`device_hms`、`device_task_status` | [设备任务状态展示与 WebSocket 推送闭环](device-task-status-display-and-websocket.md)、[监控中心设备核心列表与刷新模型](monitor-device-v2-list-refresh-model.md) | `InspectionDeviceStatusBusinessServiceImpl`、`InspectionAlarmBusinessServiceImpl`、`DeviceTaskStatusNotifier` |
+| 设备 OSD、HMS、任务状态局部更新 | `device_osd`、`dock_osd`、`device_hms`、`device_task_status` | [设备任务状态展示与 WebSocket 推送闭环](device-task-status-display-and-websocket.md)、[监控中心设备核心列表与刷新模型](monitor-device-v2-list-refresh-model.md)、[监控设备地理位置](monitor-device-geolocation.md) | `InspectionDeviceStatusBusinessServiceImpl`、`InspectionAlarmBusinessServiceImpl`、`DeviceTaskStatusNotifier` |
 | 机器狗完整状态快照 | `/ws/dock`；`robot_dog_status_snapshot` | [机器狗完整状态快照 WebSocket 契约](robot-dog-status-snapshot-websocket.md) | `InspectionRobotDogStatusBusinessServiceImpl`、`WebSocketMessageServiceImpl` |
 | 顶部业务统计刷新 | `monitor_business_overview_changed`；`GET /drone/monitor/business-overview` | [顶部统计刷新 WebSocket 链路](monitor-business-overview-websocket.md) | `MonitorBusinessOverviewChangedNotifier`、`MonitorBusinessStatusNotifier` |
 | 左上角基础统计刷新 | `monitor_overview_changed`；`GET /drone/monitor/overview` | [左上角基础统计刷新 WebSocket 链路](monitor-overview-websocket.md) | `MonitorOverviewChangedNotifier` |

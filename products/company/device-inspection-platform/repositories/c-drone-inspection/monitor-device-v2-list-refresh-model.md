@@ -15,7 +15,7 @@ Controller 只接收 `MonitorDeviceV2ListReq` 并委托 `MonitorDeviceService#ge
 
 - 无人机与所属机场关系（`dockDeviceId`、`dockDeviceSn`）；
 - 设备配置、通道、型号和空间名称；
-- 卡片位置（无人机优先最后一次有效定位，缺失时回退所属机场空间）；
+- 卡片位置（实时 OSD、无人机最后有效 OSD与空间登记位置的选择规则见 [P1 监控设备地理位置](monitor-device-geolocation.md)）；
 - CAMERA/DRONE 的任务状态快照。
 
 当前返回模型是 `MonitorDeviceV2ListDTO`。设备实时字段不直接平铺在列表 DTO 中；任务字段位于 `taskInfo`，因此前端应把初始列表视为“卡片基线”，再按设备 SN 合并 WebSocket 数据。
