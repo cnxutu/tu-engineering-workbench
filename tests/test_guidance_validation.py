@@ -911,5 +911,41 @@ class ClosingSkillRegistrationTest(unittest.TestCase):
         self.assertIn("validated 5 plugin skills", result.stdout)
 
 
+class ProductTruthClosingGuidanceTest(unittest.TestCase):
+    def test_closing_reconciles_final_facts_without_sync_history(self) -> None:
+        skill = (REPOSITORY_ROOT / "plugins/ai-guidance-workflows/skills/tu-close-delivery/SKILL.md").read_text(encoding="utf-8")
+        playbook = (REPOSITORY_ROOT / "core/playbooks/delivery-closing.md").read_text(encoding="utf-8")
+
+        self.assertIn("Compare the Delivery's final verified facts", skill)
+        self.assertIn("do not depend on tracking prior `S` actions", skill)
+        self.assertIn("不依赖识别或追踪任何 Product Truth Sync 历史", playbook)
+
+    def test_updated_covers_current_truth_already_correct_before_closing(self) -> None:
+        contract = (REPOSITORY_ROOT / "core/contracts/task-metadata.schema.yaml").read_text(encoding="utf-8")
+        skill = (REPOSITORY_ROOT / "plugins/ai-guidance-workflows/skills/tu-close-delivery/SKILL.md").read_text(encoding="utf-8")
+
+        self.assertIn("whether the relevant page was already correct or Closing updated it", contract)
+        self.assertIn("even if Closing makes no documentation change", skill)
+
+    def test_closing_corrects_later_changes_and_marks_no_delta_not_needed(self) -> None:
+        playbook = (REPOSITORY_ROOT / "core/playbooks/delivery-closing.md").read_text(encoding="utf-8")
+        contract = (REPOSITORY_ROOT / "core/contracts/task-metadata.schema.yaml").read_text(encoding="utf-8")
+
+        self.assertIn("修正、删除或替换", playbook)
+        self.assertIn("not-needed means final Closing assessment found no current-worthy Product Truth Delta", contract)
+
+    def test_finalized_closing_resolves_deferred(self) -> None:
+        contract = (REPOSITORY_ROOT / "core/contracts/task-metadata.schema.yaml").read_text(encoding="utf-8")
+
+        self.assertIn("deferred means final Product Truth assessment has not yet completed", contract)
+        self.assertIn("successfully finalized Closing resolves deferred to updated or not-needed", contract)
+
+    def test_sync_without_delivery_does_not_mutate_metadata(self) -> None:
+        runtime = (REPOSITORY_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        task_loop = (REPOSITORY_ROOT / "core/playbooks/engineering-task-loop.md").read_text(encoding="utf-8")
+
+        self.assertIn("Sync 不要求 DF、Active Delivery 或 `work/`", runtime)
+        self.assertIn("不写 `work/`、`task.yaml` 或 `knowledge_update_assessment`", task_loop)
+
 if __name__ == "__main__":
     unittest.main()

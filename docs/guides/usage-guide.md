@@ -107,6 +107,6 @@ $ai-guidance-workflows:tu-deliver-feature
 
 继续、查询和 Bug 都只需要 canonical Delivery ID：`继续 DF-20260904-01`、`DF-20260904-01 当前进展` 或 `DF-20260904-01 设备状态偶尔不刷新`。Skill 先在 `work/active/` 定位 Package；未命中时读 `work/closed/` 的 Thin Context Index，并按其 archive reference 优先访问配置的 external cold history，local legacy archive 仅作兼容 fallback。两者都不可访问时报告证据缺口。随后读取 `task.yaml`、`resume.md` 和当前阶段权威产物，再加载最小必要代码上下文。也可以只调用 Impact Skill 并附上原型图；目标项目、分层与数据约定、确认门禁、实现范围和验证方式仍须从当前工程上下文与代码核实。
 
-只有用户明确要求关闭并给出 DF ID 时才调用 `tu-close-delivery`，例如 `$ai-guidance-workflows:tu-close-delivery DF-20260904-01`。G4 或任务 Verify 通过时，Agent 只能建议 Ready to Close；Closing Skill 会先对整个 Delivery 的 Product Truth 做最终 reconciliation（包括复核此前合法 Sync 的结论），再 Sensitive Data Review、Archive 到配置的 deterministic `tu-vault` Unit、验证 finalized Archive、创建 Closed Index 并 retire active Package，不会 commit、push、release 或修改其他 Delivery。
+只有用户明确要求关闭并给出 DF ID 时才调用 `tu-close-delivery`，例如 `$ai-guidance-workflows:tu-close-delivery DF-20260904-01`。G4 或任务 Verify 通过时，Agent 只能建议 Ready to Close；Closing Skill 会先比较整个 Delivery 的最终事实与当前 canonical Product Truth，完成最终 reconciliation，再 Sensitive Data Review、Archive 到配置的 deterministic `tu-vault` Unit、验证 finalized Archive、创建 Closed Index 并 retire active Package，不会追踪 Sync history、commit、push、release 或修改其他 Delivery。
 
 安装后，Codex 可根据任务描述和运行时约束自动选择允许隐式触发的 Skill；显式写 `$插件名:Skill名` 更确定。`tu-close-delivery` 是 explicit-only，始终需要明确 Closing intent 与 DF ID。仅出现多个项目标记但未说明服务交互时，不自动加载 P1–P4、P3-1 的全局上下文。
