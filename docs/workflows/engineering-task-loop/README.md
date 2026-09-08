@@ -10,6 +10,7 @@ Repository Scope
 Task Semantics
 +
 Optional Stage
+\+
 Optional Product Truth Sync
 =
 Current Engineering Intent
@@ -19,22 +20,22 @@ Current Engineering Intent
 
 ```mermaid
 flowchart TD
-    U[User] --> S[Repository Scope<br/>P1 / P2 / ...]
-    U --> T[Natural Language<br/>Bug / Feature / Refactor / Review / Cross-service]
-    U --> G[Optional Stage<br/>E / Explore · P / Plan · X / Execute · V / Verify]
-    U --> PS[Optional Product Truth Sync<br/>S]
-    S --> R[Runtime semantic routing]
-    T --> R
-    G --> R
-    PS --> R
-    R --> PB[Playbook / Role]
-    R --> SK[Skill]
-    PB --> W[Engineering Work]
-    SK --> W
-    W --> V[Verification]
-    FD[Delivery Phases<br/>Impact → Contract → Execution → Integration & Stabilization] --> CL[Delivery Closing<br/>separate, user-authorized]
-    FD --> FI[DEV-xx / BUG / INT]
-    FI --> ETL[Engineering Task Loop]
+    USER[User] --> SCOPE[Repository Scope<br/>P1 / P2 / ...]
+    USER --> SEMANTICS[Natural Language<br/>Bug / Feature / Refactor / Review / Cross-service]
+    USER --> STAGE[Optional Stage<br/>E / Explore · P / Plan · X / Execute · V / Verify]
+    USER --> SYNC_ACTION[Optional Product Truth Sync<br/>S]
+    SCOPE --> ROUTING[Runtime semantic routing]
+    SEMANTICS --> ROUTING
+    STAGE --> ROUTING
+    SYNC_ACTION --> ROUTING
+    ROUTING --> PLAYBOOK[Playbook / Role]
+    ROUTING --> SKILL[Skill]
+    PLAYBOOK --> WORK[Engineering Work]
+    SKILL --> WORK
+    WORK --> VERIFY[Verification]
+    DELIVERY[Delivery Phases<br/>Impact → Contract → Execution → Integration & Stabilization] --> CLOSING[Delivery Closing<br/>separate, user-authorized]
+    DELIVERY --> DELIVERY_TASK[DEV-xx / BUG / INT]
+    DELIVERY_TASK --> TASK_LOOP[Engineering Task Loop]
 ```
 
 Feature Delivery 管长期生命周期；Engineering Task Loop 管一次具体修改；Stage Shortcut 不是 Provider，也不替代 Delivery ID、Task Package、Contract、Artifact 或证据。Task Loop 的 Verify 只回填当前 DEV 的 `03-execution-backlog.md`，或 BUG / INT 的 `04-integration-log.md`；它不触发 Delivery Closing。`S` 可在无 DF 或 Delivery 内独立同步已经成立的 Current Product Truth，但不触发 Archive 或修改 Delivery metadata。G4 / acceptance 只允许 Agent 建议 Ready to Close；用户显式授权后，Delivery Closing 才对整个 Delivery 的 Product Truth 做最终 reconciliation、执行 Sensitive Data Review、Archive 并验证 finalized snapshot、创建 Closed Context Index 并 retire active Package；这不是新的 Stage Shortcut，也不改变 E/P/X/V。
@@ -153,15 +154,17 @@ Plan 中可明确“允许修改 P1、P2，不能改 DB Schema 和外部 API Con
 
 ```mermaid
 flowchart TD
-    R[Request] --> E[Explore<br/>understand]
-    E --> P[Plan<br/>boundary]
-    P --> A[User alignment]
-    A --> X[Execute<br/>agency]
-    X --> V[Verify<br/>evidence]
-    V -->|pass| D[Done or optional S]
-    V -->|failure / new evidence| E
-    P -->|Stop Condition| S[Stop]
-    S --> E
+    REQUEST[Request] --> EXPLORE[Explore<br/>understand]
+    EXPLORE --> PLAN[Plan<br/>boundary]
+    PLAN --> ALIGN[User alignment]
+    ALIGN --> EXECUTE[Execute<br/>agency]
+    EXECUTE --> VERIFY[Verify<br/>evidence]
+    VERIFY -->|pass| DONE[Done]
+    VERIFY -. optional .-> SYNC[Product Truth Sync<br/>S]
+    SYNC --> PRODUCTS[products/<br/>Current Product Truth]
+    VERIFY -->|failure / new evidence| EXPLORE
+    PLAN -->|Stop Condition| STOP[Stop]
+    STOP --> EXPLORE
 ```
 
 ## Choose the path
@@ -268,7 +271,7 @@ flowchart LR
     subgraph E[Explore]
         I[tu-analyzing-feature-impact<br/>prototype / PRD]
         C[tu-loading-device-inspection-<br/>cross-service-context]
-        S[tu-diagnosing-spring-backend-incidents]
+        DIAGNOSE[tu-diagnosing-spring-backend-incidents]
         O[External research / modeling / diagnosis<br/>only when available]
     end
     subgraph P[Plan]
@@ -299,22 +302,33 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    I[Impact] --> C[Contract] --> E[Execution] --> S[Integration & Stabilization]
-    E --> D1[DEV-01<br/>Engineering Task Loop]
-    E --> D2[DEV-02<br/>Engineering Task Loop]
-    E --> D3[DEV-03<br/>Engineering Task Loop]
-    S --> B1[BUG-01<br/>Engineering Task Loop]
-    S --> N1[INT-01<br/>Engineering Task Loop]
-    S --> G[G4 / Accepted / Closing condition]
-    G --> R[Ready to Close]
-    R --> U[User explicit authorization]
-    U --> DC[Delivery Closing]
-    DC --> IP[Final Product Truth reconciliation]
-    IP --> SDR[Sensitive Data Review]
-    SDR --> A[Archive Full History]
-    A --> VA[Verify Archive]
-    VA --> CI[Create Closed Context Index]
-    CI --> RA[Retire Active Package]
+    IMPACT[Impact] --> CONTRACT[Contract] --> EXECUTION[Execution] --> STAB[Integration & Stabilization]
+    EXECUTION --> DEV_01[DEV-01<br/>E → P → X → V]
+    EXECUTION --> DEV_02[DEV-02<br/>E → P → X → V]
+    EXECUTION --> DEV_03[DEV-03<br/>E → P → X → V]
+    STAB --> BUG_01[BUG-01<br/>E → P → X → V]
+    STAB --> INT_01[INT-01<br/>E → P → X → V]
+    DEV_01 --> DEV_FACT[verified fact]
+    DEV_02 --> DEV_FACT
+    DEV_03 --> DEV_FACT
+    BUG_01 --> BUG_FACT[verified fact]
+    INT_01 --> BUG_FACT
+    DEV_FACT -. optional .-> SYNC[Product Truth Sync<br/>S]
+    BUG_FACT -. optional .-> SYNC
+    SYNC --> PRODUCTS[products/<br/>Current Product Truth]
+    STAB --> GATE[G4 / Accepted / Closing condition]
+    GATE --> READY[Ready to Close]
+    READY --> AUTH[User explicit authorization]
+    AUTH --> CLOSING[Delivery Closing]
+    CLOSING --> COMPARE[Compare final Delivery facts<br/>with current products/]
+    PRODUCTS -. current truth .-> COMPARE
+    COMPARE --> RECONCILE[Final Product Truth reconciliation]
+    RECONCILE --> PRODUCTS
+    RECONCILE --> SENSITIVE[Sensitive Data Review]
+    SENSITIVE --> ARCHIVE[Archive Full History]
+    ARCHIVE --> VERIFY_ARCHIVE[Verify Archive]
+    VERIFY_ARCHIVE --> CLOSED_INDEX[Create Closed Context Index]
+    CLOSED_INDEX --> RETIRE[Retire Active Package]
 ```
 
 在 Delivery 中，非 trivial DEV 将关键 Plan、实际实施结果和 Verify 证据回填 `03-execution-backlog.md`；Bug/INT 的根因、修复、回归和 Verify 证据回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。这不使单个 Task Loop 关闭 Delivery；独立成立的事实可通过 `S` 同步，但不改任何 Delivery 状态或 metadata。整个 Delivery 达到 G4 / acceptance 或明确 Closing condition 后，Agent 只能建议显式调用 `tu-close-delivery`；获授权后才依次对 Product Truth 做最终 reconciliation、Sensitive Data Review、Archive/verify finalized snapshot、创建 Closed Index 并 retire active Package。
@@ -355,13 +369,13 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    D[DEV-03 ready] --> E[Explore code seam]
-    E --> R[Optional codebase-design / research<br/>when available]
-    R --> P[Plan Mode]
-    P --> S[Scope + files + Stop Conditions]
-    S --> X[Optional explicit implement / tdd<br/>when available]
-    X --> C[Review / Verify]
-    C --> U[Update backlog]
+    READY_DEV[DEV-03 ready] --> EXPLORE_SEAM[Explore code seam]
+    EXPLORE_SEAM --> RESEARCH[Optional codebase-design / research<br/>when available]
+    RESEARCH --> PLAN_MODE[Plan Mode]
+    PLAN_MODE --> BOUNDARY[Scope + files + Stop Conditions]
+    BOUNDARY --> IMPLEMENT[Optional explicit implement / tdd<br/>when available]
+    IMPLEMENT --> REVIEW[Review / Verify]
+    REVIEW --> UPDATE[Update backlog]
 ```
 
 ### Cross-service scenario
@@ -374,7 +388,7 @@ flowchart TD
     R --> P[Plan repositories]
     P --> X[Execute authorized repositories only]
     X --> V[Integration verification]
-    X -->|new unapproved repository required| S[Stop Condition → Re-plan]
+    X -->|new unapproved repository required| STOP_REPLAN[Stop Condition → Re-plan]
 ```
 
 ### Context persistence
