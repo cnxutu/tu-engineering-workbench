@@ -947,5 +947,27 @@ class ProductTruthClosingGuidanceTest(unittest.TestCase):
         self.assertIn("Sync 不要求 DF、Active Delivery 或 `work/`", runtime)
         self.assertIn("不写 `work/`、`task.yaml` 或 `knowledge_update_assessment`", task_loop)
 
+    def test_reopen_resets_any_final_knowledge_outcome_to_deferred(self) -> None:
+        contract = (REPOSITORY_ROOT / "core/contracts/task-metadata.schema.yaml").read_text(encoding="utf-8")
+        delivery_skill = (REPOSITORY_ROOT / "plugins/ai-guidance-workflows/skills/tu-deliver-feature/SKILL.md").read_text(encoding="utf-8")
+        phase_four = (
+            REPOSITORY_ROOT / "plugins/ai-guidance-workflows/skills/tu-deliver-feature/references/phase-4-stabilization.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("reset knowledge_update_assessment to deferred regardless of the archived updated or not-needed outcome", contract)
+        self.assertIn("reset `knowledge_update_assessment: deferred` regardless of the archived `updated` or `not-needed` outcome", delivery_skill)
+        self.assertIn("reset the active copy's `knowledge_update_assessment: deferred` regardless of the archived `updated` or `not-needed` outcome", phase_four)
+
+    def test_reopen_mutates_only_the_active_copy_not_immutable_vault_snapshot(self) -> None:
+        playbook = (REPOSITORY_ROOT / "core/playbooks/delivery-closing.md").read_text(encoding="utf-8")
+        package_reference = (
+            REPOSITORY_ROOT / "plugins/ai-guidance-workflows/skills/tu-deliver-feature/references/task-package.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("仅 active copy 重置为 `status: active`、`knowledge_update_assessment: deferred`", playbook)
+        self.assertIn("不得 move、delete 或 modify Vault Unit", playbook)
+        self.assertIn("reset only the active copy's `knowledge_update_assessment: deferred`", package_reference)
+        self.assertIn("or modify its archived `delivery/task.yaml`", package_reference)
+
 if __name__ == "__main__":
     unittest.main()
