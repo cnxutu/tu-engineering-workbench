@@ -171,12 +171,21 @@ Archive 仅在 Sensitive Data Review 通过后写入本机 `workspace.local.yaml
 ```mermaid
 stateDiagram-v2
     [*] --> NORMAL_ACTIVE
-    NORMAL_ACTIVE: Normal Active / Reopened\nknowledge_update_assessment: deferred
-    CLOSING: Closing Transaction\nFinal Product Truth Reconciliation + Archive
-    CLOSED: Closed\nknowledge_update_assessment: updated | not-needed
+    state "Normal Active / Reopened" as NORMAL_ACTIVE
+    state "Closing Transaction" as CLOSING
+    state "Closed" as CLOSED
     NORMAL_ACTIVE --> CLOSING: user-authorized Closing
     CLOSING --> CLOSED: finalized
     CLOSED --> NORMAL_ACTIVE: Reopen / reset deferred
+    note right of NORMAL_ACTIVE
+        Default knowledge_update_assessment = deferred
+    end note
+    note right of CLOSING
+        Final Product Truth Reconciliation + Archive
+    end note
+    note right of CLOSED
+        knowledge_update_assessment = updated | not-needed
+    end note
 ```
 
 图仅刻画新 Delivery 或 Reopen 后的正常 Active 起点：Reopen 只重置恢复出的 Active Package 为 `deferred`；不可变 Vault snapshot 保留此前 finalized outcome，下一次 Closing 再重新决议。Closing 中断时，Active Package 保持可恢复，final assessment 可能已经完成而不再是 `deferred`；Recovery 根据已检查的 filesystem / metadata state 继续，不重新执行已经完成且验证过的 Closing steps。
