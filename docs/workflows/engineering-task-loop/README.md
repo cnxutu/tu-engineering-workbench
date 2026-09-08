@@ -218,7 +218,7 @@ Explore 的方案要足以让 Plan 拆分 Files / Components、Steps 和 Stop Co
 完成后先停在方案评审，不执行修改。
 ```
 
-Explore 的退出条件是：Goal / Problem、当前实现与约束、关键 Facts / Assumptions / Unknowns 已基本明确；核心可行性已有足够证据；推荐方案、change seam、影响范围和 Verification Strategy 已清楚；剩余未知项不阻塞 Plan，或已显式成为其前置条件。满足后停在方案评审。Explore 默认禁止 tracked-file 修改、commit、push、deploy、release、生产写入和外部副作用；可以读取、搜索调用链、运行现有测试或非持久诊断/验证。用户可显式放宽明确范围，例如允许新增临时测试，但不会因此授权生产代码修改。Goal Mode 或 Explore 类请求本身不天然等于只读模式。
+Explore 的退出条件是：Goal / Problem、当前实现与约束、关键 Facts / Assumptions / Unknowns 已基本明确；核心可行性已有足够证据；推荐方案、change seam、影响范围和 Verification Strategy 已清楚；剩余未知项不阻塞 Plan，或已显式成为其前置条件。满足后停在方案评审。Explore 默认禁止 tracked-file 修改、commit、push、deploy、release、生产写入和外部副作用；可以读取、搜索调用链、运行现有测试或非持久诊断/验证。用户可显式放宽明确范围，例如允许新增临时测试，但不会因此授权生产代码修改。
 
 ### Plan: execution contract
 
