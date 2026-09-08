@@ -271,6 +271,16 @@ Codex Plan Mode 形成和收敛候选 Executable Plan，本身不修改代码，
 
 V 先明确本轮要证明的 **Verification Target**，再根据目标、风险、环境和可访问依赖选择 Static Review、Automated Verification、Targeted / Scoped Smoke 或 Integration / Runtime / E2E。它们不是必须依次执行的 pipeline；完整定义和裁决规则以 [Core Playbook](../../../core/playbooks/engineering-task-loop.md#verify对目标取得证据并限定结论) 为准。
 
+未显式限定单服务时，Verification Boundary 默认沿 Target 成立所必需的调用链传播。例如“验证设备状态更新链路”若实际经过 `DeviceStateService → Feign → DeviceManagerService → Repository → DB`，V 不会只确认 Feign 已被调用就判定通过；它会在当前 Repository Scope 内继续核对 downstream implementation、DTO / Contract 与持久化行为，有条件时执行 integration/runtime verification，否则建立静态 Evidence Chain。目标所需仓库不在当前 Scope 时，不自动扩大范围，而是停止跨仓取证并将缺口标为 `not verifiable` / `insufficient scope`。
+
+```text
+V
+
+验证设备状态更新链路是否符合预期。
+请沿 Target 必需的调用链收集 Evidence；
+无法执行的环节说明证据缺口，不要因跨 Service 就判定通过。
+```
+
 例如，只审核现有代码而不修改：
 
 ```text

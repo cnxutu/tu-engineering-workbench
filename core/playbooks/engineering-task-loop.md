@@ -61,6 +61,16 @@ Verify 回答 **What can we prove about this target with the available evidence?
 
 `Static → Automated → Scoped Smoke → Integration → E2E` 不是强制 pipeline。只需证明 Service-level behavior 时，可以完成 Static Review 与 Service Smoke，同时将 Integration 标为 `not executed`、真实设备 E2E 标为 `not verifiable`。缺少完整链路不等于无法验证；应先寻找已有测试、fixture、mock、stub 或 Service 调用入口，尝试完成 Target 所需的最小可执行验证。不得为了追求更深层级而越过用户明确 Non-scope、访问生产环境或制造外部业务副作用。
 
+### Verification Boundary Propagation
+
+**Verification Boundary follows the Verification Target, unless the user explicitly narrows the scope.** 开始取证前，从 Target 推导其成立所必需的行为路径；只要某个 downstream service、external API、Feign/RPC、MQ/MQTT、adapter、callback、asynchronous consumer、Redis、DB、external SDK 或 event handler 是证明 Target 的必要环节，Verification Boundary 就应沿调用链传播。跨越 Service、Module 或 Repository 本身不是停止条件。在设备状态更新依赖 `Service A → Feign Contract → Service B → Repository → DB` 时，只证明 Service A 发起 Feign 调用不足以判定整条 Target 通过。
+
+若必要依赖可实际运行，优先执行相称的 integration/runtime verification 或 scoped/full-chain smoke 并取得真实 Evidence。无法完整运行时，继续建立静态 Evidence Chain，例如从 caller code、Contract / DTO 到 downstream Controller / Consumer、Service、Repository / SQL、config、existing tests 及可用 logs/runtime evidence，尽可能核对链路两端行为与 Contract 语义。当前条件无法继续取证时，将相应环节标为 `not executed` 或 `not verifiable`，说明缺少的 Evidence；不得因链路跨服务而默认其通过。
+
+用户显式 Verification Scope / Non-scope 优先于默认传播：只要求验证当前 Service 内部行为时，在该边界停止；外部环节标为 `not executed` 并注明 `out of scope`，或在缺少必要证据时标为 `not verifiable`。Repository Scope 同样不会因 Target 跨仓而自动扩大：当前 Scope 允许读取的 Repository 可继续取证；未在 Scope 内的 Repository 不读取，并以 `not verifiable` / `insufficient scope` 说明证据缺口。Boundary Propagation 只授权既有范围内的 read / inspect / verify，不授予任何生产代码写权限。
+
+Target 决定应追到哪里，用户显式 Scope / Non-scope 与 Repository Scope 决定最多允许追到哪里，实际 Evidence 决定最终能证明到哪里。Verdict 只能覆盖三者交集。
+
 ### Evidence、状态与 Verdict
 
 对每个适用验证项明确报告 `passed`、`failed`、`not executed` 或 `not verifiable`，并附实际 Evidence；Evidence 可以是代码位置与调用链、diff finding、测试或构建输出、请求与响应、状态变化、依赖调用记录或运行观测。`not executed` 表示本轮没有运行；`not verifiable` 表示在当前证据和可用环境下无法证明，二者都不得写成通过。
