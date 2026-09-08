@@ -267,9 +267,62 @@ Codex Plan Mode 形成和收敛候选 Executable Plan，本身不修改代码，
 - 说明剩余风险
 ```
 
-### Verify: require evidence
+### Verify: prove the target at the right depth
 
-根据任务选用 unit/integration test、build、lint、typecheck、SQL/API 验证、WS/MQTT 模拟、设备反馈、运行观测或 code review。默认只验证，不扩大实现 Scope 或在失败后自动 patch；验证失败时返回 Explore，以新证据更新 Plan。
+V 先明确本轮要证明的 **Verification Target**，再根据目标、风险、环境和可访问依赖选择 Static Review、Automated Verification、Targeted / Scoped Smoke 或 Integration / Runtime / E2E。它们不是必须依次执行的 pipeline；完整定义和裁决规则以 [Core Playbook](../../../core/playbooks/engineering-task-loop.md#verify对目标取得证据并限定结论) 为准。
+
+例如，只审核现有代码而不修改：
+
+```text
+V
+
+Verification Target：
+DeviceStateService 的在线/离线状态处理逻辑。
+
+重点检查状态流转、幂等、Redis/DB 更新和 WS 推送。
+本轮只做 Static Review，不修改代码。
+```
+
+V 会建立必要调用链，对照可用 Requirement / Contract / Plan，检查正常路径与关键异常/边缘路径并报告 finding。Static Review 的通过只覆盖静态证据，不代表 Runtime 或 E2E 已验证。
+
+完整链路不可用时，可以显式要求单服务或局部冒烟：
+
+```text
+V
+
+本轮不做完整端到端冒烟。
+
+Verification Target：
+DeviceStateService 内部状态处理链路。
+
+请构造最小必要输入，验证：
+online event
+→ state transition
+→ persistence decision
+→ WS publish decision
+
+MQTT、真实设备和前端不在本轮验证范围。
+给出 Evidence 和 Verdict。
+```
+
+此时应优先寻找已有 test harness、fixture、mock、stub 或 Service 调用入口，完成能证明 Target 的最小可执行 service/component smoke；不会因为真实设备或 E2E 不可用就放弃局部验证。一个合法结果可以是：
+
+```text
+Verification Target:
+DeviceStateService online transition
+
+Static Review: passed
+Unit Test: passed
+Service Smoke: passed
+MQTT Integration: not executed
+Device E2E: not verifiable
+
+Verdict:
+Service-level behavior is verified.
+Cross-service and real-device behavior remain unverified.
+```
+
+每项结果使用 `passed`、`failed`、`not executed` 或 `not verifiable` 并给出 Evidence。Verdict 不得超过 Evidence 实际覆盖范围：Static Review 不能推出 Feature 已验证，Service Smoke 也不能推出跨服务 E2E 已验证。V 默认只验证，不扩大实现 Scope 或在失败后自动 patch；失败时先报告证据并回到 Explore，若只是 Plan 边界缺失则建议回到 Plan。
 
 ## Stop Conditions
 

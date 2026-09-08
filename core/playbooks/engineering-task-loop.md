@@ -11,7 +11,7 @@ Stage Shortcut 位于消息的任务头部区域，可在可选 Repository Scope
 1. **Explore / E — Prove the solution is viable**：先核实现状、Goal、事实/假设/未知、change / integration seam 与可复用实现；再以证据验证方案成立所依赖的关键可行性和约束（现有扩展点、架构/Contract 兼容性、外部能力、性能或前置条件）；最后收敛推荐方案、影响范围、Non-scope、风险/约束、Verification Strategy 与未决前置条件，必要时给出替代方案及取舍。Explore 的产物是附 Evidence / Reasoning 的 **Viable Solution**：足以证明推荐方向可行并进入 Plan，但不要求边界、异常、兼容和实施细节已经完整，也不展开为逐步实施计划；关键未知项仍阻塞 Plan 时，继续验证而非结束 Explore。默认不修改任何 tracked file；可读取、搜索调用链、运行现有测试和非持久诊断/验证。用户可只放宽明确允许的范围。
 2. **Plan / P — Make the solution complete and executable**：Codex Plan Mode 基于 Explore 的 Viable Solution 继续 Refine、Bound、Close the Loop 和 Prepare Execution，补齐与正确实施相关的边界与约束、失败/边缘路径、Change Map、依赖与兼容性、执行顺序和可执行 Verification Plan。Plan 不重新无依据选择技术方向，也不一开始就机械拆 todo；简单任务可保持为 change、impact、execution、verification 的短计划，复杂度或风险需要时才展开 Contract、data、failure mode、migration、rollout 等细节。产物是可安全进入 Execute 的 **Executable Plan**；Plan 本身不实施或充当业务 Contract Authority。若产品提供原生 Plan 执行 Action，优先使用。属于 Feature Delivery 时，持久边界和结果必须回填对应 Workbench Artifact。
 3. **Execute / X — Change only inside the approved boundary**：原生 Action 不可用、Plan 后重新收敛或恢复明确边界时，`X` 确认并执行当前唯一、明确、无未决且未失效的最新 Plan。否则回到 Plan；只实施已确认范围内的改动，发现边界假设不成立或范围必须扩大时停止。
-4. **Verify / V — Prove the result with evidence**：默认只验证，不扩大实现 Scope 或自动修复；按任务选择测试、构建、lint、typecheck、契约/API、协议模拟、运行观测或 review。验证失败时先以新证据重新 Explore，不做无限猜测式 patch。
+4. **Verify / V — Prove the result with evidence**：先定义 Verification Target，再选择与目标、风险和当前环境相称的 Verification Depth，收集实际 Evidence 并给出不超过证据范围的 Verdict。产物是 **Verification Evidence + Verdict**。V 可独立审核现有代码；完整 E2E 不可用时，仍应尝试能证明目标行为的 service/component smoke。默认只验证，不扩大实现 Scope 或自动修复。
 
 ## E → P 交界
 
@@ -43,6 +43,41 @@ Plan 仅在以下适用条件均满足后完成并进入 Execute；按任务复�
 9. 执行顺序、任务拆分及必要的 rollout / rollback 边界已经明确；
 10. Verification Strategy 已转成可执行 Verification Plan，能证明正常路径、关键失败路径和兼容性闭环；
 11. 不存在阻塞 Execute 的关键 Unknown，且当前 Plan 唯一、明确、可排序、可验证并有 Stop Conditions。
+
+## Verify：对目标取得证据并限定结论
+
+Verify 回答 **What can we prove about this target with the available evidence?**，而不是机械确认是否运行了全部测试。它可以验证刚完成的 Execute，也可以在没有当前 Execute 时独立审核现有代码。开始时先识别本轮真正需要证明的 **Verification Target**，例如一个 Service 的状态处理、一次变更对离线判定的影响，或 MQTT message → Service → Redis → WS 中限定在单服务内的链路。用户可明确收窄到代码审核、Service 内部行为或其他局部对象；V 不默认把 Target 扩大为整个 Feature 或完整 E2E。
+
+### Verification Modes / Depth
+
+按 Verification Target、风险、当前环境、可访问依赖和用户明确要求，选择一个或多个适用 Depth：
+
+| Mode | 可证明的内容 | 常用手段 |
+| --- | --- | --- |
+| **Static Review** | 代码逻辑、调用链、数据流、状态流转、边界判断、异常处理、资源释放、并发风险、Contract 使用，以及与 Requirement / Plan 的一致性 | code/diff review、call-chain、data-flow、contract inspection |
+| **Automated Verification** | 可由现有或新增授权范围内自动化检查直接覆盖的行为和结构 | unit/integration test、build、lint、typecheck、existing test |
+| **Targeted / Scoped Smoke Verification** | 不依赖完整真实系统的最小可执行 service/component 链路，例如输入 → 业务决策 → 状态流转 → repository/publisher call | existing test harness、mock、stub、fake dependency、fixture、local API、protocol simulation、existing dev environment、non-production diagnostic execution |
+| **Integration / Runtime / E2E Verification** | 跨组件、外部依赖或真实运行链路 | API、SQL、MQ/MQTT、WS、Redis、DB、external service、device、runtime observation、full-chain smoke |
+
+`Static → Automated → Scoped Smoke → Integration → E2E` 不是强制 pipeline。只需证明 Service-level behavior 时，可以完成 Static Review 与 Service Smoke，同时将 Integration 标为 `not executed`、真实设备 E2E 标为 `not verifiable`。缺少完整链路不等于无法验证；应先寻找已有测试、fixture、mock、stub 或 Service 调用入口，尝试完成 Target 所需的最小可执行验证。不得为了追求更深层级而越过用户明确 Non-scope、访问生产环境或制造外部业务副作用。
+
+### Evidence、状态与 Verdict
+
+对每个适用验证项明确报告 `passed`、`failed`、`not executed` 或 `not verifiable`，并附实际 Evidence；Evidence 可以是代码位置与调用链、diff finding、测试或构建输出、请求与响应、状态变化、依赖调用记录或运行观测。`not executed` 表示本轮没有运行；`not verifiable` 表示在当前证据和可用环境下无法证明，二者都不得写成通过。
+
+**Verification verdict must not exceed evidence scope.** Static Review `passed` 只证明已检查的静态逻辑没有发现阻断问题，不代表 Runtime 或 E2E 已验证；Service Smoke `passed` 只证明已执行的单服务/组件行为，不代表跨服务、前端或真实设备链路通过。最终 Verdict 必须同时说明已证明的范围与仍未验证的范围，不能只给一个脱离 Target 和 Evidence 的 `PASS`。
+
+### 独立 Code Review
+
+V 可以在没有当前 Execute 时审核现有代码。此时读取 Verification Target 所需的代码、调用方与 Contract，对照可用的 Requirement / Plan，检查正常路径和关键异常/边缘路径，列出 finding、Evidence 与 Verdict。Static Review 是有效的验证模式，但只能提供静态证据；发现问题时报告 `failed` 或明确的 review finding，默认不修改生产代码。
+
+### Targeted / Scoped Smoke
+
+当完整设备或跨服务链路复杂、不可访问或明确不在本轮范围时，以最小必要输入和环境执行 service/component smoke。例如直接调用 Service method，以 mock、stub 或 fake dependency 观察状态转换、持久化决策及 publisher 调用；也可以使用已有 test harness、local API、协议模拟或非生产开发环境。结果应分别说明内部行为是否通过，以及 MQTT、真实设备、前端或其他外部链路为何 `not executed` 或 `not verifiable`。局部通过不得升级为完整 Feature 或 E2E 通过。
+
+### 失败与 Plan 边界
+
+Verify 执行 Plan 预先设计的 Verification Plan，并依据当前证据作出判断；Plan 回答“完成后准备如何证明”，V 回答“现在实际能证明什么”。V 不重新设计整个实现方案。若验证失败，先报告失败位置、Evidence、影响与未覆盖范围，默认携带新证据回到 Explore；若失败只是因为 Verification Plan 或执行边界缺失，可以建议回到 Plan。Verify 本身不授权生产代码修复；只有用户明确要求修复后，才按适用的 E / P / X 继续，不做无限猜测式 patch。
 
 ## Product Truth Sync
 
