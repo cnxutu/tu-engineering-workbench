@@ -20,7 +20,7 @@ flowchart LR
     subgraph P2S["P2 c-iot-server：运行态所有者"]
       ACT["recordUpstreamActivity\n刷新 Redis 通道活跃度"]
       EXPLICIT["STATE_UPDATE=OFFLINE\n删除通道活跃度"]
-      TIMER["每分钟 IotDeviceOfflineCheckJob\n扫描在线设备"]
+      TIMER["每分钟第 15、45 秒 IotDeviceOfflineCheckJob\n扫描在线设备"]
       CALC["按 required channel tags\n重算设备状态"]
       DB["更新设备状态 + 状态变更记录"]
       EVENT["RocketMQ\niot_business_event:DEVICE_OFFLINE"]
@@ -44,6 +44,7 @@ flowchart LR
 | 服务 | 离线课题中的职责 | 不负责的事 |
 | --- | --- | --- |
 | P4 `ad-iot-codec-adapter-dji` | 从 DJI Topic/Payload 提取设备身份、`tid` 等请求标识，映射为统一上行结构。 | 不保存连接状态，不计算超时，不投递 RocketMQ 业务离线事件。 |
+| P4-1 `ad-iot-codec-adapter-robotDog-zhiyuan` | 管理机器狗 WebSocket 会话，将握手及状态 APDU 映射为统一上行消息；应用层心跳用于会话观测。 | 不持久化 P2 运行态，不计算 P2 超时，不直接投递 `STATE_UPDATE=OFFLINE` 或 RocketMQ 业务离线事件。 |
 | P3 `c-iot-gateway` | 接收 MQTT，创建当前进程内 MDC `traceId`，执行上行管道并转发标准化 `IotDeviceMessage`；首次可识别上行还会异步发送在线 `STATE_UPDATE`。 | 不持久化设备离线状态；当前已核实代码没有 P3→P2 的“设备断连即离线”事件。 |
 | P2 `c-iot-server` | **设备运行态的权威所有者**：按设备/通道活动 Redis 数据、产品 required channel tags 和 keepalive 计算状态；持久化状态变更记录，并生产 `DEVICE_OFFLINE`。 | 不维护 P1 的 `online:{SN}`、监控 DTO 或 WebSocket。 |
 | P1 `c-drone-inspection` | 消费 `DEVICE_OFFLINE`，将 P2 `deviceId` 查询投影成业务 SN，删除本地在线缓存，触发监控状态刷新；30 秒对账补偿“缓存 TTL 静默过期”。 | 不反写 P2 设备主状态；不能以 OSD/视频缓存替代 P2 的运行态判定。 |
@@ -67,7 +68,7 @@ P2 对没有通道标签的产品按设备活动判断；配置 required channel
 1. **显式离线：** 上游 `STATE_UPDATE` 的 identifier 为数字离线状态。P2 清理对应运行态，再写状态变更记录并发送 `DEVICE_OFFLINE`。
 2. **静默超时：** `IotDeviceOfflineCheckJob` 在每分钟第 15、45 秒以分布式锁扫描 P2 当前在线设备，按网关 keepalive（若未配置则使用全局 keepalive × factor）重新判断。状态由在线变离线才会发事件；因此“最后一条 OSD”不是一条离线消息，且离线事件没有可一一对应的原始上行 messageId。
 
-P1 的 `online:{deviceSn}` TTL 为 120 秒。它既可由 P2 的上线事件续期，也可在 P1 消费离线事件时显式删除；监控对账任务每 30 秒以 P1 的在线/OSD/RTMP 快照补偿状态通知。P1 缓存和 P2 运行态是不同所有权的数据，短时不一致需要依时间顺序分析。
+P1 的 `online:{deviceSn}` TTL 为 120 秒。它可由 P2 的上线事件续期，也可在 P1 消费离线事件时显式删除；机器狗有效状态属性成功处理后同样会续期，详见[机器狗展示状态分支](#智元机器狗的展示状态分支)。监控对账任务每 30 秒以 P1 的在线/OSD/RTMP 快照补偿状态通知。P1 缓存和 P2 运行态是不同所有权的数据，短时不一致需要依时间顺序分析。
 
 ## 排查闭环 SOP
 
@@ -85,7 +86,7 @@ flowchart TD
     D -- 是 --> I["记录 source、reportTime、gatewayId、P2 业务事件 msgId"]
     I --> J{P1 收到 DEVICE_OFFLINE？}
     J -- 否 --> K["查 RocketMQ topic/tag、消费组、堆积、重试/DLQ、P1 Consumer 日志"]
-    J -- 是 --> L{P1 删除 online:{SN} 并发出本地状态事件？}
+    J -- 是 --> L{P1 删除在线缓存并发出本地状态事件？}
     L -- 否 --> M["查 deviceId→SN 查询、Redis、监听器异常"]
     L -- 是 --> N["查 Monitor 对账、WebSocket 订阅/通知与前端刷新"]
 ```
