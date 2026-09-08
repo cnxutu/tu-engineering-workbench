@@ -10,7 +10,7 @@ Repository Scope
 Task Semantics
 +
 Optional Stage
-\+
++
 Optional Product Truth Sync
 =
 Current Engineering Intent
@@ -160,7 +160,7 @@ flowchart TD
     ALIGN --> EXECUTE[Execute<br/>agency]
     EXECUTE --> VERIFY[Verify<br/>evidence]
     VERIFY -->|pass| DONE[Done]
-    VERIFY -. optional .-> SYNC[Product Truth Sync<br/>S]
+    VERIFY -. explicit optional .-> SYNC[Product Truth Sync<br/>S]
     SYNC --> PRODUCTS[products/<br/>Current Product Truth]
     VERIFY -->|failure / new evidence| EXPLORE
     PLAN -->|Stop Condition| STOP[Stop]
@@ -313,8 +313,8 @@ flowchart TD
     DEV_03 --> DEV_FACT
     BUG_01 --> BUG_FACT[verified fact]
     INT_01 --> BUG_FACT
-    DEV_FACT -. optional .-> SYNC[Product Truth Sync<br/>S]
-    BUG_FACT -. optional .-> SYNC
+    DEV_FACT -. explicit optional .-> SYNC[Product Truth Sync<br/>S]
+    BUG_FACT -. explicit optional .-> SYNC
     SYNC --> PRODUCTS[products/<br/>Current Product Truth]
     STAB --> GATE[G4 / Accepted / Closing condition]
     GATE --> READY[Ready to Close]

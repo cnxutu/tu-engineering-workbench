@@ -144,8 +144,8 @@ flowchart TD
     STAB --> BUG_INT_TASK[INT / BUG tasks<br/>Explore → Plan → Execute → Verify]
     DEV_TASK --> DEV_FACT[verified fact]
     BUG_INT_TASK --> BUG_INT_FACT[verified fact]
-    DEV_FACT -. optional .-> SYNC[Product Truth Sync<br/>S]
-    BUG_INT_FACT -. optional .-> SYNC
+    DEV_FACT -. explicit optional .-> SYNC[Product Truth Sync<br/>S]
+    BUG_INT_FACT -. explicit optional .-> SYNC
     SYNC --> PRODUCTS[products/<br/>Current Product Truth]
     STAB --> GATE[G4 / Accepted / Closing condition]
     GATE --> READY[Ready to Close]
@@ -170,16 +170,16 @@ Archive 仅在 Sensitive Data Review 通过后写入本机 `workspace.local.yaml
 
 ```mermaid
 stateDiagram-v2
-    [*] --> ACTIVE_DEFERRED
-    ACTIVE_DEFERRED: Active\nknowledge_update_assessment: deferred
-    CLOSING: Delivery Closing\nFinal Product Truth Reconciliation + Archive
+    [*] --> NORMAL_ACTIVE
+    NORMAL_ACTIVE: Normal Active / Reopened\nknowledge_update_assessment: deferred
+    CLOSING: Closing Transaction\nFinal Product Truth Reconciliation + Archive
     CLOSED: Closed\nknowledge_update_assessment: updated | not-needed
-    ACTIVE_DEFERRED --> CLOSING: user-authorized Closing
+    NORMAL_ACTIVE --> CLOSING: user-authorized Closing
     CLOSING --> CLOSED: finalized
-    CLOSED --> ACTIVE_DEFERRED: Reopen
+    CLOSED --> NORMAL_ACTIVE: Reopen / reset deferred
 ```
 
-Reopen 只重置恢复出的 Active Package 为 `deferred`；不可变 Vault snapshot 保留其此前 finalized outcome，下一次 Closing 再重新决议。
+图仅刻画新 Delivery 或 Reopen 后的正常 Active 起点：Reopen 只重置恢复出的 Active Package 为 `deferred`；不可变 Vault snapshot 保留此前 finalized outcome，下一次 Closing 再重新决议。Closing 中断时，Active Package 保持可恢复，final assessment 可能已经完成而不再是 `deferred`；Recovery 根据已检查的 filesystem / metadata state 继续，不重新执行已经完成且验证过的 Closing steps。
 
 ## Entry and recovery
 
