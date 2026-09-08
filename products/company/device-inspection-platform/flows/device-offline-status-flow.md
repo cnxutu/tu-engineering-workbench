@@ -1,6 +1,6 @@
 # 设备离线状态链路与排查 SOP
 
-> **证据等级：代码核对已确认（2026-08-26）。** 本文限定“设备为何被平台判定为离线、以及离线通知如何到达巡检监控”。它不定义 EMQX 的在线事件、生产 Broker ACL、某产品实际 keepalive、或前端页面最终展示时序；这些均须按运行配置与日志核实。
+> **证据等级：代码核对已确认（2026-09-08）。** 本文限定“设备为何被平台判定为离线、以及离线通知如何到达巡检监控”。它不定义 EMQX 的在线事件、生产 Broker ACL、某产品实际 keepalive、或前端页面最终展示时序；这些均须按运行配置与日志核实。
 
 ## 范围与非目标
 
@@ -50,10 +50,22 @@ flowchart LR
 
 P2 对没有通道标签的产品按设备活动判断；配置 required channel tags 的产品只有所需通道满足在线条件才被视为在线。显式 `STATE_UPDATE=OFFLINE` 带 tags 时只移除相应通道，带空 tags 时代表整个设备离线并会移除已配置通道；随后重算或直接切换状态。
 
+### 智元机器狗的展示状态分支
+
+机器狗的协议会话健康、P2 设备运行态和 P1 驾驶舱展示是三个不同层次：不能把其中任一层的“在线”直接等同于另外两层。
+
+| 层次 | 已核实的当前行为 |
+| --- | --- |
+| 适配器会话 | P4-1 在握手成功后每 200ms 发一次 `1001` 应用层心跳；3 秒未收到有效回应仅记录告警，不主动关闭会话，也不调用 Custom Adapter 的 `statusChanged(OFFLINE)`。WebSocket 关闭、写入失败或握手失败会关闭当前会话并安排重连，但当前实现同样不直接投递 `STATE_UPDATE=OFFLINE`。 |
+| P2 设备运行态 | 每条已接受的非 `STATE_UPDATE` 上行刷新对应运行态 Redis 通道键。TTL 优先使用网关的 `keepAliveTime`；未配置时使用 `star.iot.keep-alive-time × keepAliveFactor`，源码默认值为 `300s × 3 = 900s`。`IotDeviceOfflineCheckJob` 在每分钟第 15、45 秒扫描数据库中状态为 ONLINE 的 IoT 设备；所需通道键已过期时，才切换为 OFFLINE 并生产 `DEVICE_OFFLINE`。 |
+| P1 机器狗业务展示 | 有效机器狗状态属性经 P1 消费、身份及唯一项目绑定校验后，会同时将 `online:{deviceSn}` 和状态快照续期为 120 秒。`RobotDogBusinessStatusResolver` 在该在线键不存在时返回 `OFFLINE`；P2 的 `DEVICE_OFFLINE` 消费者也会立即删除同一在线键。 |
+
+所以，机器狗驾驶舱可能先于 P2 的超时扫描变为离线：连续 120 秒没有能成功到达 P1 的有效状态属性时，P1 在线键自然过期。反过来，P2 事件到达后会立即让 P1 进入离线。两者是独立缓存，短时不一致须按消息到达顺序判断，不能以 P4-1 的单次心跳告警或 `1004` 的单个字段直接断言“设备离线”。机器狗状态快照和展示契约见 [智元机器狗上下行集成闭环](zhiyuan-robot-dog-end-to-end-integration.md) 与 [机器狗状态快照 WebSocket](../repositories/c-drone-inspection/robot-dog-status-snapshot-websocket.md)。
+
 ## 离线判定的两条路径
 
 1. **显式离线：** 上游 `STATE_UPDATE` 的 identifier 为数字离线状态。P2 清理对应运行态，再写状态变更记录并发送 `DEVICE_OFFLINE`。
-2. **静默超时：** 每分钟 `IotDeviceOfflineCheckJob` 在分布式锁下扫描 P2 当前在线设备，按网关 keepalive（若未配置则使用全局 keepalive × factor）重新判断。状态由在线变离线才会发事件；因此“最后一条 OSD”不是一条离线消息，且离线事件没有可一一对应的原始上行 messageId。
+2. **静默超时：** `IotDeviceOfflineCheckJob` 在每分钟第 15、45 秒以分布式锁扫描 P2 当前在线设备，按网关 keepalive（若未配置则使用全局 keepalive × factor）重新判断。状态由在线变离线才会发事件；因此“最后一条 OSD”不是一条离线消息，且离线事件没有可一一对应的原始上行 messageId。
 
 P1 的 `online:{deviceSn}` TTL 为 120 秒。它既可由 P2 的上线事件续期，也可在 P1 消费离线事件时显式删除；监控对账任务每 30 秒以 P1 的在线/OSD/RTMP 快照补偿状态通知。P1 缓存和 P2 运行态是不同所有权的数据，短时不一致需要依时间顺序分析。
 
@@ -139,5 +151,7 @@ P1 的 `InspectionIotMessageConverter` 只接受 `params.identifier` 声明的�
 - P2 上行消费、活跃度、超时与事件生产：`c-iot-server/c-iot-core/.../mq/consumer/device/IotDeviceMessageProcesser.java`、`.../service/device/state/IotDeviceOnlineStateServiceImpl.java`、`.../job/device/IotDeviceOfflineCheckJob.java`、`.../mq/producer/IotBusinessEventProducer.java`。
 - P1 离线消费及业务投影：`c-drone-inspection/b-inspection-platform-iot/.../InspectionIotBusinessEventOfflineConsumer.java`、`c-drone-inspection/b-inspection-platform-core/.../IotDeviceOnlineStatusServiceImpl.java`、`.../MonitorBusinessStatusReconciliationTask.java`。
 - P1 物模型转换、路由与消费失败语义：`c-drone-inspection/b-inspection-platform-iot/.../InspectionIotMessageConverter.java`、`.../InspectionIotMessageRouter.java`、`.../InspectionIotUpstreamConsumer.java`。
+- P4-1 心跳、会话关闭/重连与不触发 `statusChanged` 的测试：`ad-iot-codec-adapter-robotDog-zhiyuan/.../ZhiyuanRobotDogCustomProtocolAdapter.java`、`.../ZhiyuanRobotDogLifecycleTest.java`。
+- P1 机器狗状态对 `online:{deviceSn}` 和快照的 120 秒续期及离线归约：`c-drone-inspection/b-inspection-platform-core/.../InspectionRobotDogStatusBusinessServiceImpl.java`、`.../RobotDogBusinessStatusResolver.java`。
 
 联调前仍需在目标环境核实：P2 实际的网关 keepalive/产品通道配置、P1 业务事件订阅配置、RocketMQ ACL/重试/DLQ 与 P3/P4 运行 Jar 版本。不要把这些易变运行事实写入本页。

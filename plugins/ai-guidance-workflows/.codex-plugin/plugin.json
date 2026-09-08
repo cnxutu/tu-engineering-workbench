@@ -1,6 +1,6 @@
 {
   "name": "ai-guidance-workflows",
-  "version": "0.1.0+codex.20260906090000",
+  "version": "0.1.0+codex.20260908050917",
   "description": "Evidence-led feature delivery, closing, impact analysis, Spring incident, and cross-service workflows.",
   "author": {
     "name": "tu-engineering-workbench"
