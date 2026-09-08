@@ -38,4 +38,4 @@ Playbook 是仓库级的通用工程方法，不等同于 Codex 平台安装且�
 
 用户默认使用自然语言描述任务。对非平凡工程任务，可选用 [Engineering Task Loop](playbooks/engineering-task-loop.md) 的 Stage Shortcuts：Explore → Plan → Execute → Verify。它们表达本轮阶段意图，不取代用户确认、局部 `AGENTS.md`、Contract 或证据。
 
-任务涉及多个仓库、公开契约或消息协议时，应先加载最小必要的产品架构与链路资料，使用 `System Designer` 进行设计或评审；只需先判断可行性时使用 Explore，已确认方向、只需锁定改动边界与步骤时使用 Plan。面向人的日常示例见 [Engineering Task Loop Best Practice](../docs/workflows/engineering-task-loop/README.md)，但 Runtime 不强制加载该页面。
+任务涉及多个仓库、公开契约或消息协议时，应先加载最小必要的产品架构与链路资料，使用 `System Designer` 进行设计或评审；Explore 以证据形成 Viable Solution，Plan 再补齐边界、影响、失败路径、执行和验证闭环，形成 Executable Plan。完整定义以 [Engineering Task Loop](playbooks/engineering-task-loop.md) 为准；面向人的日常示例见 [Engineering Task Loop Best Practice](../docs/workflows/engineering-task-loop/README.md)，但 Runtime 不强制加载该页面。

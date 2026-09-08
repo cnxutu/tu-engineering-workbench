@@ -44,7 +44,7 @@ E
 DF-20260903-99 DEV-01：核对补光控制接口的现有入口、权限和状态回读链路。
 ```
 
-阶段可用 `E / P / X / V` 或完整英文，大小写不敏感；Repository Scope 位于阶段前。`E` 用于取证，`P` 用于收敛候选计划。Plan Mode 帮助形成计划，但只有用户确认的 Plan 才是本轮 Execution Boundary。
+阶段可用 `E / P / X / V` 或完整英文，大小写不敏感；Repository Scope 位于阶段前。`E` 用证据形成 Viable Solution，`P` 再补齐边界、影响、失败路径、执行和验证闭环，形成 Executable Plan；完整定义以 [Engineering Task Loop](../../../engineering-task-loop/README.md) 为准。Plan Mode 帮助形成计划，但只有用户确认的 Plan 才是本轮 Execution Boundary。
 
 确认计划后，优先使用 Codex 原生 **Execute Plan / Implement**。只有原生 UI 不可用或计划发生变化时才显式使用 `X`；完成后用 `V` 执行约定验证。实施结果、证据和剩余风险回填 `03-execution-backlog.md`，Bug/联调结论回填 `04-integration-log.md`，暂停或阶段变化时刷新 `resume.md`。
 

@@ -1,6 +1,6 @@
 # Engineering Task Loop
 
-Engineering Task Loop 是一次具体 DEV、Bug、Refactor 或技术改造的细粒度安全执行方法：先充分理解，再锁定边界，随后在授权范围内修改，并用证据决定是否完成。它不取代长期的 [Feature Delivery](../feature-delivery/README.md)。可复用方法见 [Core Playbook](../../../core/playbooks/engineering-task-loop.md)；本页是面向人的使用说明和可复制提示。
+Engineering Task Loop 是一次具体 DEV、Bug、Refactor 或技术改造的细粒度安全执行方法：先核实现状、验证关键可行性并收敛推荐方向，再锁定边界，随后在授权范围内修改，并用证据决定是否完成。它不取代长期的 [Feature Delivery](../feature-delivery/README.md)。可复用方法见 [Core Playbook](../../../core/playbooks/engineering-task-loop.md)；本页是面向人的使用说明和可复制提示。
 
 ## Mental Model
 
@@ -73,7 +73,7 @@ V
 <可选额外验证>
 ```
 
-Stage Shortcut 提供默认行为，用户补充内容提供本次问题与额外约束；补充可收窄或覆盖默认行为，但仍受指令优先级限制。Explore 默认不修改 tracked files；Plan 默认只形成候选计划；Execute 只在有效边界内修改；Verify 只取得证据，不在失败后自动修复。
+Stage Shortcut 提供默认行为，用户补充内容提供本次问题与额外约束；补充可收窄或覆盖默认行为，但仍受指令优先级限制。Explore 默认不修改 tracked files；Plan 默认只形成候选 Executable Plan；Execute 只在有效边界内修改；Verify 只取得证据，不在失败后自动修复。
 
 ## Product Truth Sync Shortcut
 
@@ -116,7 +116,7 @@ P
 不要动 adapter repository。
 ```
 
-Plan 输出候选计划。若 UI 提供 `Execute Plan`、`Implement` 或等价原生 Action，直接使用它，无需再输入 `X`。若 Plan 后继续讨论，例如“不要新建 DTO，继续复用现有状态对象”，待最新方案重新收敛后输入 `X`，即确认并执行该唯一、有效的最新 Plan。
+Plan 输出候选 Executable Plan。若 UI 提供 `Execute Plan`、`Implement` 或等价原生 Action，直接使用它，无需再输入 `X`。若 Plan 后继续讨论，例如“不要新建 DTO，继续复用现有状态对象”，待最新方案重新收敛后输入 `X`，即确认并执行该唯一、有效的最新 Plan。
 
 完成后可补充验证：
 
@@ -150,13 +150,15 @@ Plan 中可明确“允许修改 P1、P2，不能改 DB Schema 和外部 API Con
 
 ### Loop at a glance
 
-直接要求 AI 改代码会把理解、决策、修改和验收混在一起。这个 Loop 将它们分开：Explore 允许充分调查，Plan 收敛候选边界，Execute 严格受授权约束，Verify 以测试和证据而不是“看起来正确”决定结果。
+直接要求 AI 改代码会把理解、决策、修改和验收混在一起。这个 Loop 将它们分开：Explore 用证据证明推荐方案可行，Plan 将方案补完整并形成可执行边界，Execute 严格受授权约束，Verify 以测试和证据而不是“看起来正确”决定结果。完整规则以 [Core Playbook](../../../core/playbooks/engineering-task-loop.md) 为准。
 
 ```mermaid
 flowchart TD
-    REQUEST[Request] --> EXPLORE[Explore<br/>understand]
-    EXPLORE --> PLAN[Plan<br/>boundary]
-    PLAN --> ALIGN[User alignment]
+    REQUEST[Goal / Problem] --> EXPLORE[Explore<br/>understand · validate · shape]
+    EXPLORE --> VIABLE[Viable Solution]
+    VIABLE --> PLAN[Plan<br/>refine · bound · close · prepare]
+    PLAN --> EXECUTABLE[Executable Plan]
+    EXECUTABLE --> ALIGN[User alignment]
     ALIGN --> EXECUTE[Execute<br/>agency]
     EXECUTE --> VERIFY[Verify<br/>evidence]
     VERIFY -->|pass| DONE[Done]
@@ -190,9 +192,11 @@ flowchart TD
 
 以下完整模板适合 Level 3、新用户学习、高风险任务，或需要显式强化边界时使用；不是日常每次都必须复制的输入。
 
-### Explore: understand before changing
+### Explore: understand, validate, and shape before planning
 
-回答发生了什么、为什么、真实 change seam 在哪里、已有何种可复用实现、受影响哪些仓库/模块、有什么替代方案、最小可行改动是什么、可能失败什么以及如何验证。默认不修改任何 tracked file；普通小任务只输出紧凑 Explore Summary：Finding、Root/likely cause、Relevant code path、Recommended approach、Alternatives、Affected scope、Explicit non-scope、Risk、Verification approach 与 Open questions，无需新建持久文件。
+Explore 先核实 Goal / Problem、当前实现、调用链、约束、change / integration seam 与可复用能力，并区分 Facts、Assumptions 和 Unknowns；不要一开始直接输出方案。随后以读取、搜索、现有测试或非持久诊断等证据验证推荐方向成立所依赖的关键条件：当前架构和扩展点是否支持、是否触及公共 Contract 或兼容性边界、外部 SDK / API 是否具备所需能力，以及性能、数据量、并发或前置条件是否构成约束。最后收敛出推荐方案及其 Evidence / Reasoning，必要时给出替代方案和取舍。
+
+Explore 的方案要足以让 Plan 拆分 Files / Components、Steps 和 Stop Conditions，但不应预先展开成逐步实施计划。普通小任务只输出紧凑 Explore Summary：Goal / Problem、Current state、Facts / Assumptions / Unknowns、Feasibility（及 Evidence）、Recommended solution、Affected scope、Explicit non-scope、Risks / constraints、Verification strategy 与 Open questions / Preconditions；按复杂度省略不适用字段，无需新建持久文件。复杂或高风险任务应明确可行性结论，例如 `Feasible`、`Feasible with constraints`、`Needs further validation` 或 `Not recommended`；关键未知项仍会阻塞 Plan 时，必须继续验证或明确列为前置条件，而非视作 Explore 完成。
 
 ```text
 先不要修改代码。
@@ -200,24 +204,33 @@ flowchart TD
 目标：
 <我要解决的问题>
 
-本轮只做探索和可行性分析。
+本轮只做探索、可行性验证和方案收敛。
 
 请：
 1. 理解当前实现与调用链；
-2. 找出真正修改 seam；
+2. 找出真正修改 seam、integration seam 与可复用能力；
 3. 区分事实、假设与未知；
-4. 给出推荐方案及必要替代方案；
-5. 明确影响范围与非范围；
-6. 给出风险和验证方式。
+4. 用现有证据或非持久验证确认关键可行性与约束；
+5. 给出附 Evidence / Reasoning 的推荐方案及必要替代方案；
+6. 明确影响范围、非范围、风险/约束和 Verification Strategy；
+7. 确认关键未知项不会阻塞 Plan，或明确继续验证所需的前置条件。
 
 完成后先停在方案评审，不执行修改。
 ```
 
-Explore 默认禁止 tracked-file 修改、commit、push、deploy、release、生产写入和外部副作用；可以读取、搜索调用链、运行现有测试或非持久诊断/验证。用户可显式放宽明确范围，例如允许新增临时测试，但不会因此授权生产代码修改。Goal Mode 或 Explore 类请求本身不天然等于只读模式。
+Explore 的退出条件是：Goal / Problem、当前实现与约束、关键 Facts / Assumptions / Unknowns 已基本明确；核心可行性已有足够证据；推荐方案、change seam、影响范围和 Verification Strategy 已清楚；剩余未知项不阻塞 Plan，或已显式成为其前置条件。满足后停在方案评审。Explore 默认禁止 tracked-file 修改、commit、push、deploy、release、生产写入和外部副作用；可以读取、搜索调用链、运行现有测试或非持久诊断/验证。用户可显式放宽明确范围，例如允许新增临时测试，但不会因此授权生产代码修改。Goal Mode 或 Explore 类请求本身不天然等于只读模式。
 
 ### Plan: execution contract
 
-Codex Plan Mode 用于形成和收敛候选执行计划，至少覆盖 Goal、Scope、Files / Components、Steps、Verification 与 Stop Conditions。它本身不修改代码，也不是业务 Contract 或 Workbench Artifact。若 UI 提供原生 Plan 执行 Action，优先使用；否则 `X` / `Execute` 可确认并执行当前唯一、明确、无未决且未失效的最新 Plan。属于 Feature Delivery 时，持久边界和结果必须回填对应 Artifact。
+Plan 建立在 Explore 已验证的 Viable Solution 上，继续追问“方案是否已经完整到可以安全执行”。它通过 Refine、Bound、Close the Loop 和 Prepare Execution，把方案推进为 Executable Plan；不重新无依据研究“是否可行、应该采用什么方案”，也不一开始就机械拆 todo。
+
+Plan 按任务相关性补齐：Scope / Non-scope 和输入输出、模块、数据、生命周期、权限、外部系统、旧数据/旧行为边界；性能、并发、一致性、SDK/API、数据库、Contract、发布、安全、兼容和可观测性约束；关键失败与边缘路径；需修改、仅受影响和明确不改内容组成的 Change Map；Files / Components、依赖、顺序、migration、feature flag、rollout / rollback 等 Execution Design；以及能覆盖正常、关键失败和兼容路径的 Executable Verification Plan。简单任务可缩短为 change、impact、execution、verification；只有复杂度或风险需要时才完整展开，不机械套模板。
+
+Plan 完成时，Explore 的推荐方向仍须成立；Goal、Scope / Non-scope、关键边界、主要约束和失败路径已经明确；依赖、Change Map、数据/API/Contract/config/迁移/部署影响与兼容性已经处理；Files / Components、执行顺序和任务拆分已经明确；Verification Plan 可以实际执行；且不存在阻塞 Execute 的关键 Unknown。此时 Plan 应当唯一、明确、可排序、可验证并带有 Stop Conditions。
+
+若 Plan 中出现足以推翻 Explore 的新事实，例如 SDK 不支持、实际数据量突破假设、隐藏架构限制、公共 Contract 无法按原方向变化，或成本/风险已不合理，应携带新证据返回 Explore。Plan 精炼可行方案；当可行性重新变得不确定时，不在 Plan 中静默重选方向。
+
+Codex Plan Mode 形成和收敛候选 Executable Plan，本身不修改代码，也不是业务 Contract 或 Workbench Artifact。若 UI 提供原生 Plan 执行 Action，优先使用；否则 `X` / `Execute` 可确认并执行当前唯一、明确、无未决且未失效的最新 Plan。属于 Feature Delivery 时，持久边界和结果必须回填对应 Artifact。
 
 ```text
 基于刚才探索结果，进入计划模式。
@@ -225,15 +238,15 @@ Codex Plan Mode 用于形成和收敛候选执行计划，至少覆盖 Goal、Sc
 请把执行范围收敛为：
 
 - Goal
-- Scope
-- Files / Components
-- Steps
-- Verification
+- Scope / Non-scope and relevant boundaries
+- Constraints, failure paths, compatibility, and Change Map
+- Files / Components, dependencies, and ordered steps
+- Executable Verification Plan
 - Stop Conditions
 
 优先采用最小改动。
 
-如果计划中需要扩大到新的 Repository、Contract、DB Schema 或权限模型，请明确指出，不要默认纳入。
+如果新事实使 Explore 的可行性结论不再成立，返回 Explore；如果计划需要扩大到新的 Repository、Contract、DB Schema 或权限模型，请明确指出，不要默认纳入。
 ```
 
 ### Execute: act inside the boundary
