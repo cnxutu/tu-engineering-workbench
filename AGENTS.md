@@ -48,6 +48,12 @@
 
 Stage Shortcut 给出默认行为；用户本轮最新明确补充提供问题、范围和额外约束，可收窄或覆盖默认行为，但仍受指令优先级约束。例如 `E` 后明确允许新增临时测试，只放宽该测试级修改，不授权其他 tracked file 修改。K2 或其他非后端任务没有适用角色时，不强行套用 Java 角色。
 
+### 3.1.1 Product Truth Sync Shortcut
+
+`Sync` / `S` 是独立的 Product Truth Sync Action，不是 Engineering Task Loop 的第五个 Stage，也不改变 `E / P / X / V`。它可位于任务头部、可选 Repository Scope 之后，以独立 token / 标签出现；`S1` 始终是 Repository Scope，不会被识别为 `S`。`P0 S` 的含义是允许在 `tu-engineering-workbench` 执行该 Action：基于当前 Thread 已有的实现、契约和 Verification Evidence，判断是否应最小更新 `products/` 中现有的 canonical Current Product Truth 页面。
+
+Sync 不要求 DF、Active Delivery 或 `work/`；也不关闭 Delivery、Archive、修改 `task.yaml` 或 `knowledge_update_assessment`。只有事实同时为 **Verified、Current、Durable、Independently Valid** 时才可同步；否则分别报告 `not-needed`、`not-ready` 或 `insufficient-evidence`，且不写 `products/`。优先使用当前 Thread 已有证据；重新读取业务仓库需要已在 Scope 内，不能因 Sync 自动扩大范围。Sync 仅可最小修改 P0 `products/` 及必要的 canonical navigation links，不写 `work/`、源代码仓库、Archive，也不 commit、push、release 或 deploy。属于 Delivery 的事实可在其间独立 Sync；Delivery Closing 仍负责整个 Delivery 的最终 Product Truth reconciliation。
+
 若已安装团队插件 `ai-guidance-workflows`：用户显式调用可用的 `tu-` Skill 时，使用该 Skill 并遵循其 `SKILL.md`；未显式调用时，按已安装 Skill 自身的触发描述和任务语义判断是否适用。未安装 Plugin 或没有适用原生 Skill 时，继续遵循本文件引用的 Core 工作流。仅出现多个项目标记但未说明服务交互时，不自动加载 P1–P4、P3-1 的全局上下文；先确认关联边界或分别按单项目任务处理。
 
 ### 3.2 按任务叠加读取的上下文

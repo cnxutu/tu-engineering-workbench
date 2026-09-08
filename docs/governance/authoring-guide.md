@@ -50,6 +50,6 @@
 
 ## 记录
 
-`Core` 下的 [契约](../../core/contracts/) 是文档契约，不是可执行校验器。任务记录应保持简洁：活跃 Delivery 位于 `work/active/`；用户授权 Closing 后，完整过程 Archive 至配置的 `tu-vault` 并验证，再在 `work/closed/` 留下薄索引、retire active Package。`work/<domain>/<product>/tasks/archive/` 是 legacy / local cold history。持久架构选择使用 ADR；加入证据前先脱敏。单个 Task Loop Verify 只回填父 Artifact；只有 Delivery Closing 时的 Integrate 才提炼已验证且仍有效的结论为产品当前事实，不直接把排查过程写入 `products/`。
+`Core` 下的 [契约](../../core/contracts/) 是文档契约，不是可执行校验器。任务记录应保持简洁：活跃 Delivery 位于 `work/active/`；用户授权 Closing 后，完整过程 Archive 至配置的 `tu-vault` 并验证，再在 `work/closed/` 留下薄索引、retire active Package。`work/<domain>/<product>/tasks/archive/` 是 legacy / local cold history。持久架构选择使用 ADR；加入证据前先脱敏。单个 Task Loop Verify 只回填父 Artifact；显式 Product Truth Sync 可将已验证、当前、长期且独立成立的结论最小提炼至 `products/`，Delivery Closing 则对整个 Delivery 做最终 reconciliation；两者都不直接把排查过程写入 `products/`。
 
 仓库配置见 [接入指南](../guides/integration-guide.md)，AI 读取、Skill 与 Template 使用见 [工程师使用与维护指南](../guides/usage-guide.md)。

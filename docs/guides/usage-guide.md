@@ -22,7 +22,7 @@ Explore
 
 ## 2. 何时维护 P0 知识
 
-仅当任务改变了长期可复用的关键入口、跨服务链路、服务/数据边界、公开契约或持久架构决策时，才更新 `products/`。修改时阅读：
+仅当任务改变了长期可复用的关键入口、跨服务链路、服务/数据边界、公开契约或持久架构决策时，才考虑更新 `products/`。显式 `P0 S` / Product Truth Sync 只在已有事实同时 Verified、Current、Durable、Independently Valid 时最小更新 canonical 页面；它不需要 DF，也不修改 Delivery metadata 或 Archive。修改时阅读：
 
 - [编写指南](../governance/authoring-guide.md)：收录标准和文档结构。
 - [治理规范](../governance/governance.md)：证据、过期性、敏感信息、ADR、Current Product Truth 与 Delivery Closing。
@@ -41,6 +41,15 @@ Explore
 个人级 Codex 指令、团队级工程规则与其他配置入口的边界，分别见 [全局 `AGENTS.md` 指南](../codex/global-agents-guidance.md) 和 [Codex 可配置入口地图](../codex/codex-customization-map.md)。这两页用于工程师理解和维护，不应复制进 P0 根 `AGENTS.md`。
 
 日常任务默认使用自然语言；对非平凡工程任务，可选用 `Explore`、`Plan`、`Execute`、`Verify` 表达本轮阶段意图。最短用法、默认边界和受控模板见 [Engineering Task Loop](../workflows/engineering-task-loop/README.md)。
+
+工程修改已验证后，如要检查是否应同步长期 Product Truth，可另起一轮：
+
+```text
+P0
+S
+```
+
+或写作 `P0 S`。它表示在 Workbench 范围内，以当前 Thread 的可靠工程证据最小同步 Current Product Truth；结果可以是 `synced`、`not-needed`、`not-ready` 或 `insufficient-evidence`。`S1` 仍是 Repository Scope，`S` 不是 E/P/X/V 的第五个 Stage。
 
 ## 4. 接入新仓库
 
@@ -98,6 +107,6 @@ $ai-guidance-workflows:tu-deliver-feature
 
 继续、查询和 Bug 都只需要 canonical Delivery ID：`继续 DF-20260904-01`、`DF-20260904-01 当前进展` 或 `DF-20260904-01 设备状态偶尔不刷新`。Skill 先在 `work/active/` 定位 Package；未命中时读 `work/closed/` 的 Thin Context Index，并按其 archive reference 优先访问配置的 external cold history，local legacy archive 仅作兼容 fallback。两者都不可访问时报告证据缺口。随后读取 `task.yaml`、`resume.md` 和当前阶段权威产物，再加载最小必要代码上下文。也可以只调用 Impact Skill 并附上原型图；目标项目、分层与数据约定、确认门禁、实现范围和验证方式仍须从当前工程上下文与代码核实。
 
-只有用户明确要求关闭并给出 DF ID 时才调用 `tu-close-delivery`，例如 `$ai-guidance-workflows:tu-close-delivery DF-20260904-01`。G4 或任务 Verify 通过时，Agent 只能建议 Ready to Close；Closing Skill 会依次 Integrate、Sensitive Data Review、Archive 到配置的 deterministic `tu-vault` Unit、验证 finalized Archive、创建 Closed Index 并 retire active Package，不会 commit、push、release 或修改其他 Delivery。
+只有用户明确要求关闭并给出 DF ID 时才调用 `tu-close-delivery`，例如 `$ai-guidance-workflows:tu-close-delivery DF-20260904-01`。G4 或任务 Verify 通过时，Agent 只能建议 Ready to Close；Closing Skill 会先对整个 Delivery 的 Product Truth 做最终 reconciliation（包括复核此前合法 Sync 的结论），再 Sensitive Data Review、Archive 到配置的 deterministic `tu-vault` Unit、验证 finalized Archive、创建 Closed Index 并 retire active Package，不会 commit、push、release 或修改其他 Delivery。
 
 安装后，Codex 可根据任务描述和运行时约束自动选择允许隐式触发的 Skill；显式写 `$插件名:Skill名` 更确定。`tu-close-delivery` 是 explicit-only，始终需要明确 Closing intent 与 DF ID。仅出现多个项目标记但未说明服务交互时，不自动加载 P1–P4、P3-1 的全局上下文。

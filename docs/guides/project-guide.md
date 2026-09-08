@@ -77,7 +77,7 @@ flowchart TD
 | 根目录 `AGENTS.md` | P0 公共运行时入口：范围、可选 Stage Shortcuts、条件读取、优先级与事实边界 | 调整跨仓库且长期稳定的 AI 加载或协作规则时。 |
 | `core/` | 跨产品复用的 Kernel、角色、规则、Playbook、契约 | 需要通用方法而非产品事实时；遵循渐进式加载。 |
 | `products/` | 已有证据支撑的产品、服务边界、链路与决策 | 改变长期入口、服务/数据边界、公开契约或端到端流程时。 |
-| `work/` | Delivery Change State：`active/` 的完整当前 Package、`closed/` 的薄索引与按需访问的 cold history | 推进、继续、关闭或回溯真实需求时；验证后的结论只在 Integrate 后提炼到 `products/`。 |
+| `work/` | Delivery Change State：`active/` 的完整当前 Package、`closed/` 的薄索引与按需访问的 cold history | 推进、继续、关闭或回溯真实需求时；显式 Product Truth Sync 可同步独立成立的结论，Closing 对 Delivery 最终 reconciliation。 |
 | `docs/` | 仅供工程师按需查阅的使用、接入、编写、治理和项目导航 | 调整工程师使用方式、维护入口或知识治理规则时。 |
 | `bootstrap/` | 目标仓库接入 P0 的 `AGENTS.md` 与清单模板 | 接入新仓库或修订接入模板时。 |
 | `scripts/`、`tests/` | 文档结构、链接、路径和契约的校验实现 | 调整校验能力或修复校验问题时。 |
@@ -116,5 +116,5 @@ flowchart TD
 - 工程师按需阅读：`README.md`、`docs/`、接入与治理说明、项目导航页。
 - 当前事实：代码、契约、配置、测试和可复现命令结果。
 - 长期知识：经证据支撑的产品入口、链路、边界和设计决策。
-- Delivery Change State：真实需求的完整当前上下文与薄历史索引；只有 Delivery Closing 时 Integrate 的验证结论才进入 Current Product Truth。
+- Delivery Change State：真实需求的完整当前上下文与薄历史索引；显式 Product Truth Sync 可将独立成立的验证结论进入 Current Product Truth，Delivery Closing 负责最终 reconciliation。
 - 不应进入产品 Current Truth：密钥、敏感运行数据、全量环境配置、未经核实猜测和一次性排查细节。

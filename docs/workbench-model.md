@@ -15,7 +15,7 @@
 
 ## Delivery 生命周期与位置
 
-Feature Delivery 的四个工程阶段保持为 Impact → Contract → Execution → Integration & Stabilization；具体 DEV、BUG 或 INT 修改使用 Engineering Task Loop 的 Explore → Plan → Execute → Verify。Verify 仅为当前工程任务返回证据，并回填父 Delivery Artifact。G4 / acceptance 或明确 Closing condition 只代表 Ready to Close；只有用户显式授权 `tu-close-delivery DF-...`，才进入 **Delivery Closing → Integrate → Sensitive Data Review → deterministic Vault Archive → Verify Archive → Closed Index → Retire Active**。Integrate 和 Archive 不是新的 E/P/X/V Stage Shortcut，也不属于第五个工程 Phase。
+Feature Delivery 的四个工程阶段保持为 Impact → Contract → Execution → Integration & Stabilization；具体 DEV、BUG 或 INT 修改使用 Engineering Task Loop 的 Explore → Plan → Execute → Verify。Verify 仅为当前工程任务返回证据，并回填父 Delivery Artifact。显式 `S` / Product Truth Sync 可在 Verify 后，将已独立成立的 Current Product Truth Delta 同步到 `products/`；它不是 E/P/X/V 的第五个 Stage，不要求 DF，也不改变 Delivery State。G4 / acceptance 或明确 Closing condition 只代表 Ready to Close；只有用户显式授权 `tu-close-delivery DF-...`，才进入 **Delivery Closing → final Product Truth reconciliation → Sensitive Data Review → deterministic Vault Archive → Verify Archive → Closed Index → Retire Active**。
 
 ```text
 work/active/<domain>/<product>/DF-YYYYMMDD-NN-<slug>/
@@ -45,9 +45,9 @@ work/<domain>/<product>/tasks/archive/
 
 ## Closing semantics
 
-Delivery Closing 的 readiness 由整个 Delivery 的关闭条件决定，而不是任一 DEV、BUG 或 INT 的 Verify；执行权则来自用户的显式 Closing Authorization。`tu-deliver-feature` 只能报告 ready 并建议 `tu-close-delivery`。`completed` 需要 acceptance satisfied，通常也满足 G4；`blocked` 和 `superseded` 也可关闭，但 Archive 不表示成功。blocked 只 Integrate 已验证且仍有效的事实，没有则记录 `knowledge_update_assessment: not-needed`；superseded 仅 Integrate 仍有效的事实，不把被替代的旧设计写成 Current Product Truth，并以 related delivery / superseded-by reference 说明去向。
+Delivery Closing 的 readiness 由整个 Delivery 的关闭条件决定，而不是任一 DEV、BUG 或 INT 的 Verify；执行权则来自用户的显式 Closing Authorization。`tu-deliver-feature` 只能报告 ready 并建议 `tu-close-delivery`。`completed` 需要 acceptance satisfied，通常也满足 G4；`blocked` 和 `superseded` 也可关闭，但 Archive 不表示成功。blocked 只对已验证且仍有效的事实做 reconciliation，没有则记录 `knowledge_update_assessment: not-needed`；superseded 仅对仍有效的事实做 reconciliation，不把被替代的旧设计写成 Current Product Truth，并以 related delivery / superseded-by reference 说明去向。
 
-**Integrate**：将本次已验证且未来可复用的事实更新到对应 `products/` 权威页或 ADR；未形成此类事实时在 Delivery 中明确 `not-needed`。Requirement Authority（approved Product Spec/PRD、decision、Contract 或 acceptance criteria）与 Implementation Reality（code、test、configuration、runtime evidence）分别维护，差异记为 Requirement / Implementation Gap。产品当前状态不应依赖阅读多个旧 Delivery 才能拼出。
+**Final Product Truth reconciliation**：审查整个 Delivery 的最终实现与 Delta，并复核其间已由 Product Truth Sync 写入的 Current Truth；不重复相同结论，修正被后续工作改变的结论，补充最终尚未同步的事实。仅将已验证且未来可复用的事实更新到对应 `products/` 权威页或 ADR；未形成此类事实时在 Delivery 中明确 `knowledge_update_assessment: not-needed`。Requirement Authority（approved Product Spec/PRD、decision、Contract 或 acceptance criteria）与 Implementation Reality（code、test、configuration、runtime evidence）分别维护，差异记为 Requirement / Implementation Gap。产品当前状态不应依赖阅读多个旧 Delivery 才能拼出。
 
 **Archive**：按 [Delivery Closing Playbook](../core/playbooks/delivery-closing.md) 先完成 Sensitive Data Review，再将完整 Package copy 到本机 `workspace.local.yaml` 解析的 `external_contexts.tu_vault.path` 下、由 tracked `core/registry/external-contexts.yaml` 共享定义的唯一 `<delivery_archive_root>/<DF-ID>/` Unit；仅 archived `delivery/task.yaml` 成为 final historical snapshot。验证后以同一 `tu-vault:<delivery_archive_root>/<DF-ID>` 创建 Closed Index，最后 retire active Package。配置缺失或 Archive Verification 失败时保留 active Package；reopen 只将 immutable `<Archive Unit>/delivery/` restore/copy 为 Active Package，不移动、删除或修改 Vault Unit，且不把 summary 或 manifest 带入 active。普通 Workbench 运行不依赖 `tu-vault`；只有 Closing 需要已配置 target。
 

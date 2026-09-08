@@ -10,20 +10,23 @@ Repository Scope
 Task Semantics
 +
 Optional Stage
+Optional Product Truth Sync
 =
 Current Engineering Intent
 ```
 
-`P1`、`P2` 等项目标记说明在哪里工作；自然语言说明要做什么；Stage 只表达本轮操作意图；Playbook、Skill 与 Role 是按语义选择的专业能力 Provider。长期 Feature 则由 Feature Delivery 保存生命周期与证据。
+`P1`、`P2` 等项目标记说明在哪里工作；自然语言说明要做什么；Stage 只表达本轮操作意图；`S` 是在已验证后可选的 Product Truth Sync Action，不属于 Stage；Playbook、Skill 与 Role 是按语义选择的专业能力 Provider。长期 Feature 则由 Feature Delivery 保存生命周期与证据。
 
 ```mermaid
 flowchart TD
     U[User] --> S[Repository Scope<br/>P1 / P2 / ...]
     U --> T[Natural Language<br/>Bug / Feature / Refactor / Review / Cross-service]
     U --> G[Optional Stage<br/>E / Explore · P / Plan · X / Execute · V / Verify]
+    U --> PS[Optional Product Truth Sync<br/>S]
     S --> R[Runtime semantic routing]
     T --> R
     G --> R
+    PS --> R
     R --> PB[Playbook / Role]
     R --> SK[Skill]
     PB --> W[Engineering Work]
@@ -34,7 +37,7 @@ flowchart TD
     FI --> ETL[Engineering Task Loop]
 ```
 
-Feature Delivery 管长期生命周期；Engineering Task Loop 管一次具体修改；Stage Shortcut 不是 Provider，也不替代 Delivery ID、Task Package、Contract、Artifact 或证据。Task Loop 的 Verify 只回填当前 DEV 的 `03-execution-backlog.md`，或 BUG / INT 的 `04-integration-log.md`；它不触发 Integrate / Archive。G4 / acceptance 只允许 Agent 建议 Ready to Close；用户显式授权后，Delivery Closing 才依次更新 Current Product Truth、执行 Sensitive Data Review、Archive 并验证 finalized snapshot、创建 Closed Context Index 并 retire active Package；这不是新的 Stage Shortcut，也不改变 E/P/X/V。
+Feature Delivery 管长期生命周期；Engineering Task Loop 管一次具体修改；Stage Shortcut 不是 Provider，也不替代 Delivery ID、Task Package、Contract、Artifact 或证据。Task Loop 的 Verify 只回填当前 DEV 的 `03-execution-backlog.md`，或 BUG / INT 的 `04-integration-log.md`；它不触发 Delivery Closing。`S` 可在无 DF 或 Delivery 内独立同步已经成立的 Current Product Truth，但不触发 Archive 或修改 Delivery metadata。G4 / acceptance 只允许 Agent 建议 Ready to Close；用户显式授权后，Delivery Closing 才对整个 Delivery 的 Product Truth 做最终 reconciliation、执行 Sensitive Data Review、Archive 并验证 finalized snapshot、创建 Closed Context Index 并 retire active Package；这不是新的 Stage Shortcut，也不改变 E/P/X/V。
 
 ## Daily Stage Shortcuts
 
@@ -70,6 +73,25 @@ V
 ```
 
 Stage Shortcut 提供默认行为，用户补充内容提供本次问题与额外约束；补充可收窄或覆盖默认行为，但仍受指令优先级限制。Explore 默认不修改 tracked files；Plan 默认只形成候选计划；Execute 只在有效边界内修改；Verify 只取得证据，不在失败后自动修复。
+
+## Product Truth Sync Shortcut
+
+`Sync` / `S` 是可选的独立 Action，不加入上表四个 Stage。它只在当前 Thread 已有可靠工程事实和 Verification Evidence 时，检查是否存在同时满足 **Verified、Current、Durable、Independently Valid** 的 Current Product Truth Delta。四项缺一不可：未产生长期事实为 `not-needed`，结论依赖尚未完成能力为 `not-ready`，缺少证据为 `insufficient-evidence`；三者均不修改文档。满足 Gate 时结果为 `synced`，最小更新已有 canonical `products/` 页面并报告 Delta、页面与证据。
+
+`S` 不要求 DF 或 Active Delivery，不是 Closing、Archive 或 `knowledge_update_assessment` 的别名。它只写 P0 `products/` 及确有必要的 canonical navigation links，不写 `work/`、源代码仓库、Archive 或 Delivery metadata，也不 commit、push、release 或 deploy。`S1` 仍是 Repository Scope；独立 token 的 `S` 才是 Action。通常在工程修改验证后另起一轮：
+
+```text
+P0
+S
+```
+
+或：
+
+```text
+P0 S
+```
+
+这表示在 Workbench 范围内，以当前 Thread 已有证据同步长期 Current Product Truth；它不自动扩大到 P1、P2 等业务仓库。若必须重新核实业务实现而该仓库不在 Scope，则报告 `insufficient-evidence` 并说明所需 Scope。
 
 ## Real Daily Usage
 
@@ -136,7 +158,7 @@ flowchart TD
     P --> A[User alignment]
     A --> X[Execute<br/>agency]
     X --> V[Verify<br/>evidence]
-    V -->|pass| D[Done]
+    V -->|pass| D[Done or optional S]
     V -->|failure / new evidence| E
     P -->|Stop Condition| S[Stop]
     S --> E
@@ -287,7 +309,7 @@ flowchart TD
     G --> R[Ready to Close]
     R --> U[User explicit authorization]
     U --> DC[Delivery Closing]
-    DC --> IP[Integrate Product Truth]
+    DC --> IP[Final Product Truth reconciliation]
     IP --> SDR[Sensitive Data Review]
     SDR --> A[Archive Full History]
     A --> VA[Verify Archive]
@@ -295,7 +317,7 @@ flowchart TD
     CI --> RA[Retire Active Package]
 ```
 
-在 Delivery 中，非 trivial DEV 将关键 Plan、实际实施结果和 Verify 证据回填 `03-execution-backlog.md`；Bug/INT 的根因、修复、回归和 Verify 证据回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。这不使单个 Task Loop 关闭 Delivery。整个 Delivery 达到 G4 / acceptance 或明确 Closing condition 后，Agent 只能建议显式调用 `tu-close-delivery`；获授权后才依次 Integrate、Sensitive Data Review、Archive/verify finalized snapshot、创建 Closed Index 并 retire active Package。
+在 Delivery 中，非 trivial DEV 将关键 Plan、实际实施结果和 Verify 证据回填 `03-execution-backlog.md`；Bug/INT 的根因、修复、回归和 Verify 证据回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。这不使单个 Task Loop 关闭 Delivery；独立成立的事实可通过 `S` 同步，但不改任何 Delivery 状态或 metadata。整个 Delivery 达到 G4 / acceptance 或明确 Closing condition 后，Agent 只能建议显式调用 `tu-close-delivery`；获授权后才依次对 Product Truth 做最终 reconciliation、Sensitive Data Review、Archive/verify finalized snapshot、创建 Closed Index 并 retire active Package。
 
 ### Bug scenario
 
@@ -368,7 +390,7 @@ flowchart TD
     T -. chat is not durable state .-> P
 ```
 
-`work/` 是交付证据，不等于产品知识；只将已验证且未来可复用的结论提炼进 `products/`。
+`work/` 是交付证据，不等于产品知识；显式 `S` 可将已独立成立的验证结论提炼进 `products/`，Delivery Closing 则对整个 Delivery 做最终 reconciliation。
 
 ## Recommended working habit
 

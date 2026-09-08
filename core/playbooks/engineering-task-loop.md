@@ -13,6 +13,10 @@ Stage Shortcut 位于消息的任务头部区域，可在可选 Repository Scope
 3. **Execute / X — Change only inside the approved boundary**：原生 Action 不可用、Plan 后重新收敛或恢复明确边界时，`X` 确认并执行当前唯一、明确、无未决且未失效的最新 Plan。否则回到 Plan；只实施已确认范围内的改动，发现边界假设不成立或范围必须扩大时停止。
 4. **Verify / V — Prove the result with evidence**：默认只验证，不扩大实现 Scope 或自动修复；按任务选择测试、构建、lint、typecheck、契约/API、协议模拟、运行观测或 review。验证失败时先以新证据重新 Explore，不做无限猜测式 patch。
 
+## Product Truth Sync
+
+`Sync` / `S` 是 Verify 后可选的独立 Action，不是本循环的第五个 Stage。它不要求 DF 或 Active Delivery：以当前 Thread 已有的实现、契约和 Verification Evidence 判断是否存在同时 **Verified、Current、Durable、Independently Valid** 的 Product Truth Delta。`P0 S` 仅授权最小更新 P0 `products/` 的现有 canonical 页面及必要导航链接；它不读取未在 Scope 内的业务仓库，不写 `work/`、`task.yaml` 或 `knowledge_update_assessment`，也不 Closing、Archive、commit、push、release 或 deploy。没有合格 Delta 时分别报告 `not-needed`、`not-ready` 或 `insufficient-evidence`，不写文档；合格时报告 `synced` 及最小 Delta、页面和证据。`S1` 是 Repository Scope，不是 Sync。
+
 ## 分档
 
 | Level | 适用情形 | 路径 |
@@ -32,4 +36,4 @@ Stage Shortcut 位于消息的任务头部区域，可在可选 Repository Scope
 
 ## 与 Feature Delivery 的边界
 
-Engineering Task Loop 管一次具体工程修改。Feature Delivery 管跨天或跨周的 Delivery ID、CAP、Phase/Gate、Task Package 与 Artifact Authority。属于 Delivery 的非平凡 DEV 任务，将重要 Plan、实施结果与 Verify 证据回填 `03-execution-backlog.md`；Bug/Integration 的根因、修复、回归与 Verify 证据回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。单个 Task Loop 的 Verify 不触发 Delivery Closing；G4 / acceptance 只允许 Agent 建议 Ready to Close。用户显式授权 `tu-close-delivery` 后，才按 [Delivery Closing](delivery-closing.md) 顺序 Integrate、Sensitive Data Review、Archive/verify finalized snapshot、创建 Closed Index 并 retire active Package；这不增加或替代 E/P/X/V。
+Engineering Task Loop 管一次具体工程修改。Feature Delivery 管跨天或跨周的 Delivery ID、CAP、Phase/Gate、Task Package 与 Artifact Authority。属于 Delivery 的非平凡 DEV 任务，将重要 Plan、实施结果与 Verify 证据回填 `03-execution-backlog.md`；Bug/Integration 的根因、修复、回归与 Verify 证据回填 `04-integration-log.md`；暂停或 Phase 变化刷新 `resume.md`。属于 Delivery 的独立事实仍可通过 `S` 同步，但不改变任何 Delivery 状态或 metadata。单个 Task Loop 的 Verify 不触发 Delivery Closing；G4 / acceptance 只允许 Agent 建议 Ready to Close。用户显式授权 `tu-close-delivery` 后，才按 [Delivery Closing](delivery-closing.md) 顺序进行最终 Product Truth reconciliation、Sensitive Data Review、Archive/verify finalized snapshot、创建 Closed Index 并 retire active Package；这不增加或替代 E/P/X/V。

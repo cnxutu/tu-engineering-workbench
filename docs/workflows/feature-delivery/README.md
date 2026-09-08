@@ -63,7 +63,7 @@ work/active/<domain>/<product>/<delivery-id>-<slug>/
 └── resume.md
 ```
 
-不强制生成空文件。新建时只创建 `task.yaml`、`resume.md` 与当前 Phase Artifact，并仅在 `artifacts` 中声明已创建文件。达到 Closing condition 只表示 Ready to Close；必须由用户显式调用 `tu-close-delivery`，它才会先 Integrate 已验证的 Product Truth、完成 Sensitive Data Review、将完整 Package Archive 到由 shared external context registry 定义、并由本机 `tu-vault` 路径解析的唯一 `<delivery_archive_root>/<delivery-id>/`、finalize 并验证 archived snapshot、创建 `work/closed/<domain>/<product>/<delivery-id>.md` Thin Context Index，并最后 retire active Package。`tasks/archive/` 只保留 legacy/local cold compatibility，不是正式 Closing 目标。
+不强制生成空文件。新建时只创建 `task.yaml`、`resume.md` 与当前 Phase Artifact，并仅在 `artifacts` 中声明已创建文件。达到 Closing condition 只表示 Ready to Close；必须由用户显式调用 `tu-close-delivery`，它才会先对整个 Delivery 的 Product Truth 做最终 reconciliation、完成 Sensitive Data Review、将完整 Package Archive 到由 shared external context registry 定义、并由本机 `tu-vault` 路径解析的唯一 `<delivery_archive_root>/<delivery-id>/`、finalize 并验证 archived snapshot、创建 `work/closed/<domain>/<product>/<delivery-id>.md` Thin Context Index，并最后 retire active Package。`tasks/archive/` 只保留 legacy/local cold compatibility，不是正式 Closing 目标。
 
 上图是人类说明的简化结构。Runtime authoritative template 是 [Task Package reference](../../../plugins/ai-guidance-workflows/skills/tu-deliver-feature/references/task-package.md)；不要让本页示例成为第二份 Runtime Authority。教学演练见 [robot-dog fill-light example](examples/robotdog-fill-light/walkthrough.md)。
 
@@ -81,7 +81,7 @@ work/active/<domain>/<product>/<delivery-id>-<slug>/
 | 4. Integration & Stabilization | 联调、测试、Bug、回归如何闭环？ | `04-integration-log.md` | `G4_test_ready` |
 
 ```text
-Impact → G1 → Contract → G2 → Execution → G3 → Integration & Stabilization → G4 / Accepted → Ready to Close → User Authorization → Delivery Closing → Integrate → Sensitive Data Review → Vault Archive → Verify Archive → Closed Index → Retire Active
+Impact → G1 → Contract → G2 → Execution → G3 → Integration & Stabilization → G4 / Accepted → Ready to Close → User Authorization → Delivery Closing → Final Product Truth Reconciliation → Sensitive Data Review → Vault Archive → Verify Archive → Closed Index → Retire Active
 ```
 
 ### Phase artifacts
@@ -133,9 +133,9 @@ Bug 先定位 Delivery 和 CAP，再分类路由：
 
 Phase 4 ADOPT 已可用的 `diagnosing-bugs`；总入口只负责 Delivery、CAP、Phase 和 Artifact 路由，不重写通用 Debug 方法。
 
-## Closing: Integrate and Archive
+## Closing: Reconcile and Archive
 
-单个 DEV / BUG / INT 的 Engineering Task Loop Verify 只回填 `03-execution-backlog.md` 或 `04-integration-log.md`，不触发 Delivery Closing。G4 / acceptance 达成时，`tu-deliver-feature` 最多报告 Ready to Close 并建议 `tu-close-delivery DF-YYYYMMDD-NN`；只有用户显式 Closing Authorization 才开始收尾。`completed` 需 acceptance satisfied，通常也满足 G4；`blocked` 或 `superseded` 也可明确关闭。Integrate 与 Archive 是 Delivery Closing 的动作，不新增 Engineering Task Loop Stage，也不改变四阶段或 E/P/X/V。
+单个 DEV / BUG / INT 的 Engineering Task Loop Verify 只回填 `03-execution-backlog.md` 或 `04-integration-log.md`，不触发 Delivery Closing。独立的 `S` / Product Truth Sync 可以在无 DF 的任务，或 Delivery 内已独立成立的 DEV / BUG 后最小维护 Current Product Truth；它不修改此 Delivery 的 metadata、状态或 Archive。G4 / acceptance 达成时，`tu-deliver-feature` 最多报告 Ready to Close 并建议 `tu-close-delivery DF-YYYYMMDD-NN`；只有用户显式 Closing Authorization 才开始收尾。`completed` 需 acceptance satisfied，通常也满足 G4；`blocked` 或 `superseded` 也可明确关闭。最终 Product Truth reconciliation 与 Archive 是 Delivery Closing 的动作，不新增 Engineering Task Loop Stage，也不改变四阶段或 E/P/X/V。
 
 ```mermaid
 flowchart TD
@@ -146,7 +146,7 @@ flowchart TD
     G --> R[Ready to Close]
     R --> U[User explicit authorization]
     U --> DC[Delivery Closing]
-    DC --> IP[Integrate Product Truth]
+    DC --> IP[Final Product Truth reconciliation]
     IP --> SDR[Sensitive Data Review]
     SDR --> A[Archive Full History to tu-vault]
     A --> VA[Verify Archive]
@@ -154,7 +154,7 @@ flowchart TD
     CI --> RA[Retire Active Package]
 ```
 
-Integrate 将已验证、仍有效且可复用的能力、链路、契约、约束或 ADR 更新至 `products/` 的唯一权威页；没有可提炼事实时记录 `knowledge_update_assessment: not-needed`。Requirement Authority 来自 Current Product Spec/PRD、approved Product Decision、approved Contract 或明确 acceptance criteria；Implementation Reality 来自代码、测试、配置与可复现运行证据。两者不一致时记录 Requirement / Implementation Gap，不能让代码反向否定已批准需求。对于 `superseded`，不得把被替代的旧设计写成 Current Product Truth，并应记录 related delivery / superseded-by reference。
+Delivery Closing 对整个 Delivery 的最终 Product Truth Delta 做 reconciliation：检查最终实现，复核此前 `S` 已同步的结论是否仍正确，不重复相同结论，修正后续工作改变的结论，并补充最终尚未同步的事实。只将已验证、仍有效且可复用的能力、链路、契约、约束或 ADR 更新至 `products/` 的唯一权威页；没有可提炼事实时按现有 Delivery contract 记录 `knowledge_update_assessment: not-needed`。Requirement Authority 来自 Current Product Spec/PRD、approved Product Decision、approved Contract 或明确 acceptance criteria；Implementation Reality 来自代码、测试、配置与可复现运行证据。两者不一致时记录 Requirement / Implementation Gap，不能让代码反向否定已批准需求。对于 `superseded`，不得把被替代的旧设计写成 Current Product Truth，并应记录 related delivery / superseded-by reference。
 
 Archive 仅在 Sensitive Data Review 通过后写入本机 `workspace.local.yaml` 的 `external_contexts.tu_vault.path`；shared `delivery_archive_root` 由 `core/registry/external-contexts.yaml` 定义。一个 DF 对应唯一 `<delivery_archive_root>/<DF-ID>/` Archive Unit，且 Closed Index、manifest 与 archived task metadata 都使用 `tu-vault:<delivery_archive_root>/<DF-ID>`，不写本机绝对路径。Workbench active task 保持 `status: active`；只有 copied `delivery/task.yaml` 写入 final status、`archived_at`、`archive_reference` 和 `closed_index`。Archive Verification 必须核对 manifest、archived task metadata 和全部 artifacts；通过后才创建 `work/closed/<domain>/<product>/<delivery-id>.md` Thin Context Index，随后 retire active Package。它表示 Delivery Lifecycle Closed / Cold Context，不等于成功。配置缺失或 archive 不可验证时保留 active Package 并停止；不得降级为本地 archive 后假装成功。reopen 只将 immutable `<Archive Unit>/delivery/` restore/copy 为 Active Package，不移动、删除或修改 Vault Unit，也不把 `summary.md` 或 `manifest.yaml` 带入 active。已有 pre-V1 `tasks/archive/` 不删除、不伪造也不迁移。
 
@@ -183,6 +183,6 @@ Archive 仅在 Sensitive Data Review 通过后写入本机 `workspace.local.yaml
 
 ## Knowledge promotion and non-goals
 
-`work/` 保存 Delivery Change State，不自动进入 `products/`。仅在 Integrate 时将经验证且未来可复用的架构事实、仓库责任、跨服务 flow、协议语义或 ADR 提炼为 Current Product Truth；Closing 时把 `knowledge_update_assessment` 更新为 `updated` 或 `not-needed`。
+`work/` 保存 Delivery Change State，不自动进入 `products/`。显式 Product Truth Sync 仅可在事实已验证、当前、长期且独立成立时提炼 Current Product Truth，且不修改 Delivery metadata；Delivery Closing 仍对全 Delivery 结论最终 reconciliation，并在 Closing 时按现有 contract 把 `knowledge_update_assessment` 更新为 `updated` 或 `not-needed`。
 
 V1 不引入运行时框架、工作流引擎、数据库、复杂 DSL、额外 Schema Framework、大量 phase Skill，也不把 Apifox/Issue Tracker 设为 Authority。Prototype parsing、通用 debugging、TDD、review、ticketing 和 implementation 保留给成熟可用能力；本 Workbench 只拥有生命周期状态与领域交付语义。
