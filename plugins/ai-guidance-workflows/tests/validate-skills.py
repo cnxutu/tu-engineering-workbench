@@ -97,6 +97,49 @@ def validate_skill(skill_dir: Path) -> list[str]:
     return errors
 
 
+def validate_runtime_diagnostic_contract(plugin_root: Path) -> list[str]:
+    """Check the runtime-aware branch without using a real host or credentials."""
+    errors: list[str] = []
+    skill_dir = plugin_root / "skills" / "tu-diagnosing-spring-backend-incidents"
+    skill_text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+    procedure = skill_dir / "references" / "runtime-diagnostic-procedure.md"
+    procedure_text = procedure.read_text(encoding="utf-8") if procedure.is_file() else ""
+    required_skill_markers = (
+        "Runtime Diagnostic Procedure",
+        "runtime-aware incident",
+        "Runtime diagnosis is read-only by default",
+    )
+    required_procedure_markers = (
+        "Runtime shortcut not configured",
+        "Runtime state",
+        "Targeted logs",
+        "Trace/correlation",
+        "Dependency/middleware",
+        "Code/framework",
+        "Facts",
+        "Hypothesis",
+        "Unknown",
+        "Next Evidence",
+        "Most Likely Cause",
+        "without a later explicit authorization",
+        "`P2 E` + message-processing problem",
+        "`P3 ssh 150 E` + device-offline problem",
+        "`ssh 999`",
+        "A stopped service",
+    )
+    for marker in required_skill_markers:
+        if marker not in skill_text:
+            errors.append(f"runtime diagnostic skill missing marker: {marker}")
+    for marker in required_procedure_markers:
+        if marker not in procedure_text:
+            errors.append(f"runtime diagnostic procedure missing marker: {marker}")
+
+    runtime_guide = plugin_root.parent.parent / "docs" / "guides" / "runtime-guide.md"
+    if "### Runtime Diagnosis" not in runtime_guide.read_text(encoding="utf-8"):
+        errors.append("runtime-guide missing Runtime Diagnosis section")
+    return errors
+
+
 def main() -> int:
     plugin_root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parents[1]
     skills_root = plugin_root / "skills"
@@ -109,6 +152,8 @@ def main() -> int:
 
     for skill_name in sorted(actual_skills):
         errors.extend(validate_skill(skills_root / skill_name))
+
+    errors.extend(validate_runtime_diagnostic_contract(plugin_root))
 
     if errors:
         for error in errors:

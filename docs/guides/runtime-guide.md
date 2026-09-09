@@ -69,6 +69,13 @@ ssh 150 E
 traceId xxx 帮我定位异常
 ```
 
+### Runtime Diagnosis
+
+Runtime-aware incidents use the existing Spring incident diagnostic Skill's evidence procedure. A request such as
+`P3 ssh 150 E` followed by “排查设备离线” is routed through Runtime Context, targeted runtime evidence, and then the
+responsible repository code. The result separates Facts, Evidence, Hypothesis, Unknown, Next Evidence, and Diagnosis;
+runtime access remains read-only unless a later request explicitly authorizes a mutation.
+
 ### Runtime + Verification
 
 ```text

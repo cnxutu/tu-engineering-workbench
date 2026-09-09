@@ -1,11 +1,16 @@
 ---
 name: tu-diagnosing-spring-backend-incidents
-description: Use when investigating a Spring Boot backend incident, unexpected behavior, message-processing failure, data inconsistency, latency regression, or production issue before proposing a code or configuration fix.
+description: Use when investigating a Spring Boot backend incident, runtime/container failure, unexpected behavior, message-processing failure, data inconsistency, latency regression, or production issue before proposing a code or configuration fix.
 ---
 
 # Diagnosing Spring Backend Incidents
 
 Establish the first broken boundary with evidence before proposing a root cause or fix. Treat product knowledge as navigation and current code, configuration, telemetry, and repeatable tests as evidence.
+
+For a runtime-aware incident (the task names `ssh <shortcut>`, an environment/server, Docker/container state, runtime
+logs, or otherwise requires runtime evidence), follow the procedure in
+[Runtime Diagnostic Procedure](references/runtime-diagnostic-procedure.md). Keep ordinary code/service incidents on
+the existing path; do not require SSH or runtime files unless the problem needs that evidence.
 
 ## Scope and evidence
 
@@ -23,9 +28,30 @@ Establish the first broken boundary with evidence before proposing a root cause 
 5. Compare a failing sample with a nearby successful sample; inspect version and configuration differences without exposing credentials or production payloads.
 6. Propose the smallest evidence-backed fix. State compatibility, rollback, data repair, and regression scope before implementation.
 
+## Runtime-aware branch
+
+Resolve the repository scope, optional Runtime Target Hint, engineering stage, and problem before touching a host. Then
+resolve the logical environment through the Workbench registry, local binding, and product Runtime Context; use only the
+minimum deployment, observability, framework-provenance, and local snapshot material required by the problem. Resolve a
+diagnostic subject (service, container, request/trace, device, message, dependency, or deployment) and inspect the
+smallest relevant boundary first.
+
+Use the evidence ladder in order: runtime state, targeted logs, trace/correlation, evidence-directed dependency or
+middleware checks, then repository/code/framework mapping. A trace ID is a local correlation aid unless propagation across
+the specific boundary is verified; do not treat it as a universal end-to-end key. Do not copy bulk logs or business
+payloads into Workbench.
+
+Runtime diagnosis is read-only by default. Runtime access never authorizes restart, deployment, configuration or data
+mutation. Stop when the symptom-to-runtime-to-implementation/configuration chain is closed, or report the evidence gap
+and next evidence when it is not. Request an explicit scope decision before reading an out-of-scope repository.
+
 ## Output contract
 
-Report in this order: **symptom and impact; verified path and scope; evidence timeline or boundary comparison; hypotheses and exclusions; root cause or next evidence collection; minimal fix; verification; residual risks and follow-ups.**
+For ordinary incidents, report in this order: **symptom and impact; verified path and scope; evidence timeline or boundary
+comparison; hypotheses and exclusions; root cause or next evidence collection; minimal fix; verification; residual risks
+and follow-ups.** For runtime-aware incidents, use the stable contract: **Facts; Evidence; Hypothesis; Unknown; Next
+Evidence; Diagnosis** (with impact and recommended action as useful context). Diagnosis must be limited to the evidence:
+`Root Cause Confirmed`, `Most Likely Cause`, or `Insufficient Evidence`.
 
 If evidence is insufficient, stop at an evidence-collection plan; do not invent a diagnosis or implement a speculative repair.
 
