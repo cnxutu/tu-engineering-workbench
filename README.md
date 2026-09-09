@@ -2,7 +2,7 @@
 
 `tu-engineering-workbench` 是面向 AI Coding / Agent Engineering 的 Living Engineering Model：它帮助 AI 在正确的工程上下文中，以正确的方法持续推进真实软件交付。
 
-它不是 Prompt 集合、Skill 大全、项目 Wiki、业务代码副本、任务管理系统，也不承担开发环境、CLI、VPS 或工程工具职责；这些属于 `tu-devkit`。
+它不是 Prompt 集合、Skill 大全、项目 Wiki、业务代码副本或任务管理系统。个人 Markdown Context、Memory、Knowledge 与历史 Delivery Archive 属于 `tu-vault`（P0-1）；开发环境、CLI、VPS 与工程工具属于 `tu-devkit`（P0-2）。
 
 ## 目录模型
 

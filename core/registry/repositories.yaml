@@ -5,6 +5,8 @@ repositories:
   - code: P0
     repository: tu-engineering-workbench
   - code: P0-1
+    repository: tu-vault
+  - code: P0-2
     repository: tu-devkit
   - code: P1
     repository: c-drone-inspection

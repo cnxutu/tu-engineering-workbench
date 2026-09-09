@@ -23,7 +23,8 @@ REPOSITORY_REGISTRY = Path("core/registry/repositories.yaml")
 EXTERNAL_CONTEXT_REGISTRY = Path("core/registry/external-contexts.yaml")
 PRIMARY_REPOSITORY_BINDINGS = {
     "P0": "tu-engineering-workbench",
-    "P0-1": "tu-devkit",
+    "P0-1": "tu-vault",
+    "P0-2": "tu-devkit",
 }
 DELIVERY_ID_PATTERN = re.compile(r"^DF-\d{8}-\d{2}$")
 DELIVERY_DIRECTORY_PATTERN = re.compile(r"^(DF-\d{8}-\d{2})(?:-.+)?$")

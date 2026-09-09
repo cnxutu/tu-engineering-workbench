@@ -6,7 +6,7 @@
 
 当 P0 被设置为 Primary 时，Codex 每次任务都应先读取本文件的公共约束，无需用户重复提及 `P0`。会话首次任务中，从用户的直接说明识别项目标记；仅当识别到标记时，读取 [`core/registry/repositories.yaml`](core/registry/repositories.yaml) 确认它是否已登记、对应工程及产品绑定。除 Primary 的默认加载外，已登记标记共同构成本次可操作范围，后续消息沿用该范围，直到用户明确变更。引用的示例、代码块、文档标题、路径或历史记录中的项目标记不自动扩大范围；语义不明确时先确认，不猜测扩大范围。
 
-项目标记可出现在自然语言、列表、括号或可选的 Stage Shortcut 前后；`范围：` 只是可选前缀。短横线 `-` 或连接号 `–` 仅展开连续的已登记主序列（如 `P0–P7`）；带连字符的独立标记（如 `P0-1`、`P3-1`、`P4-1`）不拆分，未登记标记也不能由范围语法推断。用户始终可以自然语言描述任务；Stage Shortcut 只是可选加速器，不是使用前提。
+项目标记可出现在自然语言、列表、括号或可选的 Stage Shortcut 前后；`范围：` 只是可选前缀。短横线 `-` 或连接号 `–` 仅展开连续的已登记主序列（如 `P0–P7`）；带连字符的独立标记（如 `P0-1`、`P0-2`、`P3-1`、`P4-1`）不拆分，未登记标记也不能由范围语法推断。用户始终可以自然语言描述任务；Stage Shortcut 只是可选加速器，不是使用前提。
 
 项目标记只用于 P0 的会话范围和跨仓库导航；目标仓库及其生成物必须使用实际工程名、服务名、模块名或领域术语，不得把项目标记写入源码、注释、日志、配置、数据库说明、测试、接口说明或新文档。项目标记作为优先级、阶段、变量或协议/型号值时可按原语义保留。
 
@@ -65,7 +65,7 @@ Sync 不要求 DF、Active Delivery 或 `work/`；也不关闭 Delivery、Archiv
 | 维护 P0 的运行时入口、`core/` 公共规则、角色、工作流或契约 | `docs/governance/authoring-guide.md` 的“公共规则维护”，以及受影响文件 | 产品知识、治理规范、使用教程 |
 | 维护 P0 的产品知识、架构、流程、服务边界、清单或交付记录 | `docs/governance/authoring-guide.md`、`docs/governance/governance.md`，以及受影响的权威页面 | 其他产品目录与所有使用教程 |
 | 修改 P0 的工具、脚本、校验或团队 Plugin | 目标目录的 README、实现与测试；Plugin 还读取 manifest、相关 `SKILL.md` 与 `tests/test-plugin.sh` | 产品知识、知识编写规范、无关 Plugin |
-| 用户明确指定 P0-1 并明确提出 VPS 部署、升级、调整、网络排查、性能或稳定性问题 | 通过 `workspace.local.yaml` 定位 P0-1，再读取 P0-1 的 `docs/vps/AGENTS.md` 和当前链路所需资料；涉及实现时仍读取本仓 `development.md` 与 P0-1 的 `vps-init/README.md` | 仅因 P0 是 Primary、偶然提到 VPS、一般网络问答或无真实 VPS/网络目标的仓库开发，不触发该专项入口 |
+| 用户明确指定 P0-2 并明确提出 VPS 部署、升级、调整、网络排查、性能或稳定性问题 | 通过 `workspace.local.yaml` 定位 P0-2，再读取 P0-2 的 `docs/vps/AGENTS.md` 和当前链路所需资料；涉及实现时仍读取本仓 `development.md` 与 P0-2 的 `vps-init/README.md` | 仅因 P0 是 Primary、偶然提到 VPS、一般网络问答或无真实 VPS/网络目标的仓库开发，不触发该专项入口 |
 | 任务涉及多个已登记项目，或明确涉及服务关系、OSD、指令、协议、缓存链路、公开 Contract、数据所有权或跨服务发布依赖 | `products/company/device-inspection-platform/index.md`，再沿链接读取当前已维护的最小 Flow 或 P1 入口/缓存资料；未覆盖场景以目标代码、契约和配置核实 | 整个产品目录、无关服务源码 |
 | K1/K2 的 Knowledge Hub 产品架构或跨端任务 | `products/personal/knowledge-hub/index.md`，再沿链接读取所需资料 | 无关公司产品材料 |
 | L1 的软考高级系统架构师学习沉淀任务 | `products/personal/architecture-learning/index.md`，再沿链接读取所需资料 | 无关产品材料 |

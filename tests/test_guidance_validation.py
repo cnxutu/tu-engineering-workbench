@@ -58,8 +58,11 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
     def test_rejects_template_missing_primary_repository_code(self) -> None:
         self.assert_template_rejects_missing_code("P0")
 
-    def test_rejects_template_missing_devkit_repository_code(self) -> None:
+    def test_rejects_template_missing_vault_repository_code(self) -> None:
         self.assert_template_rejects_missing_code("P0-1")
+
+    def test_rejects_template_missing_devkit_repository_code(self) -> None:
+        self.assert_template_rejects_missing_code("P0-2")
 
     def test_rejects_registry_with_swapped_primary_repository_bindings(self) -> None:
         repository = self.copied_repository()
@@ -214,6 +217,8 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
                     "repositories:",
                     "  - code: P0-1",
                     f"    path: {repository}",
+                    "  - code: P0-2",
+                    f"    path: {repository}",
                     "  - code: P0",
                     f"    path: {repository}",
                     "  - code: K1",
@@ -253,7 +258,7 @@ class WorkspaceTemplateValidationTest(unittest.TestCase):
     def test_rejects_unresolved_local_workspace_path(self) -> None:
         repository = self.copied_repository()
         (repository / "workspace.local.yaml").write_text(
-            "repositories:\n  - code: P0-1\n    path: <unset>\n",
+            "repositories:\n  - code: P0-2\n    path: <unset>\n",
             encoding="utf-8",
         )
 

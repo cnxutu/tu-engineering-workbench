@@ -53,4 +53,4 @@ Delivery Closing 的 readiness 由整个 Delivery 的关闭条件决定，而不
 
 ## External boundary and navigation
 
-`tu-vault` 是未来可选的个人/历史记忆，Workbench 是 Engineering Model，项目仓库是 Executable Reality。Obsidian 可改善人类导航，但标准 Markdown 链接、明确目录和 metadata 才是确定性的 Agent 路由；不依赖 WikiLink、Graph View 或 `.obsidian` 配置。
+`tu-vault`（P0-1）是个人 Markdown Context、Memory、Knowledge 与历史 Delivery Archive 仓库；其普通内容不是 Current Product Truth，归档能力仍按需启用。Workbench 是 Engineering Model，项目仓库是 Executable Reality。Obsidian 可改善人类导航，但标准 Markdown 链接、明确目录和 metadata 才是确定性的 Agent 路由；不依赖 WikiLink、Graph View 或 `.obsidian` 配置。
