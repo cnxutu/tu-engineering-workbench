@@ -82,7 +82,11 @@ flowchart TD
 | `bootstrap/` | 目标仓库接入 P0 的 `AGENTS.md` 与清单模板 | 接入新仓库或修订接入模板时。 |
 | `scripts/`、`tests/` | 文档结构、链接、路径和契约的校验实现 | 调整校验能力或修复校验问题时。 |
 | `core/registry/repositories.yaml` | 已登记项目标记、仓库身份与产品绑定的唯一来源 | 新增或调整工程注册时；同步校验本机路径模板。 |
+| `core/registry/environments.yaml` | Logical Environment、产品绑定与 runtime model 的 committed registry | 新增逻辑环境或维护已验证的运行模型时；不记录物理主机或连接参数。 |
 | `workspace.example.yaml` / `workspace.local.yaml` | 可提交的路径模板 / 不提交的本机绝对路径映射 | 接入或移动本机工作区时；不得把本机路径写入可提交模板。 |
+| `runtime.example.yaml` / `runtime.local.yaml` | 可提交的 Runtime binding 模板 / 不提交的 Shortcut 到本机 SSH alias 绑定 | 新电脑配置或新增本机 Runtime Target 时；不记录 Host、User 或 key。 |
+| `products/**/runtime/` | 已验证、长期且非敏感的 Runtime Knowledge | 维护 Repository ↔ Runtime、部署架构、中间件边界或 observability 事实时。 |
+| `.runtime.local/` | 不提交的物理 Runtime Snapshot | 只读勘察后保存当时容器、端口、镜像、挂载和日志路径等易变事实。 |
 | `.agents/plugins/marketplace.json` | 团队 Plugin 市场清单；仓库根目录是市场根目录 | 新增 Plugin、调整市场元数据或重新配置本地市场时。 |
 | `plugins/ai-guidance-workflows/` | 团队原生 Codex Skill 与 Plugin 测试 | 新增、修改或重命名团队 Skill 时。 |
 

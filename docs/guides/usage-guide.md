@@ -6,7 +6,7 @@
 
 ## 1. 会话首次声明范围
 
-会话首次任务中出现 `P0`、`P0-1`、`P0-2`、`P1`–`P7`、`P3-1`、`P4-1`、`P10`、`K1`、`K2`、`K5`、`L1`、`A1`、`S1` 等项目标记时，Codex 应直接识别本次范围；以下 `范围：` 只是便于工程师阅读的写法：
+会话首次任务中出现 `P0`、`P0-1`、`P0-2`、`P1`–`P8`、`P3-1`、`P4-1`、`P10`、`K1`、`K2`、`K5`、`L1`、`A1`、`S1` 等项目标记时，Codex 应直接识别本次范围；以下 `范围：` 只是便于工程师阅读的写法：
 
 ```text
 范围：P0 + P1
@@ -19,6 +19,18 @@ Explore
 项目标记、实际仓库名与产品绑定以 [仓库注册表](../../core/registry/repositories.yaml) 为准；仓库在产品中的职责由产品 repository manifest 维护。`P0–P7` 只展开连续主序列；P0-1、P0-2、P3-1、P4-1 是独立标记。`workspace.local.yaml` 只维护本机绝对路径；首次接入时从 [`../../workspace.example.yaml`](../../workspace.example.yaml) 复制创建。缺少映射时不得猜测源码位置。除 P0 文档外，项目文件不得把这些标记当作项目或服务名称，应改用实际工程名；优先级、阶段、变量名和协议/型号值等非项目语义不受此限制。
 
 项目标记不依赖固定分隔符，因此 `P1 + P2`、`P1,P2`、`P1，P2`、`P1、P2`、`P1 P2`，或正文中分别出现 P1、P2，均表示本次涉及两者；`-` 或 `–` 表示连续范围，例如 `P0–P7`，但不拆分 P0-1、P0-2、P3-1、P4-1。`范围：` 是可选前缀。
+
+## Runtime Target Hint
+
+`ssh <shortcut>` 是可选 Runtime Target Hint，用于选择本机已配置的运行环境，不是严格 DSL。例如：
+
+```text
+P3 ssh 150 E
+排查设备离线
+```
+
+这里 `P3` 是 Repository Scope，`ssh 150` 是 Runtime Target Hint，`E` 表示只读 Explore；仍应以自然语言描述任务。
+配置、权限边界、local-only 文件和新增服务器流程见 [Runtime Context 使用与维护指南](runtime-guide.md)。
 
 ## 2. 何时维护 P0 知识
 

@@ -5,6 +5,7 @@
 | 目标 | 阅读入口 |
 | --- | --- |
 | 第一次使用 Workbench | [使用指南](guides/usage-guide.md) |
+| 配置和使用开发/测试 Runtime、SSH Shortcut 与 Runtime Context | [Runtime 使用指南](guides/runtime-guide.md) |
 | 接入新的 Repository | [接入指南](guides/integration-guide.md) |
 | 理解项目结构与维护路径 | [项目导航](guides/project-guide.md) |
 | 理解 Workbench 核心区域与 Delivery Closing | [Living Engineering Model](workbench-model.md) |
