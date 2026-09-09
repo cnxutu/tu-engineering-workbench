@@ -1,0 +1,7 @@
+# Local runtime binding template. Copy to runtime.local.yaml and replace only
+# the SSH alias; keep its Host, User, and IdentityFile in ~/.ssh/config.
+version: v1
+environments:
+  company-dev:
+    ssh:
+      alias: <local-ssh-alias>

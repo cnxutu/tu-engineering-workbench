@@ -1,0 +1,9 @@
+# Logical environment registry. Connection details and physical-host identity
+# belong exclusively in ignored local overlays.
+version: v1
+environments:
+  - id: company-dev
+    product: company/device-inspection-platform
+    kind: development
+    access: ssh
+    runtime_model: pending_runtime_reconnaissance

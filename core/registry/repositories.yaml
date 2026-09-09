@@ -35,6 +35,8 @@ repositories:
   - code: P7
     repository: c-tag
     product: company/device-inspection-platform
+  - code: P8
+    repository: star-framework
   - code: P10
     repository: tu-device-platform-kernel-lab
   - code: K1
