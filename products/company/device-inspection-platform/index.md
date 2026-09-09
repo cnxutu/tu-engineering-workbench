@@ -20,6 +20,17 @@
 
 当前核心证据覆盖设备消息上行、设备指令下行和 `c-wvp` 视频控制面；架构页另外标注流媒体边界。当前代码、契约、配置和测试仍优先于本页。
 
+## Shared Framework Dependency
+
+`star-framework` 是 `c-drone-inspection`、`c-iot-server`、`c-iot-gateway`、`c-gateway`、`c-system`
+等业务仓库共享的 Maven / Spring 基础框架，提供依赖管理、Web、RPC、MQ、Security、Redis、异步任务等可复用
+能力。它不是独立部署服务，也不拥有设备业务、协议接入、数据或消息链路；业务仓库实际声明的 artifact 和版本
+才决定能力是否生效。
+
+排查 trace、MDC、Feign、RocketMQ、日志或框架异步任务时，先读
+[共享框架能力溯源](runtime/framework-capability-provenance.md)，再按其中的 artifact、版本和代码入口回到
+`star-framework` 与实际消费仓库核实。
+
 ## 按任务读取
 
 ### 跨服务链路与边界
@@ -34,6 +45,7 @@
 - 评审 P1 项目集/项目、角色池、空间池与 P7 项目树边界：读 [项目集与项目管理设计（P1 + P7）](decisions/project-set-project-management.md)。
 - P1 按用户与项目返回菜单、项目角色与 P6 权限接口联调：读 [P1 项目菜单权限（P1 + P6）](repositories/c-drone-inspection/project-menu-permission.md)。
 - P1-P4、P3-1 技术栈、中间件、职责边界、消息/指令/视频流媒体架构与问题定位范围：读 [P1-P4、P3-1 技术栈与系统架构](architecture/p1-p4-technology-and-system-architecture.md)。
+- 需要判断 trace、日志、Feign、RocketMQ 或异步能力是否来自共享框架：读 [共享框架能力溯源](runtime/framework-capability-provenance.md)。
 
 ### 服务内入口
 

@@ -1,0 +1,23 @@
+repository: star-framework
+product: company/device-inspection-platform
+product_manifest: ../product.yaml
+product_index: ../index.md
+guidance_home:
+  resolution: AI_GUIDANCE_HOME-or-explicit-repository-config
+local_instructions: []
+knowledge_update:
+  assess_cross_service_facts: true
+role: 业务仓库共享的 Maven / Spring 基础框架；不作为本产品 Runtime Service 或业务数据 owner
+verified_responsibilities:
+  - shared-dependency-management
+  - common-runtime-utilities
+  - web-rpc-mq-security-and-async-starters
+evidence_sources:
+  - pom.xml
+  - fw-common
+  - fw-spring-boot-starter-web
+  - fw-spring-boot-starter-rpc
+  - fw-spring-boot-starter-mq
+unknowns:
+  - exact-artifact-version-in-each-runtime-container
+  - per-service-starter-activation-and-overrides

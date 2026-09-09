@@ -30,6 +30,16 @@
 
 上述 logical service 名称来自各仓库的应用配置；它们不证明任一服务已部署到 `company-dev`。
 
+## Shared Framework Dependency
+
+`star-framework` 是 Maven 多模块共享框架，而非本产品的 Runtime Service 或部署节点。它通过
+`fw-*` artifact 提供 Web、RPC、MQ、Security、Redis、异步任务等横切能力；某个仓库声明或传递引入这些
+artifact，只能证明其构建期消费关系，不能证明目标环境已经部署了 `star-framework`，也不能替代该服务当前 JAR 的版本核验。
+
+涉及 trace、日志、Feign、MQ 或异步排障时，先读
+[共享框架能力溯源](framework-capability-provenance.md)，再按其中的版本和入口回到 `star-framework` 与业务仓库源码。
+`star-framework` 不得画入 Deployment Architecture；它只应作为 Runtime Capability Provenance 图中的 provider。
+
 ## 逻辑依赖与观察入口
 
 | Component | Source-confirmed relationship | Runtime status |

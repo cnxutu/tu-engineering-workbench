@@ -20,14 +20,21 @@
 
 ## `traceId` 源码证据
 
-`c-iot-gateway` 的 HTTP filter 接收 request-id header，或在缺失时创建 MDC `traceId`，并把它返回到
-response header。其 MQTT、TCP 与 Custom 上行处理器也在处理边界创建并清理 MDC `traceId`。这证明 P3
-进程内的上行处理日志可关联；它不证明消息转发后的跨进程传播。
+`c-iot-gateway` 的 HTTP `TraceIdWebFilter` 是业务仓库实现：它接收 `X-Request-Id`，或使用 `star-framework`
+`MdcTracerUtils` 生成带 `igw/web` 语义的值，并返回 response header。其 MQTT、TCP 与 Custom 上行处理器
+也由 P3 自己在处理边界调用同一 `star-framework` 工具创建、写入和清理 MDC。因此 P3 是这些非 HTTP 入口的
+trace owner，`star-framework` 是所复用的 MDC/key/ID 工具 provider；该分层不证明消息转发后的跨进程传播。
 
-`c-iot-server` 的 `DeviceMessageLogStore` 会在消息日志未携带 traceId 时读取当前 MDC 值；两个视频
-RocketMQ consumer 会确保其消费处理存在 traceId。当前证据不足以确认设备消息在 gateway、IoT、RocketMQ
-和业务服务之间保留同一值。`c-drone-inspection` 与 `c-iot-server` 的 Logback pattern 会输出 MDC 值，但本
-轮未找到足以证明其全部 ingress、异步执行器或 RPC 传播语义的代码证据。
+`c-iot-server` 的 `DeviceMessageLogStore` 会在消息日志没有 traceId 时读取当前 MDC 值。两个视频
+RocketMQ consumer 调用 `MdcTracerUtils.getTraceId()`，这只能保证消费线程中存在一个 traceId；MDC 为空时
+该工具会新建 ID，而不是从消息恢复。`star-framework` 的 `MqTraceUtils`/`StarMQProducer` 确实提供了
+`X-Request-Id` message header 的附加与恢复能力，且 P2 `IotBusinessEventProducer` 使用 `StarMQProducer`；
+但 P2 的其它直接 `RocketMQTemplate` 调用和上述视频 consumer 不构成同一条端到端保证。
+
+`c-drone-inspection`、`c-iot-server`、`c-iot-gateway`、`c-gateway` 与 `c-system` 各自维护 Logback
+pattern；它们都输出 MDC `traceId`，但 `star-framework` 没有为业务服务自动装载统一 Logback 配置。相同格式是当前各
+仓库配置事实，不是已证明的 starter 行为。完整的 provider、consumer、版本和可依赖约束见
+[共享框架能力溯源](framework-capability-provenance.md)。
 
 ## Runtime Reconnaissance 检查点
 
@@ -43,3 +50,5 @@ RocketMQ consumer 会确保其消费处理存在 traceId。当前证据不足以
 - `c-iot-server`: `DeviceMessageLogStore`、视频 RocketMQ consumer 与 `logback-spring.xml`。
 - `c-drone-inspection`: `logback-spring.xml`。
 - `c-wvp`: `logback-spring.xml`。
+- `star-framework`: `MdcConstants`、`MdcTracerUtils`、`RequestIdTraceFilter`、
+  `RequestIdFeignInterceptor` 与 `MqTraceUtils`。
