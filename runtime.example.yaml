@@ -1,7 +1,8 @@
-# Local runtime binding template. Copy to runtime.local.yaml and replace only
-# the SSH alias; keep its Host, User, and IdentityFile in ~/.ssh/config.
+# Local-only Runtime Target binding template. Copy to runtime.local.yaml.
+# Keep Host, User, and IdentityFile exclusively in ~/.ssh/config.
 version: v1
 environments:
   company-dev:
-    ssh:
-      alias: <local-ssh-alias>
+    targets:
+      - shortcut: "<local-runtime-shortcut>"
+        ssh_alias: "<local-ssh-alias>"

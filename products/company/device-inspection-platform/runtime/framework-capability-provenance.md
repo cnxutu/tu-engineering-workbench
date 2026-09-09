@@ -30,7 +30,7 @@ Service；部署拓扑不得把它当成容器、JAR 或网络节点。
 | --- | --- | --- | --- | --- |
 | MDC key / ID utility | `star-framework` `MdcConstants` / `MdcTracerUtils` (`traceId`) | `c-drone-inspection`、`c-iot-server`、`c-iot-gateway`、`c-gateway`、`c-system` 源码均可达或直接调用 | 在当前线程读取或创建 traceId | source verified；per-container JAR version unknown |
 | Servlet HTTP ingress | `star-framework` `fw-web` `RequestIdTraceFilter` | `c-drone-inspection`、`c-iot-server`；`c-system` 经 `fw-security -> fw-web` | 复用入站 `X-Request-Id`，缺失时创建 MDC 值并写 response header | code capability verified；runtime header behavior not verified |
-| `c-iot-gateway` HTTP ingress | `c-iot-gateway` `TraceIdWebFilter` on framework utility | `c-iot-gateway` | 生成/复用 MDC 值并返回 header | source verified；current test runtime not running |
+| `c-iot-gateway` HTTP ingress | `c-iot-gateway` `TraceIdWebFilter` on framework utility | `c-iot-gateway` | 生成/复用 MDC 值并返回 header | source verified；runtime behavior not verified in current snapshot |
 | `c-iot-gateway` MQTT / TCP / Custom ingress | `c-iot-gateway` handlers on framework utility | `c-iot-gateway` | 按协议消息边界创建并清理本进程 MDC | source verified；not a framework protocol propagation feature |
 | Feign HTTP propagation | `star-framework` `fw-rpc` `RequestIdFeignInterceptor` | `c-drone-inspection`、`c-iot-server`、`c-iot-gateway`、`c-system` 声明 `fw-rpc` | 将当前或新建 traceId 写入 outbound `X-Request-Id` | framework v2.1/v2.2 code verified；runtime chain and bean override not verified |
 | Reactive gateway context | `c-gateway` `MdcSubscriber` / `LogHooks` | `c-gateway` | 从 SkyWalking Reactor context 写 MDC；access log 取 framework utility value | source verified；not `fw-web` behavior |
@@ -56,14 +56,13 @@ The arrows from `star-framework` are dependency/provenance relationships, not ru
 
 ## Bounded Runtime Evidence
 
-在用户授权的当前测试环境只读检查中，`b-inspection-platform`、`c-iot`、`c-gateway` 与 `c-system`
-为运行容器；其 stdout 采样分别观察到 trace-shaped 值，P5 的近期 stdout 还出现 `X-Request-Id` 文本。此结果
-证明这些容器当前至少有部分日志带 trace context，不证明它们的 framework artifact 版本、HTTP header 传播或跨服务
-traceId 一致性。
+在用户授权的 `company-dev` 只读检查中，`b-inspection-platform`、`c-iot`、`c-gateway` 与 `c-system`
+的 stdout 采样观察到 trace-shaped 值，`c-gateway` 的近期 stdout 还出现 `X-Request-Id` 文本。此结果证明一次
+受限采样中至少有部分日志带 trace context，不证明当前容器状态、framework artifact 版本、HTTP header 传播或跨服务
+traceId 一致性。容器 active/exited 等易变状态只保存在本地 Runtime Snapshot。
 
-`c-iot-gateway` 容器存在但为 `exited`。这是测试环境为避免两个 IoT Gateway 同时接收设备数据的有意部署
-选择，而不是本轮故障结论；因此 P3 的 MQTT/TCP/Custom/HTTP trace 行为在当前环境均为 runtime not verifiable。
-本页不保存主机、日志路径、业务日志或容器镜像等易变/敏感细节。
+当次 snapshot 中 `c-iot-gateway` 未运行，所以其 MQTT/TCP/Custom/HTTP trace 行为均为 runtime not verifiable。
+本页不保存主机、日志路径、业务日志、容器状态或镜像等易变/敏感细节。
 
 ## Review Conclusions
 
@@ -104,4 +103,4 @@ RocketMQ 后仍是同一个值尚无 runtime evidence。
 - `c-iot-gateway`: root/module POMs, `TraceIdWebFilter`, `IotMqttUpstreamHandler`, `IotTcpUpstreamHandler`,
   `CustomUpstreamCallbackHandler`, and bootstrap Logback.
 - `c-gateway` / `c-system`: root/module POMs, Reactor MDC/access-log classes, `AdminAuthServiceImpl`, and their Logback files.
-- Runtime: user-authorized read-only Docker inventory and stdout aggregate checks in the current test environment; no payload was retained.
+- Runtime: user-authorized read-only Docker inventory and stdout aggregate checks in `company-dev`; no payload was retained.

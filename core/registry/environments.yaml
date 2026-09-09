@@ -6,4 +6,4 @@ environments:
     product: company/device-inspection-platform
     kind: development
     access: ssh
-    runtime_model: pending_runtime_reconnaissance
+    runtime_model: containerized_docker

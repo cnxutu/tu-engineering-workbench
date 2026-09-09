@@ -48,7 +48,15 @@
 
 Stage Shortcut 给出默认行为；用户本轮最新明确补充提供问题、范围和额外约束，可收窄或覆盖默认行为，但仍受指令优先级约束。例如 `E` 后明确允许新增临时测试，只放宽该测试级修改，不授权其他 tracked file 修改。K2 或其他非后端任务没有适用角色时，不强行套用 Java 角色。
 
-### 3.1.1 Product Truth Sync Shortcut
+### 3.1.1 Runtime Target Hint
+
+自然语言仍是 Runtime 任务的默认入口；`ssh <shortcut>` 是可选的 **Runtime Target Hint**，不是新的 DSL。例如 `P3 ssh 150 E 排查设备离线` 中，项目标记用于 Repository Scope，`ssh 150` 只指定目标运行时，`E` 仍定义只读 Explore 边界。普通源码任务不因存在此约定而加载 Runtime Context。
+
+出现该 Hint 时，先读取 [`core/registry/environments.yaml`](core/registry/environments.yaml)，再仅在存在时读取忽略的仓库根 `runtime.local.yaml`。该 local overlay 的 `environments.<logical-environment>.targets[]` 将用户 shortcut 绑定到本机 SSH alias：唯一命中时以该 alias 作为实际 SSH target；未命中时报告 `Runtime shortcut not configured`；重复命中时停止并请求用户确认。不得猜测 IP、SSH alias 或未配置 mapping；服务器编号不是 logical environment identity，也不得写入环境注册表。
+
+Runtime Target Hint 只选择 Runtime Context，绝不授予 restart、stop、start、deploy、Docker Compose、数据库/中间件写入、文件修改或 cleanup 权限，也不改变 `E / P / X / V` 的权限模型。连接参数、物理主机和实时运行状态只属于 `runtime.local.yaml` 与 `.runtime.local/`，必须保持忽略；模板见 [`runtime.example.yaml`](runtime.example.yaml)。
+
+### 3.1.2 Product Truth Sync Shortcut
 
 `Sync` / `S` 是独立的 Product Truth Sync Action，不是 Engineering Task Loop 的第五个 Stage，也不改变 `E / P / X / V`。它可位于任务头部、可选 Repository Scope 之后，以独立 token / 标签出现；`S1` 始终是 Repository Scope，不会被识别为 `S`。`P0 S` 的含义是允许在 `tu-engineering-workbench` 执行该 Action：基于当前 Thread 已有的实现、契约和 Verification Evidence，判断是否应最小更新 `products/` 中现有的 canonical Current Product Truth 页面。
 
