@@ -56,28 +56,31 @@ flowchart LR
     MQTT[MQTT broker: role unverified]
     NGINX[Nginx]
 
-    EDGE --> INSPECTION
-    EDGE --> IOT
-    EDGE --> SYSTEM
-    EDGE --> TAG
-    IOT_GATEWAY --> IOT
-    IOT --> INSPECTION
-    VIDEO --> ZLM
-    INSPECTION --> ROCKETMQ
-    IOT --> ROCKETMQ
-    INSPECTION --> REDIS
-    IOT --> REDIS
-    VIDEO --> REDIS
-    INSPECTION --> MYSQL
-    IOT --> MYSQL
-    IOT --> TDENGINE
-    INSPECTION --> NACOS
-    IOT --> NACOS
-    IOT_GATEWAY --> NACOS
-    VIDEO --> NACOS
+    EDGE -.->|downstream route; exact config pending| INSPECTION
+    EDGE -.->|downstream route; exact config pending| IOT
+    EDGE -.->|downstream route; exact config pending| SYSTEM
+    EDGE -.->|downstream route; exact config pending| TAG
+    IOT_GATEWAY -->|standardized device message| IOT
+    IOT -->|Data Rule / event| ROCKETMQ
+    ROCKETMQ -->|business consume| INSPECTION
+    INSPECTION -->|RPC / control| IOT
+    IOT -->|device downlink| IOT_GATEWAY
+    INSPECTION -->|video resource / control| VIDEO
+    VIDEO -->|media event| INSPECTION
+    VIDEO <-->|control / media lifecycle| ZLM
+    INSPECTION -->|cache dependency| REDIS
+    IOT -->|runtime-state dependency| REDIS
+    VIDEO -->|cache dependency| REDIS
+    INSPECTION -->|persistence dependency| MYSQL
+    IOT -->|persistence dependency| MYSQL
+    IOT -->|time-series dependency| TDENGINE
+    INSPECTION -->|service/config dependency| NACOS
+    IOT -->|service/config dependency| NACOS
+    IOT_GATEWAY -->|service/config dependency| NACOS
+    VIDEO -->|service/config dependency| NACOS
 ```
 
-Arrows express source-confirmed logical dependencies or product-domain communication, not a complete network capture.
-The Docker inventory proves deployment presence only where stated above; it does not prove every edge is active in the
-current snapshot. `star-framework` is intentionally absent because it is a build-time capability provider, not a
-runtime deployment unit.
+Solid arrows are source-confirmed logical calls, events, or dependencies; dotted gateway arrows only state that a
+downstream route is expected and require route-configuration verification. The Docker inventory proves deployment
+presence only where stated above; it does not prove every edge is active in the current snapshot. `star-framework` is
+intentionally absent because it is a build-time capability provider, not a runtime deployment unit.

@@ -74,6 +74,7 @@ Sync 不要求 DF、Active Delivery 或 `work/`；也不关闭 Delivery、Archiv
 | 维护 P0 的产品知识、架构、流程、服务边界、清单或交付记录 | `docs/governance/authoring-guide.md`、`docs/governance/governance.md`，以及受影响的权威页面 | 其他产品目录与所有使用教程 |
 | 修改 P0 的工具、脚本、校验或团队 Plugin | 目标目录的 README、实现与测试；Plugin 还读取 manifest、相关 `SKILL.md` 与 `tests/test-plugin.sh` | 产品知识、知识编写规范、无关 Plugin |
 | 用户明确指定 P0-2 并明确提出 VPS 部署、升级、调整、网络排查、性能或稳定性问题 | 通过 `workspace.local.yaml` 定位 P0-2，再读取 P0-2 的 `docs/vps/AGENTS.md` 和当前链路所需资料；涉及实现时仍读取本仓 `development.md` 与 P0-2 的 `vps-init/README.md` | 仅因 P0 是 Primary、偶然提到 VPS、一般网络问答或无真实 VPS/网络目标的仓库开发，不触发该专项入口 |
+| 任务明确含 `ssh <shortcut>`，或涉及开发/测试 Runtime、Docker/container、日志、trace/`traceId`、Nacos、Runtime Service 或服务运行异常 | 先读取 `core/registry/environments.yaml`，再在存在时读取忽略的 `runtime.local.yaml`；由唯一 resolved logical environment 的 `product` 读取 `products/<product>/runtime/index.md`，随后只按任务读取 `deployment-architecture.md`、`observability.md` 或 `framework-capability-provenance.md` | 普通源码任务、未命中的 Runtime 专题页、所有本地 snapshot 和未解析的 Runtime Target |
 | 任务涉及多个已登记项目，或明确涉及服务关系、OSD、指令、协议、缓存链路、公开 Contract、数据所有权或跨服务发布依赖 | `products/company/device-inspection-platform/index.md`，再沿链接读取当前已维护的最小 Flow 或 P1 入口/缓存资料；未覆盖场景以目标代码、契约和配置核实 | 整个产品目录、无关服务源码 |
 | K1/K2 的 Knowledge Hub 产品架构或跨端任务 | `products/personal/knowledge-hub/index.md`，再沿链接读取所需资料 | 无关公司产品材料 |
 | L1 的软考高级系统架构师学习沉淀任务 | `products/personal/architecture-learning/index.md`，再沿链接读取所需资料 | 无关产品材料 |

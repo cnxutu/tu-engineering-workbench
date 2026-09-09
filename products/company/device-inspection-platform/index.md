@@ -35,6 +35,8 @@
 
 ### 跨服务链路与边界
 
+- 涉及开发/测试环境、Deployment、Runtime Service、Docker、日志、trace、Nacos 或 Runtime 排障：先读
+  [Runtime Context](runtime/index.md)，再由该页按需导航。
 - OSD、State 或 DRC 数据从设备进入平台：读 [DJI OSD 上行数据链路](flows/dji-osd-upstream-flow.md)。
 - 需要从产品需求、TSL 定义到设备上报、平台运行态和 P1 业务投影的一页全链路：读 [设备状态与物模型端到端链路](flows/device-state-thing-model-end-to-end.md)。
 - 理解智元机器狗从协议映射到驾驶舱状态回读、控制下行和验收边界：读 [智元机器狗上下行集成闭环](flows/zhiyuan-robot-dog-end-to-end-integration.md)。

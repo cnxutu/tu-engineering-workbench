@@ -31,7 +31,8 @@
 | `c-system` | `c-system` | RBAC、基础用户信息与系统管理 | container observed |
 | `c-tag` | `c-tag` | 标签资源与数据权限 | container observed |
 
-上述 logical service 名称来自各仓库的应用配置；它们不证明任一服务已部署到 `company-dev`。
+上述 logical service 名称来自源码/应用配置；是否实际部署到 `company-dev`，由独立的 Runtime
+Reconnaissance evidence 证明，而不是由名称本身推断。
 
 ## Shared Framework Dependency
 
