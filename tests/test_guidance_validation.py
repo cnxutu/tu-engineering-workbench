@@ -916,6 +916,35 @@ class ClosingSkillRegistrationTest(unittest.TestCase):
         self.assertIn("validated 5 plugin skills", result.stdout)
 
 
+class RuntimeAccessBoundaryTest(unittest.TestCase):
+    def test_runtime_access_template_is_placeholder_only(self) -> None:
+        template = (REPOSITORY_ROOT / "runtime-access.example.yaml").read_text(encoding="utf-8")
+        self.assertIn("version: v1", template)
+        self.assertIn("privilege: readonly", template)
+        sensitive_lines = re.findall(r"(?im)^\s*(?:password|token|secret):\s*(.+)$", template)
+        self.assertTrue(sensitive_lines)
+        self.assertTrue(all("<" in value and ">" in value for value in sensitive_lines))
+
+    def test_runtime_diagnostic_reports_missing_access_and_keeps_read_only(self) -> None:
+        procedure = (
+            REPOSITORY_ROOT
+            / "plugins/ai-guidance-workflows/skills/tu-diagnosing-spring-backend-incidents/references/runtime-diagnostic-procedure.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Runtime access not configured for <dependency>", procedure)
+        self.assertIn("both remain read-only by default", procedure)
+        self.assertIn("Do not echo credentials", procedure)
+
+    def test_local_runtime_files_are_not_tracked(self) -> None:
+        result = subprocess.run(
+            ["git", "ls-files", "--", ".runtime.local", "runtime.local.yaml"],
+            cwd=REPOSITORY_ROOT,
+            capture_output=True,
+            check=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(result.stdout.strip(), "")
+
+
 class ProductTruthClosingGuidanceTest(unittest.TestCase):
     def test_closing_reconciles_final_facts_without_sync_history(self) -> None:
         skill = (REPOSITORY_ROOT / "plugins/ai-guidance-workflows/skills/tu-close-delivery/SKILL.md").read_text(encoding="utf-8")

@@ -1,0 +1,35 @@
+# Local-only Runtime Diagnostic access template.
+# Copy to .runtime.local/<environment>/access.local.yaml and replace placeholders locally.
+# Never commit this file with real values; production credentials are not supported by V1.
+version: v1
+environment: <logical-environment>
+
+access:
+  mysql:
+    host: "<host>"
+    port: 3306
+    database: "<database>"
+    username: "<username>"
+    password: "<password>"
+    privilege: readonly
+
+  redis:
+    host: "<host>"
+    port: 6379
+    database: 0
+    password: "<password>"
+    privilege: readonly
+
+  nacos:
+    endpoint: "<endpoint>"
+    namespace: "<namespace>"
+    username: "<username>"
+    password: "<password>"
+    privilege: readonly
+
+  # Optional when the environment requires message-broker inspection.
+  rocketmq:
+    endpoint: "<endpoint>"
+    username: "<username>"
+    password: "<password>"
+    privilege: readonly

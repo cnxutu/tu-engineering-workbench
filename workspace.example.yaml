@@ -32,6 +32,8 @@ repositories:
     path: <set-local-p6-path>
   - code: P7
     path: <set-local-p7-path>
+  - code: P8
+    path: <set-local-p8-path>
   - code: P10
     path: <set-local-p10-path>
   - code: K1

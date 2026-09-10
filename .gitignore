@@ -1,5 +1,8 @@
 workspace.local.yaml
+# Local Runtime Binding (routing only; never commit the local file).
 runtime.local.yaml
+# Local Runtime Snapshot, deployment mapping, and Dev/Test access overlay.
+# access.local.yaml may contain credentials and must remain local-only.
 .runtime.local/
 __pycache__/
 

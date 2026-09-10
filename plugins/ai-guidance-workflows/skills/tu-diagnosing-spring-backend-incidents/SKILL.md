@@ -43,7 +43,10 @@ payloads into Workbench.
 
 Runtime diagnosis is read-only by default. Runtime access never authorizes restart, deployment, configuration or data
 mutation. Stop when the symptom-to-runtime-to-implementation/configuration chain is closed, or report the evidence gap
-and next evidence when it is not. Request an explicit scope decision before reading an out-of-scope repository.
+and next evidence when it is not. When dependency evidence is required, inspect the local-only
+`.runtime.local/<environment>/access.local.yaml` entry first; missing access is reported without guessing credentials.
+Credentials are never echoed, logged, copied to snapshots/Product Truth, or included in output. Request an explicit scope
+decision before reading an out-of-scope repository.
 
 ## Output contract
 

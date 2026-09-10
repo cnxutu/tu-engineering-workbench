@@ -5,7 +5,8 @@
 本页是无人机巡检平台 Runtime 任务的按需入口。逻辑环境由
 [`core/registry/environments.yaml`](../../../../core/registry/environments.yaml) 定义；本机 SSH
 别名由忽略的 `runtime.local.yaml` 绑定；完整的主机、容器、挂载、端口和日志路径只可保存到忽略的
-`.runtime.local/<environment>/`。三者不替代现有仓库注册表、产品架构页或源码配置。
+`.runtime.local/<environment>/`。依赖诊断所需的 Dev/Test 访问信息单独保存到
+`.runtime.local/<environment>/access.local.yaml`；三者不替代现有仓库注册表、产品架构页或源码配置。
 
 当前已登记的 `company-dev` 是逻辑开发环境。一次授权的只读 Docker inventory 已验证它采用容器化 Docker
 运行模型，并观察到多个业务服务与中间件部署单元；物理主机、连接参数、容器状态及其时间点属于本地 snapshot，
@@ -15,7 +16,8 @@
 
 当任务涉及开发/测试环境、服务器、Docker、容器、运行日志、服务异常、Nacos 或 trace 时，先读取本页，
 再依次读取环境注册表、存在时的本机绑定和对应环境的本地 snapshot。普通源码任务不读取这些运行时文件。
-运行时错误先根据下表定位仓库，再读取该仓库的局部 `AGENTS.md` 与相关代码、配置和契约。
+运行时错误先根据下表定位仓库，再读取该仓库的局部 `AGENTS.md` 与相关代码、配置和契约。依赖证据仍须遵循
+诊断流程的 access.local.yaml 检查和只读约束。
 
 ## 源码已验证的逻辑服务
 
@@ -63,7 +65,7 @@ artifact，只能证明其构建期消费关系，不能证明目标环境已经
 
 本机 binding 的结构及 `company-dev` 的非敏感拓扑见 [Deployment Architecture V1](deployment-architecture.md)。
 在完成只读勘察后，在 `.runtime.local/company-dev/` 创建 `runtime-snapshot.md` 与 `deployment-map.yaml`。
-它们必须保持忽略，且不得记录 secret。可记录真实主机、Docker、容器、镜像、绑定端口、挂载、网络、日志路径和
+它们必须保持忽略，且不得记录凭据值；可记录真实主机、Docker、容器、镜像、绑定端口、挂载、网络、日志路径和
 证据时间；commit 前只能把已验证、稳定且非敏感的抽象结论提炼回本产品知识。
 
 ## 新环境接入

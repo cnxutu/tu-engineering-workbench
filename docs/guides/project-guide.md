@@ -86,7 +86,7 @@ flowchart TD
 | `workspace.example.yaml` / `workspace.local.yaml` | 可提交的路径模板 / 不提交的本机绝对路径映射 | 接入或移动本机工作区时；不得把本机路径写入可提交模板。 |
 | `runtime.example.yaml` / `runtime.local.yaml` | 可提交的 Runtime binding 模板 / 不提交的 Shortcut 到本机 SSH alias 绑定 | 新电脑配置或新增本机 Runtime Target 时；不记录 Host、User 或 key。 |
 | `products/**/runtime/` | 已验证、长期且非敏感的 Runtime Knowledge | 维护 Repository ↔ Runtime、部署架构、中间件边界或 observability 事实时。 |
-| `.runtime.local/` | 不提交的物理 Runtime Snapshot | 只读勘察后保存当时容器、端口、镜像、挂载和日志路径等易变事实。 |
+| `.runtime.local/` | 不提交的 Runtime Snapshot、Deployment Mapping 与 Dev/Test Local Runtime Access | 只读勘察后保存易变运行事实；按公司策略允许时，依赖诊断凭据仅放在 `.runtime.local/<environment>/access.local.yaml`，不得进入提交、日志或 Product Truth。 |
 | `.agents/plugins/marketplace.json` | 团队 Plugin 市场清单；仓库根目录是市场根目录 | 新增 Plugin、调整市场元数据或重新配置本地市场时。 |
 | `plugins/ai-guidance-workflows/` | 团队原生 Codex Skill 与 Plugin 测试 | 新增、修改或重命名团队 Skill 时。 |
 

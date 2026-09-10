@@ -52,9 +52,9 @@ Stage Shortcut 给出默认行为；用户本轮最新明确补充提供问题�
 
 自然语言仍是 Runtime 任务的默认入口；`ssh <shortcut>` 是可选的 **Runtime Target Hint**，不是新的 DSL。例如 `P3 ssh 150 E 排查设备离线` 中，项目标记用于 Repository Scope，`ssh 150` 只指定目标运行时，`E` 仍定义只读 Explore 边界。普通源码任务不因存在此约定而加载 Runtime Context。
 
-出现该 Hint 时，先读取 [`core/registry/environments.yaml`](core/registry/environments.yaml)，再仅在存在时读取忽略的仓库根 `runtime.local.yaml`。该 local overlay 的 `environments.<logical-environment>.targets[]` 将用户 shortcut 绑定到本机 SSH alias：唯一命中时以该 alias 作为实际 SSH target；未命中时报告 `Runtime shortcut not configured`；重复命中时停止并请求用户确认。不得猜测 IP、SSH alias 或未配置 mapping；服务器编号不是 logical environment identity，也不得写入环境注册表。
+出现该 Hint 时，先读取 [`core/registry/environments.yaml`](core/registry/environments.yaml)，再仅在存在时读取忽略的仓库根 `runtime.local.yaml`。该 local overlay 的 `environments.<logical-environment>.targets[]` 将用户 shortcut 绑定到本机 SSH alias：唯一命中时以该 alias 作为实际 SSH target；未命中时报告 `Runtime shortcut not configured`；重复命中时停止并请求用户确认。不得猜测 IP、SSH alias 或未配置 mapping；服务器编号不是 logical environment identity，也不得写入环境注册表。Runtime binding 只负责路由；依赖凭据必须从 `.runtime.local/<environment>/access.local.yaml` 单独读取。
 
-Runtime Target Hint 只选择 Runtime Context，绝不授予 restart、stop、start、deploy、Docker Compose、数据库/中间件写入、文件修改或 cleanup 权限，也不改变 `E / P / X / V` 的权限模型。连接参数、物理主机和实时运行状态只属于 `runtime.local.yaml` 与 `.runtime.local/`，必须保持忽略；模板见 [`runtime.example.yaml`](runtime.example.yaml)。
+Runtime Target Hint 只选择 Runtime Context，绝不授予 restart、stop、start、deploy、Docker Compose、数据库/中间件写入、文件修改或 cleanup 权限，也不改变 `E / P / X / V` 的权限模型。`runtime.local.yaml` 只保存 Shortcut → Logical Environment → SSH Alias 绑定；`.runtime.local/<environment>/access.local.yaml` 可在公司策略允许时保存 Dev/Test Runtime Diagnostic 所需的本地访问信息，必须保持忽略。模板见 [`runtime.example.yaml`](runtime.example.yaml) 与 [`runtime-access.example.yaml`](runtime-access.example.yaml)。
 
 ### 3.1.2 Product Truth Sync Shortcut
 
@@ -93,7 +93,7 @@ Sync 不要求 DF、Active Delivery 或 `work/`；也不关闭 Delivery、Archiv
 
 当前代码、契约、配置、测试和可复现命令结果用于证明**当前事实**；带证据的产品知识用于提供已确认上下文；Core 规则和示例只提供通用方法，不能证明现状。当前代码不能否定用户已授权的目标变更，只能说明变更前状态和兼容性影响。未知项标为待核实。
 
-不得记录或输出密钥、Token、凭据、客户数据或其他敏感运行信息。
+Committed Workbench（包括 `core/`、`products/`、`docs/`、`plugins/`、`runtime.example.yaml` 和 `workspace.example.yaml`）永远不得保存 password、token、private key、credential value、Cookie 或其他 Secret。`.runtime.local/` 是仅限本机的 Dev/Test overlay，可按公司策略保存诊断所需访问信息，但不得进入 Git、Product Truth、诊断输出或日志；生产凭据、个人密码、SSH private key 内容和无关 Secret 永不保存。凭据存在不等于获得写权限，Runtime Diagnostic 与 `E / P / V / X` 默认仍为只读。
 
 ### 4.3 风险操作与平台审核
 

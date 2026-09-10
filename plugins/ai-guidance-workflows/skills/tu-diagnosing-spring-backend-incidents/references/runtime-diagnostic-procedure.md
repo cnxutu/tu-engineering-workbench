@@ -44,7 +44,11 @@ observability, framework-provenance, and `.runtime.local/<environment>/` materia
 3. **Trace/correlation** — consult the product observability and framework-provenance pages. Verify the boundary before
    joining records: HTTP, Feign, async, RocketMQ, MQTT, WebSocket, and TCP may preserve, rebuild, or omit context.
 4. **Dependency/middleware** — inspect Nacos, Redis, MySQL, RocketMQ, MQTT/EMQX, ZLMediaKit, network, or DNS only when
-   preceding evidence points to that dependency.
+   preceding evidence points to that dependency. Before a provider check, look for the matching entry in
+   `.runtime.local/<environment>/access.local.yaml`. If it is absent, emit
+   `Runtime access not configured for <dependency>` and stop at **Next Evidence**; never guess or request a credential
+   value in output. An entry's `privilege` (`readonly` or `elevated`) describes the credential's possible capability,
+   not authorization for the diagnostic: both remain read-only by default.
 5. **Code/framework** — map the runtime unit to repository/module/class/config. Load shared framework context only to
    explain an observed behavior; distinguish business code, framework capability, runtime configuration, and middleware.
 
@@ -56,7 +60,9 @@ reason is closed. Use `Most Likely Cause` for a supported mechanism that lacks i
 when a required host, deployment, or cross-boundary signal is unavailable, and name the next evidence to obtain.
 
 Keep diagnosis separate from fix: report finding, impact, evidence, and recommended action; do not restart, deploy, edit
-configuration, write data, or clean a host without a later explicit authorization.
+configuration, write data, or clean a host without a later explicit authorization. Do not echo credentials, put them in
+logs/snapshots/Product Truth, or print complete credential-bearing connection strings; report only sanitized status such as
+`MySQL access: configured`.
 
 ## Case 001 fixture (sanitized)
 
@@ -79,6 +85,11 @@ Subject: `c-iot-gateway` in `company-dev`.
 - `P3 ssh 150 E` + device-offline problem: enter this runtime-aware branch without binding tests to a real host.
 - `ssh 999`: stop at context resolution with `Runtime shortcut not configured`.
 - A stopped service: emit the six-field runtime contract and do not restart it.
+- Dependency access missing: emit `Runtime access not configured for <dependency>` and stop at `Next Evidence`.
+- `readonly` and `elevated` access: diagnostic operations remain read-only in both cases.
+
+Local Runtime Access V1 is limited to Dev/Test. Production credentials are not supported; production diagnosis requires
+a separate policy, audit, approval, isolation, and operation-logging review.
 
 ## Future limitation
 

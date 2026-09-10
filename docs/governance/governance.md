@@ -12,7 +12,7 @@ P0 `tu-engineering-workbench` 是 Living Engineering Model：`core/` 提供工�
 
 ## 敏感信息
 
-禁止在 Workbench 中保存凭据、Token、私钥、客户标识、生产 payload、内部主机信息或未脱敏日志。应引用受控来源或使用脱敏示例；证据引用必须在不复制敏感内容的前提下仍有意义。
+Committed Workbench 中禁止保存凭据、Token、私钥、客户标识、生产 payload、内部主机信息或未脱敏日志。仅限本机且被 Git 忽略的 `.runtime.local/<environment>/access.local.yaml` 可在公司策略允许时保存 Dev/Test Runtime Diagnostic 所需的凭据；这些值不得复制到 Product Truth、任务记录、诊断输出或日志。应引用受控来源或使用脱敏示例；证据引用必须在不复制敏感内容的前提下仍有意义。生产凭据、个人密码、SSH private key 内容和无关 API Secret 永不保存。
 
 ## ADR、Product Knowledge 与 Delivery State
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
@@ -328,6 +329,46 @@ def validate_sensitive_values(repo_root: Path, errors: list[str]) -> None:
                 errors.append(f"possible sensitive value in {path.relative_to(repo_root)}")
 
 
+def validate_runtime_access_boundary(repo_root: Path, errors: list[str]) -> None:
+    """Validate the local runtime access template and Git safety boundary."""
+    ignore_file = repo_root / ".gitignore"
+    if not ignore_file.is_file():
+        errors.append("missing .gitignore")
+    else:
+        ignore_text = ignore_file.read_text(encoding="utf-8")
+        if not re.search(r"(?m)^\s*runtime\.local\.yaml\s*$", ignore_text):
+            errors.append("runtime.local.yaml is not ignored")
+        if not re.search(r"(?m)^\s*\.runtime\.local/\s*$", ignore_text):
+            errors.append(".runtime.local/ is not ignored")
+
+    template = repo_root / "runtime-access.example.yaml"
+    error_if_missing(template, "runtime access template", errors)
+    if template.is_file():
+        text = template.read_text(encoding="utf-8")
+        if yaml_scalar(text, "version") != "v1":
+            errors.append("runtime access template requires version: v1")
+        if yaml_scalar(text, "environment") is None or not PLACEHOLDER_PATTERN.match(yaml_scalar(text, "environment") or ""):
+            errors.append("runtime access template environment must be a placeholder")
+        for match in SENSITIVE_KEY_PATTERN.finditer(text):
+            value = match.group("value").strip().strip("\\\"'")
+            if value and not PLACEHOLDER_PATTERN.match(value):
+                errors.append(f"runtime access template contains concrete sensitive value: {match.group(0).strip()}")
+        privileges = re.findall(r"^\s+privilege:\s*(\S+)\s*$", text, re.MULTILINE)
+        if not privileges or any(value not in {"readonly", "elevated"} for value in privileges):
+            errors.append("runtime access template privilege must be readonly or elevated")
+
+    if (repo_root / ".git").exists():
+        result = subprocess.run(
+            ["git", "ls-files", "--", ".runtime.local", "runtime.local.yaml"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            errors.append("local runtime files must not be tracked: " + result.stdout.strip().replace("\n", ", "))
+
+
 def yaml_scalar(text: str, key: str) -> str | None:
     match = re.search(rf"^{re.escape(key)}:\s*(\S.*?)\s*$", text, re.MULTILINE)
     if match is None:
@@ -578,6 +619,7 @@ def main() -> int:
     validate_workspace_configuration(repo_root, registered_codes, errors)
     validate_workspace_template(repo_root, registered_codes, errors)
     validate_sensitive_values(repo_root, errors)
+    validate_runtime_access_boundary(repo_root, errors)
     validate_feature_delivery_packages(repo_root, errors)
     validate_closed_delivery_indexes(repo_root, external_contexts.get("delivery_archive_root"), errors)
 

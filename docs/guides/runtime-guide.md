@@ -10,9 +10,11 @@ Product Truth、Runtime Snapshot、Secret Store 或 MCP 文档。Codex 的实际
 | --- | --- |
 | `AGENTS.md` | Codex Runtime behavior authority |
 | `core/registry/environments.yaml` | Logical Environment Registry |
-| `runtime.local.yaml` | Local Runtime Binding |
+| `runtime.local.yaml` | Local Runtime Binding (Shortcut → Environment → SSH alias) |
 | `products/<product>/runtime/` | Durable Runtime Knowledge |
-| `.runtime.local/` | Local Runtime Snapshot |
+| `.runtime.local/<environment>/runtime-snapshot.md` | Local Runtime Snapshot |
+| `.runtime.local/<environment>/deployment-map.yaml` | Local Physical Deployment Mapping |
+| `.runtime.local/<environment>/access.local.yaml` | Local Runtime Access (Dev/Test diagnostic credentials) |
 | 本页 | Human Usage Guide |
 
 ## Runtime 四层模型
@@ -122,7 +124,30 @@ environments:
         ssh_alias: "<company-dev-alias>"
 ```
 
-`runtime.local.yaml` 已被 Git Ignore；它将 Runtime Shortcut 绑定到 Logical Environment 与本机 SSH alias。
+`runtime.local.yaml` 已被 Git Ignore；它只将 Runtime Shortcut 绑定到 Logical Environment 与本机 SSH alias，不保存凭据。
+
+### Local Runtime Access
+
+Runtime Context = AI 知道系统是什么；Runtime Binding = AI 知道去哪；Runtime Access = AI 有能力读取 Runtime
+Dependency；Diagnostic Skill = AI 知道怎么查。四者共同形成：
+
+```text
+Context + Binding + Access + Diagnostic Procedure
+```
+
+在公司策略允许且仅面向 Dev/Test 时，将本地访问信息写入
+`.runtime.local/<environment>/access.local.yaml`。以提交的
+[`runtime-access.example.yaml`](../../runtime-access.example.yaml) 为模板；不要创建真实值的 committed 文件。
+Local Runtime Access V1 不支持 Production credential；任何生产诊断都必须另行 Explore 公司策略、审计、审批、隔离和操作留痕。
+该文件可以包含 MySQL、Redis、Nacos 以及按需的 RocketMQ 连接信息和轻量 `privilege`（`readonly` 或
+`elevated`）。`privilege` 描述凭据潜在能力，不是给 AI 的授权：诊断无论哪种值都只执行 read-only 操作。
+
+推荐使用最小权限账号：MySQL diagnostic readonly user（SELECT/schema metadata）、Redis read-oriented ACL、
+Nacos read-only configuration/service query、RocketMQ query/inspect。此轮不创建或修改这些账号。
+
+进入依赖证据阶段时，诊断流程先检查该文件对应 provider 的 entry；缺失时报告
+`Runtime access not configured for <dependency>`，并停在 `Next Evidence`，不猜测凭据。回复、日志和快照只可记录
+`MySQL access: configured` 这类状态，不输出值或包含凭据的完整连接字符串。
 
 ### 3. 测试解析与连接
 
@@ -153,7 +178,7 @@ ssh 150
 4. 按公司权限策略，将个人持有的 company-scoped public key 授权给目标服务器账号。
 5. 在 `runtime.local.yaml` 增加 `112 → logical environment → SSH alias` 的 local binding。
 6. 执行 Read-only Runtime Reconnaissance。
-7. 将当前 snapshot 保存在 `.runtime.local/`。
+7. 将当前 snapshot 保存在 `.runtime.local/`；如配置了依赖访问，则将其单独保存在 `.runtime.local/<environment>/access.local.yaml`。
 8. 仅把 Verified、Durable、Non-sensitive 的结论同步到 `products/**/runtime/`。
 
 不要因为新增服务器自动生成新 key。推荐使用一把个人持有、公司工程范围使用的 dedicated SSH key；公司安全策略允许时，
@@ -167,9 +192,10 @@ ssh 150
 | Committed | `core/registry/environments.yaml` | Logical Environment、Product binding、runtime model |
 | Committed | `products/**/runtime/` | Repository ↔ Runtime、Deployment Architecture、Middleware Role、Observability、Durable Runtime Knowledge |
 | Local-only | `runtime.local.yaml` | Shortcut、SSH alias |
-| Local-only | `.runtime.local/` | Physical Runtime Snapshot、Container、Image、Port、Mount、Log Path、当前 Runtime State |
+| Local-only | `.runtime.local/<environment>/` | Physical Runtime Snapshot、Deployment Mapping、Container、Image、Port、Mount、Log Path、当前 Runtime State |
+| Local-only | `.runtime.local/<environment>/access.local.yaml` | 公司策略允许的 Dev/Test Runtime Diagnostic access；不得进入输出、日志或 Product Truth |
 | Local-only | `~/.ssh/config` | Host、User、IdentityFile |
-| Never Store | Workbench / committed docs | private key content、password、token、Cookie、DB password、Secret |
+| Never Store | Workbench / committed docs / `.runtime.local/` | SSH private key content、个人密码、生产凭据、无关 API Secret、客户 Secret |
 
 ## Code ↔ Runtime Navigation
 
@@ -213,6 +239,6 @@ company-dev → Docker runtime model
 某日志文件当前大小
 ```
 
-不要把 Runtime Snapshot 当作 Product Truth。Runtime 任务先从产品的
+不要把 Runtime Snapshot 当作 Product Truth，也不要把 access.local.yaml 的值复制进 snapshot。Runtime 任务先从产品的
 [`runtime/index.md`](../../products/company/device-inspection-platform/runtime/index.md) 进入，再按问题读取最小的
 Deployment、Observability 或 Framework Capability 页面。

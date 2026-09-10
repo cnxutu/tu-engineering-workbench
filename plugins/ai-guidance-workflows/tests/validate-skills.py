@@ -108,6 +108,8 @@ def validate_runtime_diagnostic_contract(plugin_root: Path) -> list[str]:
         "Runtime Diagnostic Procedure",
         "runtime-aware incident",
         "Runtime diagnosis is read-only by default",
+        "access.local.yaml",
+        "Credentials are never echoed",
     )
     required_procedure_markers = (
         "Runtime shortcut not configured",
@@ -126,6 +128,8 @@ def validate_runtime_diagnostic_contract(plugin_root: Path) -> list[str]:
         "`P3 ssh 150 E` + device-offline problem",
         "`ssh 999`",
         "A stopped service",
+        "Runtime access not configured for <dependency>",
+        "readonly` and `elevated` access",
     )
     for marker in required_skill_markers:
         if marker not in skill_text:
