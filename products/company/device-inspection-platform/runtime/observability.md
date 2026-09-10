@@ -44,6 +44,23 @@ pattern；它们都输出 MDC `traceId`，但 `star-framework` 没有为业务�
 3. 核实异步 executor、RocketMQ consumer、MQTT handler 和 WebSocket 消息是否保留或重建 trace context。
 4. 记录 warning/error 的首选入口、文件轮转和时间范围，真实路径仅进入本地 snapshot。
 
+## Stable problem-to-evidence routing
+
+下表是稳定的导航规则，不替代当前环境的 deployment-map、runtime-snapshot 或实际日志。Runtime Explore 默认先读取
+最小 route 与代码入口，在边界出现证据缺口时才扩大范围。
+
+| User symptom | Code Evidence first | Runtime Evidence next | Correlation boundary |
+| --- | --- | --- | --- |
+| 接口异常 | `c-gateway` 路由/过滤器，再到下游 Controller | API gateway 与目标服务的状态、时间窗日志 | `X-Request-Id` / `traceId`；实际路由须由环境配置确认。 |
+| 设备离线 | `c-iot-gateway` 上行桥接，再到 `c-iot` 设备状态处理 | P3、P2 容器状态与日志；已确认后才查 MQTT broker | device identity、gateway identity、message/request identifier；MQTT binding 不可猜测。 |
+| traceId | 发起服务的 ingress、Feign/MQ capability | 同一时间窗的相关容器 stdout/文件日志 | `traceId` 是候选关联键；跨 Feign、MQ、协议边界须由代码与运行证据共同确认。 |
+| MQTT topic | P3 协议 bridge 与 P4 codec mapping | P3 日志与已确认的 broker 日志 | Topic、device identity、request/message identifier；不把 MQTT 容器名当作绑定证据。 |
+| 视频黑屏或录像异常 | `c-wvp` 资源/播放/录像入口 | `c-video-center`、ZLMediaKit 与媒体网络证据 | video resource、stream、media server 与 RocketMQ message identifier。 |
+| 服务启动失败 | 对应 bootstrap、Nacos 配置导入与启动 lifecycle | 容器 state、health、最近启动日志、authorized readonly Nacos query | service name、container lifecycle 与配置版本；容器 running 不等于已注册。 |
+
+在每条路由中，Observation 不等于 Diagnosis，Source Evidence 不等于 Runtime Verification。未知的 broker、实例注册、
+有效配置或跨进程 trace 传播必须明确保留为 `unknown`，不得用命名或容器存在补齐。
+
 ## 证据
 
 - `c-iot-gateway`: `TraceIdWebFilter`、`IotMqttUpstreamHandler` 与 `logback-spring.xml`。

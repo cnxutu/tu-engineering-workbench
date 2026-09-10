@@ -68,6 +68,14 @@ artifact，只能证明其构建期消费关系，不能证明目标环境已经
 它们必须保持忽略，且不得记录凭据值；可记录真实主机、Docker、容器、镜像、绑定端口、挂载、网络、日志路径和
 证据时间；commit 前只能把已验证、稳定且非敏感的抽象结论提炼回本产品知识。
 
+`deployment-map.yaml` 是 Local Runtime Routing Index：它将逻辑服务连接到 repository/module、Spring service、
+当前环境 container、Nacos service、日志入口、主要依赖、Trace capability 与稳定知识 `source_refs`，用于从运行现象
+快速回到最小代码和证据入口。它是 local environment binding，不是 Product Truth 的替代权威。
+
+`runtime-snapshot.md` 是 Last Known Runtime State，只保存带 `captured_at` 的动态 Runtime Evidence，例如容器状态、
+health、image、资源压力、Nacos 查询结果、异常摘要与 unknown。它不能证明诊断结论，不能污染本页或其他 committed
+Product Truth；只有同时 Verified、Current、Durable、Independently Valid 的非敏感结论才可按 Product Truth Sync 规则提炼。
+
 ## 新环境接入
 
 新增测试或其他逻辑环境时：

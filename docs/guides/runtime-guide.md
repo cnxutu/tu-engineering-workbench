@@ -242,3 +242,30 @@ company-dev → Docker runtime model
 不要把 Runtime Snapshot 当作 Product Truth，也不要把 access.local.yaml 的值复制进 snapshot。Runtime 任务先从产品的
 [`runtime/index.md`](../../products/company/device-inspection-platform/runtime/index.md) 进入，再按问题读取最小的
 Deployment、Observability 或 Framework Capability 页面。
+
+## Runtime Cognition v1
+
+Runtime Cognition v1 复用既有目录与 Authority，不建立新的 Runtime 数据库、顶层目录或历史快照体系。
+
+| Layer | Location | Purpose | Authority boundary |
+| --- | --- | --- | --- |
+| Product Runtime Cognition | `products/<product>/runtime/` | 服务职责、稳定依赖、代码入口、日志与关联方式 | Durable Product Truth；不保存环境瞬时状态。 |
+| Local Runtime Routing Index | `.runtime.local/<environment>/deployment-map.yaml` | Agent Runtime Routing Index：将逻辑服务连接到 repository/module、Spring service、container、Nacos service、日志入口、依赖与 Trace capability | Local environment binding；引用 Product Truth 与代码，不成为第二个产品知识权威。 |
+| Runtime Snapshot | `.runtime.local/<environment>/runtime-snapshot.md` | Last Known Runtime State：当前容器、资源、Nacos 查询结果、异常摘要与证据缺口 | Point-in-time local evidence；不是诊断结论或历史记录。 |
+| P8 Framework Capability Evidence | 产品 Runtime 的 framework provenance 页面与 `star-framework` 源码 | MDC、Feign、MQ、异步等 build-time capability 的来源与边界 | Source evidence；不等于容器已经加载或验证该能力。 |
+
+`deployment-map.yaml` 只保存稳定的 routing join：逻辑服务到代码、服务名、容器名、Nacos 名称、日志选择器、主要依赖、Trace capability 和 `source_refs`。它不得保存 health、restart count、CPU/Memory、image history、故障、凭据或全量接口、Topic、表清单。
+
+`runtime-snapshot.md` 只维护一个当前快照，最少包含 `captured_at`、`environment`、`freshness`、host baseline、container summary、Nacos evidence、current observations、evidence gaps/unknowns 和 safety note。快照不保存 raw logs、password、token、secret、完整业务 payload 或完整连接串。
+
+### Explore modes
+
+**Targeted Runtime Explore（默认）** 从用户现象出发：读取 Routing Index，加载最小 Code Evidence，取得最小 Runtime Evidence，在每个边界比较输入、接受/处理结果和可观测输出，定位 first mismatch boundary；只有证据要求时才扩大仓库、容器或中间件范围。
+
+**Baseline Runtime Explore（显式）** 仅在用户明确要求“环境巡检”“刷新 baseline”或等价目标时，才采集 Docker inventory、网络、主机资源和全体容器基线。默认 Explore 只报告本轮证据；用户明确要求刷新/记录时才更新忽略的 local snapshot，仍不得修改目标 Runtime。
+
+### Runtime Explore safety
+
+Explore 默认只读。允许使用 `docker ps`、安全字段的 `docker inspect`、`docker logs`、`docker stats --no-stream`、Docker network read、`uptime`/`free`/`df`、authorized readonly Nacos query，以及源码和非敏感配置结构读取。
+
+Explore 默认禁止 `restart`/`start`/`stop`/`rm`、`compose up/down`、`chmod`/`chown`、MySQL/Redis/MQ/Nacos 写操作、deploy/pull 和任何产生业务副作用的 `docker exec`。V1 不将 `docker exec` 纳入默认 allowlist；需要变更时必须离开 Explore，并获得相应的 Plan / Execute 授权。
