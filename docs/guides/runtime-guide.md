@@ -271,3 +271,42 @@ Runtime Cognition v1 复用既有目录与 Authority，不建立新的 Runtime �
 Explore 默认只读。允许使用 `docker ps`、安全字段的 `docker inspect`、`docker logs`、`docker stats --no-stream`、Docker network read、`uptime`/`free`/`df`、authorized readonly Nacos query，以及源码和非敏感配置结构读取。
 
 Explore 默认禁止 `restart`/`start`/`stop`/`rm`、`compose up/down`、`chmod`/`chown`、MySQL/Redis/MQ/Nacos 写操作、deploy/pull 和任何产生业务副作用的 `docker exec`。V1 不将 `docker exec` 纳入默认 allowlist；需要变更时必须离开 Explore，并获得相应的 Plan / Execute 授权。
+
+### Runtime state suitability and mutation gate
+
+Preflight 不只是检查节点是否 `running`；它应先判断当前状态是否适合**该环境与本轮验证场景**：
+
+```text
+Observed Runtime State
+        ↓
+Deployment Intent
+        ↓
+Environment Role
+        ↓
+Current Operational Intent
+        ↓
+Expected State
+        ↓
+Normal / Fault / Not Applicable / Unknown
+```
+
+- **Deployment Intent** 是 Compose、Helm、deployment config、restart policy 或 service mapping 所说明的静态部署能力或通常形态；它不能单独证明某服务此刻必须运行。
+- **Environment Role** 回答该 Logical Environment 是否承载当前问题或验证场景。
+- **Current Operational Intent** 是当前时间点允许运行、暂时停用、切换或迁移的动态事实，须由可用运行记录或 Human Context 确认。
+- 只有当前状态违反已建立的 Expected State 时，才是 Runtime Fault；若环境不承载该场景，Verification 应标为 `Not Applicable`；角色或意图未知时标为 `Unknown`，并输出 `Need Human Context`。
+
+在提出或执行 `start`、`restart`、`stop`、`deploy`、`redeploy`、`scale`、`clear`、`delete`、`migrate` 或运行配置修改前，依次确认 Environment Role、Current Operational Intent、Expected State 和实际违例，再取得针对该动作的 Human Approval。不得只凭 Deployment Intent 推荐恢复或重启。
+
+### Human Evidence Bridge
+
+Executor 因权限、SSH、网络、Runtime policy 或副作用审批不能继续时，不把约束解释为诊断结论，也不绕开安全边界。应停止推断，输出最小 `Need Evidence`，由 Human 提供脱敏证据或明确的操作意图后，继续既有 Evidence Chain。Human-assisted Execute 是受控证据桥接，不是 Runtime Diagnostic 的失败模式。
+
+## Runtime phase status
+
+```text
+Runtime Phase 1 — Runtime Context / Routing: FROZEN
+Runtime Phase 2 — Runtime Diagnostic: FROZEN
+Next: Phase 3 — Integration Verification
+```
+
+冻结表示当前能力已达到日常使用标准：后续只接受“真实问题 → 已验证 Gap → 最小增量修复”的 usage-driven evolution，不主动扩展 Runtime framework、目录、DSL 或自动化平台。

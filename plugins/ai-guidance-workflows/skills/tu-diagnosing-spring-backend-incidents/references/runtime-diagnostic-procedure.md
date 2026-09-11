@@ -14,6 +14,8 @@ Resolve Runtime Context (registry → local binding → product runtime pages/sn
   ↓
 Resolve diagnostic subject
   ↓
+Establish Expected Runtime State for the environment and verification scenario
+  ↓
 Runtime state
   ↓
 Targeted logs
@@ -33,6 +35,12 @@ Parse the user message without inventing mappings. A Runtime Target Hint must re
 `core/registry/environments.yaml`, `runtime.local.yaml`, and the product runtime index. If it does not resolve, report
 `Runtime shortcut not configured`. Do not guess an IP, SSH alias, environment, or repository. Read deployment,
 observability, framework-provenance, and `.runtime.local/<environment>/` material only when the subject requires it.
+
+When a stopped, unhealthy, absent, or replacement runtime unit affects a diagnosis or integration verification, establish
+its Expected Runtime State before calling it a fault or recommending recovery. Deployment Intent (Compose, Helm,
+deployment config, restart policy, or service mapping) describes static capability and normal shape only. It must be
+combined with the Environment Role and Current Operational Intent for the requested scenario. If either dynamic fact is
+unknown, report `Need Human Context`; do not infer that the unit should start, restart, deploy, or be replaced.
 
 ### 2. Evidence ladder
 
@@ -64,27 +72,29 @@ configuration, write data, or clean a host without a later explicit authorizatio
 logs/snapshots/Product Truth, or print complete credential-bearing connection strings; report only sanitized status such as
 `MySQL access: configured`.
 
-## Case 001 fixture (sanitized)
+For any state-changing action (`start`, `restart`, `stop`, `deploy`, `redeploy`, `scale`, `clear`, `delete`, `migrate`, or
+runtime configuration change), confirm in order: Environment Role, Current Operational Intent, Expected Runtime State,
+and an actual state violation; then obtain Human Approval for the precise action. A stopped unit may be `Fault`,
+`Normal`, `Not Applicable`, or `Unknown` depending on those facts.
 
-Subject: `c-iot-gateway` in `company-dev`.
+When an executor cannot obtain a required signal because of permission, SSH, network, Runtime policy, or side-effect
+approval, stop the inference and request the smallest sanitized `Need Evidence`. Human-provided evidence or operational
+intent may continue the same diagnostic chain; do not bypass the executor constraint.
 
-- **Facts:** container status `exited`; exit code `143`; `OOMKilled=false`; restart count `0`; restart policy
-  `unless-stopped`; recent sampled logs show no startup-failure or OOM evidence.
-- **Evidence:** read-only Docker inspect and bounded log sampling from the Runtime Context case; source maps the logical
-  service to `c-iot-gateway`.
-- **Hypothesis:** exit code `143` is consistent with a process receiving `SIGTERM`.
-- **Unknown:** which actor or operation sent the termination signal.
-- **Next Evidence:** Docker daemon/system journal around stop time, host reboot/uptime evidence, and deployment/compose
-  operation evidence, subject to access and secret filtering.
-- **Diagnosis:** `Most Likely Cause` — graceful termination mechanism (`SIGTERM`); trigger is
-  `Insufficient Evidence`. No restart or other mutation is implied.
+## Sanitized stopped-service example
+
+- **Facts:** a service is stopped; inspect and bounded logs establish its immediate lifecycle evidence.
+- **Required context:** Deployment Intent, Environment Role, and Current Operational Intent for the requested scenario.
+- **Verdict:** report `Fault` only when the stopped state violates the established Expected State; otherwise report
+  `Normal`, `Not Applicable`, or `Unknown` / `Need Human Context`.
+- **Action boundary:** no restart or other mutation is implied by lifecycle evidence alone.
 
 ## Static routing scenarios
 
 - `P2 E` + message-processing problem: remain on the ordinary incident path; do not force Runtime Context.
-- `P3 ssh 150 E` + device-offline problem: enter this runtime-aware branch without binding tests to a real host.
-- `ssh 999`: stop at context resolution with `Runtime shortcut not configured`.
-- A stopped service: emit the six-field runtime contract and do not restart it.
+- `P3 ssh <configured-shortcut> E` + device-offline problem: enter this runtime-aware branch without binding tests to a real host.
+- `ssh <unconfigured-shortcut>`: stop at context resolution with `Runtime shortcut not configured`.
+- A stopped service: emit the six-field runtime contract, establish Expected State, and do not restart it.
 - Dependency access missing: emit `Runtime access not configured for <dependency>` and stop at `Next Evidence`.
 - `readonly` and `elevated` access: diagnostic operations remain read-only in both cases.
 

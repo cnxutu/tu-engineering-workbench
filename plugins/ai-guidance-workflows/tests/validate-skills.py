@@ -125,11 +125,12 @@ def validate_runtime_diagnostic_contract(plugin_root: Path) -> list[str]:
         "Most Likely Cause",
         "without a later explicit authorization",
         "`P2 E` + message-processing problem",
-        "`P3 ssh 150 E` + device-offline problem",
-        "`ssh 999`",
+        "`P3 ssh <configured-shortcut> E` + device-offline problem",
+        "`ssh <unconfigured-shortcut>`",
         "A stopped service",
         "Runtime access not configured for <dependency>",
         "readonly` and `elevated` access",
+        "Need Human Context",
     )
     for marker in required_skill_markers:
         if marker not in skill_text:
