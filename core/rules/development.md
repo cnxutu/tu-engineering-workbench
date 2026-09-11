@@ -23,7 +23,7 @@
 - 用户已明确目标、范围和实现方向，且改动可逆、符合下文风险分级验证中低风险定义时，直接执行必要的读取、编辑和本地验证；不要对连续小步骤重复确认。
 - 仅在下列情况于实施前请求**一次**必要确认：存在会显著改变功能结果的多种解释或方案；会改变公开 API、消息契约、数据语义或服务边界；需要删除或覆盖数据、文件、历史；会影响生产、外部系统、权限、安全或产生额外费用；或所需权限、范围无法从现有信息确定。
 - 确认时给出具体风险原因、受影响对象、推荐方案、备选方案与风险。获得决定后沿同一决策链执行，不重复询问；用户授权可满足平台要求用户审批或确认的前提，但不能覆盖平台、系统或开发者的禁止性约束及实际权限限制。若发现会实质改变已确认功能结果、范围或风险等级的新事实，停止当前实施，说明变化并重新请求必要确认。提交、推送、发布及其他外部状态变更仍须有用户明确授权；用户未回复时，不执行待确认的高风险操作。
-- 对 Runtime 的 start、restart、stop、deploy、redeploy、scale、clear、delete、migrate 或运行配置修改，先确认 Environment Role、Current Operational Intent、该场景的 Expected Runtime State，以及当前状态确实违反该 Expected State；Compose、Helm、restart policy、deployment mapping 等 Deployment Intent 不能单独证明“现在必须运行”。任一前置事实未知时，输出 `Need Human Context`，不得建议或执行恢复、重启或部署；四项已确认后仍须获得针对该动作的 Human Approval。
+- Runtime 状态变更分为两类。Corrective / Recovery Action（因故障提出的 start、restart、restore 或 replacement/recovery）在建议或执行前，确认 Environment Role、Current Operational Intent、该场景的 Expected Runtime State、当前状态确实违反该状态，并取得针对动作的 Human Approval。Planned Runtime Change（deploy、redeploy、scale、planned stop、migrate、clear、delete、运行配置修改或其他预期状态迁移）在执行前，确认 Environment Role、Current Operational Intent 或明确用户目标、Desired Target State 与 Scope、风险边界，并取得 Human Approval；不要求当前状态已违反 Expected State。Compose、Helm、restart policy、deployment mapping 等 Deployment Intent 不能单独证明当前 Runtime State 是 Fault。任一必要事实未知时，输出 `Need Human Context`，不得把该动作表述为 corrective recovery。
 - 除非平台或系统层明确禁止，高风险判断成立时不得直接终止而不向用户说明原因并请求决策。若工具调用被平台自动审核拒绝，应明确标注为平台限制，不将其表述为用户拒绝或任务完成，并提供缩小范围、分步执行或等待授权等可行下一步。
 - 遇到权限不足、沙箱限制、平台拦截，或授权请求未成功发出/未获得结果时，不得自行终止任务或仅让用户手动执行命令。必须向用户发起明确的授权或决策请求，说明受阻操作与精确对象、受阻原因和影响范围、推荐的授权/继续方案，以及缩小范围、替代实施或暂缓方案；在用户作出选择前，继续完成不依赖该权限的核实工作。仅在平台或系统明确禁止再次请求授权时，才说明限制并交接可执行选项。
 

@@ -72,10 +72,14 @@ configuration, write data, or clean a host without a later explicit authorizatio
 logs/snapshots/Product Truth, or print complete credential-bearing connection strings; report only sanitized status such as
 `MySQL access: configured`.
 
-For any state-changing action (`start`, `restart`, `stop`, `deploy`, `redeploy`, `scale`, `clear`, `delete`, `migrate`, or
-runtime configuration change), confirm in order: Environment Role, Current Operational Intent, Expected Runtime State,
-and an actual state violation; then obtain Human Approval for the precise action. A stopped unit may be `Fault`,
-`Normal`, `Not Applicable`, or `Unknown` depending on those facts.
+For a Corrective / Recovery Action (`start`, `restart`, restore, or replacement/recovery proposed because of a fault),
+confirm in order: Environment Role, Current Operational Intent, Expected Runtime State, and an actual state violation;
+then obtain Human Approval for the precise action. For a Planned Runtime Change (`deploy`, `redeploy`, `scale`, planned
+stop, `migrate`, `clear`, `delete`, runtime configuration change, or another expected state transition), confirm
+Environment Role, Current Operational Intent or explicit user goal, Desired Target State and Scope, and risk boundary;
+then obtain Human Approval. A planned change does not require a current state violation. Deployment Intent alone does
+not establish that a current Runtime State is a Fault; a stopped unit may be `Fault`, `Normal`, `Not Applicable`, or
+`Unknown` depending on those facts.
 
 When an executor cannot obtain a required signal because of permission, SSH, network, Runtime policy, or side-effect
 approval, stop the inference and request the smallest sanitized `Need Evidence`. Human-provided evidence or operational

@@ -295,7 +295,7 @@ Normal / Fault / Not Applicable / Unknown
 - **Current Operational Intent** 是当前时间点允许运行、暂时停用、切换或迁移的动态事实，须由可用运行记录或 Human Context 确认。
 - 只有当前状态违反已建立的 Expected State 时，才是 Runtime Fault；若环境不承载该场景，Verification 应标为 `Not Applicable`；角色或意图未知时标为 `Unknown`，并输出 `Need Human Context`。
 
-在提出或执行 `start`、`restart`、`stop`、`deploy`、`redeploy`、`scale`、`clear`、`delete`、`migrate` 或运行配置修改前，依次确认 Environment Role、Current Operational Intent、Expected State 和实际违例，再取得针对该动作的 Human Approval。不得只凭 Deployment Intent 推荐恢复或重启。
+Corrective / Recovery Action（因故障提出的 `start`、`restart`、restore 或 replacement/recovery）须依次确认 Environment Role、Current Operational Intent、Expected State 和实际违例，再取得针对该动作的 Human Approval。Planned Runtime Change（`deploy`、`redeploy`、`scale`、planned stop、`migrate`、`clear`、`delete`、运行配置修改或其他预期状态迁移）须确认 Environment Role、Current Operational Intent 或明确用户目标、Desired Target State 与 Scope、风险边界和 Human Approval；不要求当前状态已违反 Expected State。两类动作都不得只凭 Deployment Intent 断言当前状态是 Fault。
 
 ### Human Evidence Bridge
 
