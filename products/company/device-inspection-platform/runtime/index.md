@@ -19,6 +19,8 @@
 运行时错误先根据下表定位仓库，再读取该仓库的局部 `AGENTS.md` 与相关代码、配置和契约。依赖证据仍须遵循
 诊断流程的 access.local.yaml 检查和只读约束。
 
+- 需要从日志、`traceId` 或服务运行输出定位问题时，读 [Runtime Observability](observability.md)。该页仅说明源码可确认的设计；实际环境状态仍须以本地 Runtime snapshot 核实。
+
 ## 源码已验证的逻辑服务
 
 | Repository | Logical service | Runtime role | `company-dev` evidence |

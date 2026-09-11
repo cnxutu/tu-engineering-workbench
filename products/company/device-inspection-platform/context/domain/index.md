@@ -17,6 +17,7 @@
 
 - [多厂商设备接入边界](vendor-device-integration.md)：新设备厂商/型号的资料归档、P3 接入分流、最小契约与联调边界。
 - [智元酷拓（Agibot）厂商资料入口](agibot/index.md)：智元设备的 SDK、版本兼容、示例、回调、原始协议资料与版本追溯约束；当前公开资料覆盖 D1 Max。
+- [智元酷拓 D1 Max 型号能力与接入约束](zhiyuan-d1-max-sdk.md)：D1 Max 的 SDK 能力、状态/安全语义和候选接入边界；目标架构仍为 `pending_verification`。
 
 ### DJI 无人机专题
 
@@ -30,6 +31,7 @@
 
 - [物联网物模型（TSL）：从极简内核到巡检平台](iot-thing-model-tsl.md)：属性、服务、事件、P2/P3/P4/P1 链路、适配器加载及教学模拟。
 - [原生 SDK Bridge 的通信选型](grpc-edge-bridge-selection.md)：独立 C++/原生 SDK Bridge 与 P3 间的 HTTP/JSON、gRPC、MQTT 候选取舍。
+- [设备接入核心上下行对接任务清单](device-integration-task-checklist.md)：新厂商、新型号或新驾驶舱能力的任务拆解与验收边界。
 - OSD 角度判定：当前项目阈值和异常规则尚未形成可复用、可追溯的批准结论；新增规则前应在 `decisions/` 建立 ADR，并引用代码、协议文档或测试证据。
 
 ## 证据状态
