@@ -75,6 +75,51 @@ V
 
 Stage Shortcut 提供默认行为，用户补充内容提供本次问题与额外约束；补充可收窄或覆盖默认行为，但仍受指令优先级限制。Explore 默认不修改 tracked files；Plan 默认只形成候选 Executable Plan；Execute 只在有效边界内修改；Verify 只取得证据，不在失败后自动修复。
 
+## Human ↔ Agent：先给事实，再推导范围
+
+默认模型是：
+
+```text
+Goal
++ Known Evidence
++ Confirmed Boundary（仅在确定时）
+→ Agent derives Scope
+→ Evidence-based Investigation
+```
+
+**Human provides facts; Agent derives scope.** 人不必为了让 Agent 工作而预先定位 Repository、服务、模块、类、表/Key 或日志路径；这些是 Context Routing 和 Explore 的职责。简单问题仍可直接描述，例如“退出驾驶舱后仍显示作业中，帮我排查”。
+
+| 输入层 | 应提供什么 | 不应当作什么 |
+| --- | --- | --- |
+| Goal | 想解决的问题、预期与实际行为 | 实现范围或 Root Cause 的预判 |
+| Known Evidence | 已确认的时间窗、事件、状态、`traceId`、日志摘要或版本 | Root Cause；Agent 仍须建立因果链 |
+| Confirmed Boundary | 已知环境、设备类型、受影响版本或已经确认的改动边界 | 未证实的“应该就是某服务” |
+| Path | 已确定的服务、文件、表/Key、日志入口 | 默认必填项；仅在范围已明确、紧急恢复或 Agent 跑偏时给出 |
+
+Hypothesis 必须明确为猜测：它是可证伪的调查线索，不是事实或结论。已知的 Scope hint 应直接复用，避免形式上的重复探索；推测范围不应提前限制 Explore。紧急生产 Incident 可优先恢复速度，直接给出环境、服务、时间窗、日志、部署和已知代码路径，但 Agent 仍以证据作诊断。
+
+Agent 应吸收已有 Evidence，沿 `Problem → Product → Flow → Repository → Service → Runtime → Evidence → Code` 路由，并在证据已经定位 change seam 或 root-cause boundary 时收敛。**Autonomous routing should reduce uncertainty, not maximize exploration.**
+
+需要较完整输入时可复制下面模板；它是推荐写法，不是表单：
+
+```text
+Goal:
+<我要解决的问题>
+
+Known Evidence:
+- <确定事实、日志 / traceId / 时间窗 / 状态>
+
+Known Boundary:
+- <仅在确定时填写>
+
+Hypothesis:
+- <可选；这是猜测，不是事实>
+
+Instruction:
+Use Workbench context to derive the investigation scope.
+Do not treat my hypothesis as fact.
+```
+
 ## Product Truth Sync Shortcut
 
 `Sync` / `S` 是可选的独立 Action，不加入上表四个 Stage。它只在当前 Thread 已有可靠工程事实和 Verification Evidence 时，检查是否存在同时满足 **Verified、Current、Durable、Independently Valid** 的 Current Product Truth Delta。四项缺一不可：未产生长期事实为 `not-needed`，结论依赖尚未完成能力为 `not-ready`，缺少证据为 `insufficient-evidence`；三者均不修改文档。满足 Gate 时结果为 `synced`，最小更新已有 canonical `products/` 页面并报告 Delta、页面与证据。

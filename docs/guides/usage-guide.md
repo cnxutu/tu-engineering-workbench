@@ -52,7 +52,7 @@ P3 ssh 150 E
 
 个人级 Codex 指令、团队级工程规则与其他配置入口的边界，分别见 [全局 `AGENTS.md` 指南](../codex/global-agents-guidance.md) 和 [Codex 可配置入口地图](../codex/codex-customization-map.md)。这两页用于工程师理解和维护，不应复制进 P0 根 `AGENTS.md`。
 
-日常任务默认使用自然语言；对非平凡工程任务，可选用 `Explore`、`Plan`、`Execute`、`Verify` 表达本轮阶段意图。最短用法、默认边界和受控模板见 [Engineering Task Loop](../workflows/engineering-task-loop/README.md)。
+日常任务默认使用自然语言；对非平凡工程任务，可选用 `Explore`、`Plan`、`Execute`、`Verify` 表达本轮阶段意图。范围尚未知时，优先提供 Goal 与已知 Evidence；只有确认时才加 Boundary，不必猜测 Repository 或代码 Path。完整的输入分层、模板和紧急 Incident 例外见 [Engineering Task Loop 的 Human ↔ Agent 协作说明](../workflows/engineering-task-loop/README.md#human--agent先给事实再推导范围)。
 
 工程修改已验证后，如要检查是否应同步长期 Product Truth，可另起一轮：
 

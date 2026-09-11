@@ -8,6 +8,12 @@
 
 Stage Shortcut 位于消息的任务头部区域，可在可选 Repository Scope 之后、主要自然语言任务正文之前，以独立 token / 独立标签出现；支持大小写不敏感的 `E` / `Explore`、`P` / `Plan`、`X` / `Execute`、`V` / `Verify`。`P1`、`P2`、`P3-1` 等仍是项目标记，正文中的普通单字母不触发 Stage。
 
+## 输入与范围推导
+
+**Human provides facts; Agent derives scope.** 默认输入是 Goal 与 Human 已掌握的 Evidence；只有确认时才附 Confirmed Boundary。Repository、服务、模块、类、数据表/Key 和日志路径属于 Agent 通过 Context Routing 推导的 Path，除非 Human 已确定它们，或需要在紧急恢复中直接缩短路径。
+
+Human Hypothesis 是可证伪的线索，不是事实或结论；Agent 必须复用已知 Evidence、独立建立因果链并区分 Fact / Hypothesis / Unknown。已知 Scope hint 可以收窄调查，但推测范围不得提前限制 Explore。自主路由的目标是降低不确定性而非最大化探索：出现足以定位 change seam 或 root-cause boundary 的证据后，应停止扫描不必要的 Repository、服务或 Runtime。
+
 1. **Explore / E — Prove the solution is viable**：先核实现状、Goal、事实/假设/未知、change / integration seam 与可复用实现；再以证据验证方案成立所依赖的关键可行性和约束（现有扩展点、架构/Contract 兼容性、外部能力、性能或前置条件）；最后收敛推荐方案、影响范围、Non-scope、风险/约束、Verification Strategy 与未决前置条件，必要时给出替代方案及取舍。Explore 的产物是附 Evidence / Reasoning 的 **Viable Solution**：足以证明推荐方向可行并进入 Plan，但不要求边界、异常、兼容和实施细节已经完整，也不展开为逐步实施计划；关键未知项仍阻塞 Plan 时，继续验证而非结束 Explore。默认不修改任何 tracked file；可读取、搜索调用链、运行现有测试和非持久诊断/验证。用户可只放宽明确允许的范围。
 2. **Plan / P — Make the solution complete and executable**：Codex Plan Mode 基于 Explore 的 Viable Solution 继续 Refine、Bound、Close the Loop 和 Prepare Execution，补齐与正确实施相关的边界与约束、失败/边缘路径、Change Map、依赖与兼容性、执行顺序和可执行 Verification Plan。Plan 不重新无依据选择技术方向，也不一开始就机械拆 todo；简单任务可保持为 change、impact、execution、verification 的短计划，复杂度或风险需要时才展开 Contract、data、failure mode、migration、rollout 等细节。产物是可安全进入 Execute 的 **Executable Plan**；Plan 本身不实施或充当业务 Contract Authority。若产品提供原生 Plan 执行 Action，优先使用。属于 Feature Delivery 时，持久边界和结果必须回填对应 Workbench Artifact。
 3. **Execute / X — Change only inside the approved boundary**：原生 Action 不可用、Plan 后重新收敛或恢复明确边界时，`X` 确认并执行当前唯一、明确、无未决且未失效的最新 Plan。否则回到 Plan；只实施已确认范围内的改动，发现边界假设不成立或范围必须扩大时停止。

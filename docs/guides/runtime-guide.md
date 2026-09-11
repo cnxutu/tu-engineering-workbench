@@ -78,6 +78,8 @@ Runtime-aware incidents use the existing Spring incident diagnostic Skill's evid
 responsible repository code. The result separates Facts, Evidence, Hypothesis, Unknown, Next Evidence, and Diagnosis;
 runtime access remains read-only unless a later request explicitly authorizes a mutation.
 
+已知的 Runtime Evidence（例如环境、服务、时间窗、`traceId`、已收到的事件、状态快照或脱敏异常摘要）应直接提供并复用，但不能直接当作 Root Cause。范围未知时，Agent 从这些事实推导最小 Runtime / Code Scope；已确认的服务或日志 Path 可以收窄调查。紧急 Incident 以恢复速度优先，可直接给出已知环境、服务、部署和代码 Path，但仍须保留 evidence-based diagnosis。
+
 ### Runtime + Verification
 
 ```text
@@ -260,7 +262,7 @@ Runtime Cognition v1 复用既有目录与 Authority，不建立新的 Runtime �
 
 ### Explore modes
 
-**Targeted Runtime Explore（默认）** 从用户现象出发：读取 Routing Index，加载最小 Code Evidence，取得最小 Runtime Evidence，在每个边界比较输入、接受/处理结果和可观测输出，定位 first mismatch boundary；只有证据要求时才扩大仓库、容器或中间件范围。
+**Targeted Runtime Explore（默认）** 从用户现象和已知 Evidence 出发：读取 Routing Index，加载最小 Code Evidence，取得最小 Runtime Evidence，在每个边界比较输入、接受/处理结果和可观测输出，定位 first mismatch boundary；只有证据要求时才扩大仓库、容器或中间件范围。自主路由用于降低不确定性，定位边界后不为完整性扫描无关 Runtime。
 
 **Baseline Runtime Explore（显式）** 仅在用户明确要求“环境巡检”“刷新 baseline”或等价目标时，才采集 Docker inventory、网络、主机资源和全体容器基线。默认 Explore 只报告本轮证据；用户明确要求刷新/记录时才更新忽略的 local snapshot，仍不得修改目标 Runtime。
 
